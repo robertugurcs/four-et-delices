@@ -1,0 +1,1580 @@
+﻿================================================================================
+MAKE YOUR WISH / CATEGORY WISH — COMPLETE BUNDLE FOR CLAUDE
+================================================================================
+
+ASSETS (binary, repo paths):
+public/assets/category-wish/K-4-1.png
+public/assets/category-wish/W-2-1.png
+public/assets/category-wish/B-4-1.png
+public/assets/category-wish/C-4-1.png
+public/assets/category-wish/four-et-delices-wordmark.png
+public/assets/category-wish/noun-genies-lamp-5353843.svg
+public/assets/category-wish/noun-genie-mood-birthdays.svg
+public/assets/category-wish/noun-genie-mood-weddings.svg
+public/assets/category-wish/noun-genie-mood-kids.svg
+public/assets/category-wish/noun-genie-mood-corporate.svg
+public/assets/category-wish/noun-genie-7253710.svg
+
+
+################################################################################
+FILE: src/app/page.tsx
+################################################################################
+
+import type { Metadata } from "next";
+import { MiniSweetCatchFooter } from "@/components/footer/MiniSweetCatchFooter";
+import CategoryWishSection from "@/components/category-wish/CategoryWishSection";
+import { IntroController } from "@/components/hero/IntroController";
+import HeroScrollShrink from "@/components/hero/HeroScrollShrink";
+import TasteRevealSection from "@/components/hero/TasteRevealSection";
+import { SiteHeader } from "@/components/site-header/SiteHeader";
+
+export const metadata: Metadata = {
+  title: "Custom Cake Studio",
+  description: "Bespoke celebration cakes, crafted to order.",
+};
+
+export default function Home() {
+  return (
+    <main className="m-0 w-full max-w-full overflow-x-clip p-0">
+      <IntroController />
+      <SiteHeader />
+      <HeroScrollShrink />
+      <TasteRevealSection />
+      <CategoryWishSection />
+      <MiniSweetCatchFooter />
+    </main>
+  );
+}
+
+
+################################################################################
+FILE: src/app/layout.tsx
+################################################################################
+
+import type { Metadata } from "next";
+import { Nunito_Sans, Playfair_Display } from "next/font/google";
+import { CustomCursor } from "@/components/CustomCursor";
+import { IntroReadyGate } from "@/components/IntroReadyGate";
+import "./globals.css";
+
+/**
+ * Editorial display serif (luxury patisserie).
+ * Preferred retail faces: Canela, Reckless Neue â€” swap via local @font-face on
+ * `--font-cake-serif` when licensed; until then Google Playfair Display ~400/500.
+ */
+const display = Playfair_Display({
+  variable: "--font-cake-serif",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+const body = Nunito_Sans({
+  variable: "--font-cake-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "Custom Cake Studio",
+    template: "%s | Custom Cake Studio",
+  },
+  description: "Bespoke celebration cakes, crafted to order.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="en"
+      className={`${display.variable} ${body.variable} antialiased`}
+    >
+      <body className="m-0 min-h-screen p-0 font-sans">
+        <IntroReadyGate />
+        <CustomCursor />
+        {children}
+      </body>
+    </html>
+  );
+}
+
+
+################################################################################
+FILE: src/components/category-wish/CategoryWishSection.tsx
+################################################################################
+
+"use client";
+
+import Image from "next/image";
+import { useCallback, useEffect, useId, useRef, useState, type RefObject } from "react";
+import { gsap } from "gsap";
+
+type CategoryMood = "birthdays" | "weddings" | "kids" | "corporate";
+
+const GENIE_BY_MOOD: Record<CategoryMood, string> = {
+  birthdays: "/assets/category-wish/noun-genie-mood-birthdays.svg",
+  weddings: "/assets/category-wish/noun-genie-mood-weddings.svg",
+  kids: "/assets/category-wish/noun-genie-mood-kids.svg",
+  corporate: "/assets/category-wish/noun-genie-mood-corporate.svg",
+};
+
+const LAMP_SRC = "/assets/category-wish/noun-genies-lamp-5353843.svg";
+const WORDMARK_SRC = "/assets/category-wish/four-et-delices-wordmark.png";
+
+type Category = {
+  anchor: string;
+  title: string;
+  image: string;
+  mood: CategoryMood;
+  fanTxRem: number;
+  fanRotDeg: number;
+  fanZ: number;
+  fanOpacity: number;
+  fanLiftPx: number;
+};
+
+const CATEGORIES: Category[] = [
+  {
+    anchor: "birthdays",
+    title: "Birthdays",
+    image: "/assets/category-wish/K-4-1.png",
+    mood: "birthdays",
+    fanTxRem: -20.5,
+    fanRotDeg: -6.25,
+    fanZ: 4,
+    fanOpacity: 1,
+    fanLiftPx: 10,
+  },
+  {
+    anchor: "weddings",
+    title: "Weddings",
+    image: "/assets/category-wish/W-2-1.png",
+    mood: "weddings",
+    fanTxRem: -6.85,
+    fanRotDeg: -2.1,
+    fanZ: 6,
+    fanOpacity: 1,
+    fanLiftPx: 2,
+  },
+  {
+    anchor: "kids",
+    title: "Kids",
+    image: "/assets/category-wish/B-4-1.png",
+    mood: "kids",
+    fanTxRem: 6.85,
+    fanRotDeg: 2.1,
+    fanZ: 6,
+    fanOpacity: 1,
+    fanLiftPx: 2,
+  },
+  {
+    anchor: "corporate",
+    title: "Corporate",
+    image: "/assets/category-wish/C-4-1.png",
+    mood: "corporate",
+    fanTxRem: 20.5,
+    fanRotDeg: 6.25,
+    fanZ: 4,
+    fanOpacity: 1,
+    fanLiftPx: 10,
+  },
+];
+
+function SmokeTrailSvg({
+  pathRef,
+  gradientId,
+}: {
+  pathRef: RefObject<SVGPathElement | null>;
+  gradientId: string;
+}) {
+  return (
+    <svg
+      className="category-wish-smoke-svg"
+      viewBox="0 0 520 96"
+      preserveAspectRatio="none"
+      aria-hidden
+      focusable="false"
+    >
+      <defs>
+        <linearGradient
+          id={gradientId}
+          x1="0"
+          y1="96"
+          x2="520"
+          y2="0"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor="#672d3a" stopOpacity="0.45" />
+          <stop offset="28%" stopColor="#c9a227" stopOpacity="0.55" />
+          <stop offset="58%" stopColor="#e8d5a8" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#faf4ea" stopOpacity="0.22" />
+        </linearGradient>
+      </defs>
+      <path
+        ref={pathRef}
+        className="category-wish-smoke-svg__path"
+        fill="none"
+        stroke={`url(#${gradientId})`}
+        strokeWidth="2.15"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M 42 78 C 42 78 62 58 88 52 S 156 38 212 34 S 332 28 398 28 S 472 26 488 30"
+      />
+    </svg>
+  );
+}
+
+export default function CategoryWishSection() {
+  const rootRef = useRef<HTMLElement>(null);
+  const lampWrapRef = useRef<HTMLDivElement>(null);
+  const smokePathRef = useRef<SVGPathElement>(null);
+  const eyebrowRef = useRef<HTMLParagraphElement>(null);
+  const eyebrowSmokeRef = useRef<HTMLSpanElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const smokeGradientId = `cw-smoke-grad-${useId().replace(/:/g, "")}`;
+  const magicGenieRef = useRef<HTMLImageElement>(null);
+  const cardButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const cardLiftRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const spellRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [hoveredMood, setHoveredMood] = useState<CategoryMood | null>(null);
+  const revealedRef = useRef(false);
+
+  const scrollToAnchor = useCallback((id: string) => {
+    window.requestAnimationFrame(() => {
+      const target = document.getElementById(id);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    const lampWrap = lampWrapRef.current;
+    if (!root || !lampWrap) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let io: IntersectionObserver | null = null;
+
+    const ctx = gsap.context(() => {
+      const lifts = cardLiftRefs.current.filter(Boolean) as HTMLDivElement[];
+      const smokePath = smokePathRef.current;
+      const eyebrowEl = eyebrowRef.current;
+      const smokeTextEl = eyebrowSmokeRef.current;
+      const titleEl = titleRef.current;
+
+      const readOp = (el: Element) => Number(el.getAttribute("data-o") ?? 1);
+
+      if (reduced) {
+        gsap.set(lampWrap, { opacity: 1, scale: 1, y: 0, filter: "none" });
+        gsap.set(lifts, { opacity: (_, el) => readOp(el), y: 0 });
+        lampWrap.classList.add("category-wish-header-lamp--glow");
+        if (smokePath) {
+          const len = smokePath.getTotalLength();
+          gsap.set(smokePath, { strokeDasharray: len, strokeDashoffset: 0, opacity: 0.38 });
+        }
+        if (eyebrowEl && smokeTextEl) {
+          gsap.set([eyebrowEl, smokeTextEl], {
+            opacity: 1,
+            y: 0,
+            filter: "none",
+            letterSpacing: "0.26em",
+          });
+        }
+        if (titleEl) gsap.set(titleEl, { opacity: 1, y: 0 });
+        return;
+      }
+
+      gsap.set(lampWrap, { opacity: 0, scale: 0.42, y: 32 });
+
+      gsap.set(lifts, { opacity: 0, y: 52 });
+      if (eyebrowEl && smokeTextEl) {
+        gsap.set([eyebrowEl, smokeTextEl], {
+          opacity: 0,
+          y: 12,
+          filter: "blur(11px)",
+          letterSpacing: "0.38em",
+        });
+      }
+      if (titleEl) gsap.set(titleEl, { opacity: 0, y: 16 });
+
+      if (smokePath) {
+        const len = smokePath.getTotalLength();
+        gsap.set(smokePath, {
+          strokeDasharray: len,
+          strokeDashoffset: len,
+          opacity: 0,
+        });
+      }
+
+      io = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry?.isIntersecting || revealedRef.current) return;
+          revealedRef.current = true;
+
+          const tl = gsap.timeline({
+            defaults: { ease: "power3.out" },
+            smoothChildTiming: true,
+          });
+
+          tl.to(lampWrap, {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 1.35,
+            ease: "expo.out",
+          }).call(
+            () => {
+              lampWrap.classList.add("category-wish-header-lamp--glow");
+            },
+            undefined,
+            0.28,
+          );
+
+          if (smokePath) {
+            tl.to(
+              smokePath,
+              { opacity: 0.62, duration: 0.42, ease: "sine.out" },
+              0.38,
+            ).to(
+              smokePath,
+              {
+                strokeDashoffset: 0,
+                duration: 1.55,
+                ease: "power2.inOut",
+              },
+              0.45,
+            );
+          }
+
+          if (eyebrowEl && smokeTextEl) {
+            tl.to(
+              [smokeTextEl, eyebrowEl],
+              {
+                opacity: 1,
+                y: 0,
+                filter: "blur(0px)",
+                letterSpacing: "0.26em",
+                duration: 1.12,
+                stagger: 0.09,
+                ease: "power3.out",
+              },
+              0.88,
+            );
+          }
+
+          if (smokePath) {
+            tl.to(
+              smokePath,
+              {
+                opacity: 0.22,
+                duration: 0.85,
+                ease: "sine.inOut",
+              },
+              2.05,
+            );
+          }
+
+          if (titleEl) {
+            tl.to(
+              titleEl,
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.05,
+                ease: "power4.out",
+              },
+              1.65,
+            );
+          }
+
+          tl.to(
+            lifts,
+            {
+              opacity: (_, el) => readOp(el),
+              y: 0,
+              duration: 1.18,
+              stagger: 0.22,
+              ease: "expo.out",
+            },
+            1.95,
+          );
+        },
+        { threshold: 0.28, rootMargin: "0px 0px -8% 0px" },
+      );
+
+      io.observe(root);
+    }, root);
+
+    return () => {
+      revealedRef.current = false;
+      io?.disconnect();
+      ctx.revert();
+    };
+  }, []);
+
+  const handleActivate = (anchor: string, index: number) => {
+    setSelected(anchor);
+
+    const root = rootRef.current;
+    const lampEl = lampWrapRef.current;
+    const genieEl = magicGenieRef.current;
+    const inner = cardLiftRefs.current[index];
+    const cardBtn = cardButtonRefs.current[index];
+    const spellEl = spellRefs.current[index];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const fly = gsap.timeline();
+
+    if (!reduced && inner) {
+      fly
+        .to(inner, { scale: 1.03, duration: 0.2, ease: "power2.out" })
+        .to(inner, { scale: 1, duration: 0.45, ease: "power3.out" });
+    }
+
+    const mood = CATEGORIES[index]?.mood;
+    const genieSrc = mood ? GENIE_BY_MOOD[mood] : GENIE_BY_MOOD.birthdays;
+
+    if (!reduced && genieEl && lampEl && root && cardBtn) {
+      genieEl.src = genieSrc;
+      const sr = root.getBoundingClientRect();
+      const lr = lampEl.getBoundingClientRect();
+      const cr = cardBtn.getBoundingClientRect();
+      const w = 58;
+      const left0 = lr.left - sr.left + lr.width / 2 - w / 2;
+      const top0 = lr.top - sr.top + lr.height / 2 - w * 0.42;
+      const left1 = cr.left - sr.left + cr.width / 2 - w / 2;
+      const top1 = cr.top - sr.top + cr.height / 2 - w * 0.42;
+
+      gsap.set(genieEl, {
+        width: w,
+        height: "auto",
+        left: left0,
+        top: top0,
+        autoAlpha: 0,
+        scale: 0.62,
+      });
+
+      fly
+        .to(genieEl, { autoAlpha: 1, scale: 1, duration: 0.15, ease: "power2.out" }, 0)
+        .to(genieEl, { left: left1, top: top1, duration: 0.52, ease: "power2.inOut" }, 0.1)
+        .to(genieEl, { autoAlpha: 0, scale: 0.72, duration: 0.22, ease: "power3.in" }, "-=0.1");
+    }
+
+    if (!reduced && spellEl) {
+      gsap.set(spellEl, { opacity: 0, scale: 0.32 });
+      fly
+        .to(spellEl, { opacity: 0.88, scale: 1.15, duration: 0.22, ease: "power2.out" }, 0.32)
+        .to(spellEl, { opacity: 0, scale: 1.95, duration: 0.48, ease: "power2.in" });
+    }
+
+    if (!reduced && lampEl) {
+      fly.fromTo(
+        lampEl,
+        { filter: "drop-shadow(0 4px 14px rgba(212, 175, 104, 0.22))" },
+        {
+          filter:
+            "drop-shadow(0 0 22px rgba(236, 201, 120, 0.88)) drop-shadow(0 10px 26px rgba(196, 54, 112, 0.18))",
+          duration: 0.32,
+          yoyo: true,
+          repeat: 1,
+          ease: "sine.inOut",
+        },
+        0.02,
+      );
+    }
+
+    const scrollAt = reduced ? 0.04 : 0.62;
+    fly.call(() => scrollToAnchor(anchor), undefined, scrollAt);
+  };
+
+  return (
+    <section
+      ref={rootRef}
+      className="category-wish-section"
+      aria-labelledby="category-wish-heading"
+      data-cw-mood={hoveredMood ?? ""}
+    >
+      <img
+        ref={magicGenieRef}
+        className="category-wish-magic-genie"
+        src={GENIE_BY_MOOD.birthdays}
+        alt=""
+        width={58}
+        height={72}
+        draggable={false}
+      />
+
+      <div className="category-wish-section__inner">
+        <header className="category-wish-section__header">
+          <div className="category-wish-section__wish-row">
+            <div ref={lampWrapRef} className="category-wish-header-lamp">
+              <img
+                className="category-wish-header-lamp__img"
+                src={LAMP_SRC}
+                alt=""
+                width={72}
+                height={90}
+                draggable={false}
+              />
+            </div>
+            <div className="category-wish-eyebrow-cluster">
+              <SmokeTrailSvg pathRef={smokePathRef} gradientId={smokeGradientId} />
+              <div className="category-wish-eyebrow-stack">
+                <span
+                  ref={eyebrowSmokeRef}
+                  className="category-wish-section__eyebrow-smoke"
+                  aria-hidden
+                >
+                  Make your wish
+                </span>
+                <p
+                  ref={eyebrowRef}
+                  className="category-wish-section__eyebrow"
+                >
+                  Make your wish
+                </p>
+              </div>
+            </div>
+          </div>
+          <h2
+            ref={titleRef}
+            id="category-wish-heading"
+            className="category-wish-section__title"
+          >
+            What are we celebrating?
+          </h2>
+        </header>
+
+        <div
+          className="category-wish-fan"
+          role="list"
+          onMouseLeave={() => setHoveredMood(null)}
+        >
+          {CATEGORIES.map((cat, index) => (
+            <div
+              key={cat.anchor}
+              className="category-wish-fan__slot"
+              role="listitem"
+              style={{
+                zIndex: cat.fanZ,
+                ["--cw-tx" as string]: `${cat.fanTxRem}rem`,
+                ["--cw-lift" as string]: `${cat.fanLiftPx}px`,
+              }}
+            >
+              <button
+                ref={(el) => {
+                  cardButtonRefs.current[index] = el;
+                }}
+                type="button"
+                data-category-mood={cat.mood}
+                className={`category-wish-card${selected === cat.anchor ? " category-wish-card--selected" : ""}`}
+                onClick={() => handleActivate(cat.anchor, index)}
+                onMouseEnter={() => setHoveredMood(cat.mood)}
+                aria-pressed={selected === cat.anchor}
+                aria-label={`${cat.title} â€” explore`}
+              >
+                <div
+                  ref={(el) => {
+                    cardLiftRefs.current[index] = el;
+                  }}
+                  className="category-wish-card__lift"
+                  data-o={cat.fanOpacity}
+                >
+                  <div
+                    className="category-wish-card__tilt"
+                    style={{
+                      ["--cw-rot" as string]: `${cat.fanRotDeg}deg`,
+                    }}
+                  >
+                    <div className="category-wish-card__media">
+                      <Image
+                        src={cat.image}
+                        alt=""
+                        fill
+                        sizes="(max-width: 1023px) 96vw, (max-width: 1600px) 28vw, 420px"
+                        quality={92}
+                        className="category-wish-card__img"
+                        priority={index < 2}
+                      />
+                      <div className="category-wish-card__scrim" aria-hidden />
+                      <div className="category-wish-card__overlay">
+                        <span className="category-wish-card__overlay-title">{cat.title}</span>
+                      </div>
+                      <div className="category-wish-card__brand">
+                        <Image
+                          src={WORDMARK_SRC}
+                          alt=""
+                          width={132}
+                          height={44}
+                          className="category-wish-card__wordmark"
+                        />
+                      </div>
+                      <div
+                        ref={(el) => {
+                          spellRefs.current[index] = el;
+                        }}
+                        className="category-wish-card__spell"
+                        aria-hidden
+                      />
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+################################################################################
+FILE: src/components/CustomCursor.tsx
+################################################################################
+
+"use client";
+
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+
+/** Desktop-style pointer: fine control + real hover (excludes most phones). */
+const CURSOR_MQ = "(pointer: fine) and (hover: hover)";
+
+/** Same viewBox as /public/assets/knife.svg */
+const VIEWBOX = 512.8;
+
+/** Rendered SVG size (px); tip offset below must stay in sync (viewBox fraction Ã— this). */
+const KNIFE_PX = 32;
+
+/**
+ * Blade tip = path `M` in knife.svg â€” mouse (clientX/Y) maps to this point so the user
+ * â€œclicks with the tipâ€, not the handle. Keep transform-origin in CSS at the same %.
+ */
+const TIP_UX = 506.8;
+const TIP_UY = 14.319;
+
+/** Fallback until DOM measures tip after CSS translate/rotate/scale */
+const TIP_X = (TIP_UX / VIEWBOX) * KNIFE_PX;
+const TIP_Y = (TIP_UY / VIEWBOX) * KNIFE_PX;
+
+/** Path geometry from knife.svg (SVG Repo) */
+const KNIFE_PATH_D =
+  "M506.8,14.319c-6.4-6.4-17.6-11.6-36-0.8c-91.6,55.2-225.6,180-227.2,181.2c-0.4,0.4-0.4,0.4-0.4,0.8l-0.4,0.4c0,0,0,0.4,0,0.8c0,0.4,0,0.4,0,0.8v44L9.2,452.719c-6,6-9.2,13.6-9.2,22c0,8.4,3.2,16,8.8,22c6.4,6,14.4,8.8,22,8.8c8,0,16-3.2,22-9.2l454-453.6C514.8,34.719,514.8,21.919,506.8,14.319z";
+
+/** Lower = smoother/luxury lag (lerp toward mouse); higher = snappier */
+const SMOOTH = 0.11;
+
+const CLICK_MS = 150;
+
+/** Grow cursor when hovering interactive targets (DOM â€” not CSS ~ sibling) */
+const INTERACTIVE_FOR_HOVER =
+  'button, a[href], [role="button"], input[type="submit"], input[type="button"], input[type="reset"], summary';
+
+type CategoryWishMood = "birthdays" | "weddings" | "kids" | "corporate";
+
+const GENIE_BY_MOOD: Record<CategoryWishMood, string> = {
+  birthdays: "/assets/category-wish/noun-genie-mood-birthdays.svg",
+  weddings: "/assets/category-wish/noun-genie-mood-weddings.svg",
+  kids: "/assets/category-wish/noun-genie-mood-kids.svg",
+  corporate: "/assets/category-wish/noun-genie-mood-corporate.svg",
+};
+
+function parseCategoryMood(
+  raw: string | null | undefined,
+): CategoryWishMood | null {
+  if (
+    raw === "birthdays" ||
+    raw === "weddings" ||
+    raw === "kids" ||
+    raw === "corporate"
+  ) {
+    return raw;
+  }
+  return null;
+}
+
+export function CustomCursor() {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const genieImgRef = useRef<HTMLImageElement>(null);
+  /** Blade tip / genie face offset from root TL (px), includes inner CSS transforms */
+  const hotspotRef = useRef({ hx: TIP_X, hy: TIP_Y });
+  const clickAnimRef = useRef(0);
+  const posRef = useRef({ x: 0, y: 0 });
+  const visualRef = useRef({ x: 0, y: 0 });
+  const syncedRef = useRef(false);
+  const rafRef = useRef(0);
+  const [active, setActive] = useState(false);
+  const [cursorUi, setCursorUi] = useState<{
+    mode: "knife" | "genie";
+    mood: CategoryWishMood | null;
+    grow: boolean;
+    knifeClick: boolean;
+    genieWink: boolean;
+  }>({
+    mode: "knife",
+    mood: null,
+    grow: false,
+    knifeClick: false,
+    genieWink: false,
+  });
+
+  const measureKnifeHotspot = useCallback(() => {
+    const root = rootRef.current;
+    const svg = svgRef.current;
+    if (!root || !svg) return;
+    const pt = svg.createSVGPoint();
+    pt.x = TIP_UX;
+    pt.y = TIP_UY;
+    const m = svg.getScreenCTM();
+    if (!m) return;
+    const scr = pt.matrixTransform(m);
+    const rr = root.getBoundingClientRect();
+    hotspotRef.current = {
+      hx: scr.x - rr.left,
+      hy: scr.y - rr.top,
+    };
+  }, []);
+
+  /** Face center (between â€œeyesâ€) from measured bitmap box */
+  const measureGenieHotspot = useCallback(() => {
+    const root = rootRef.current;
+    const img = genieImgRef.current;
+    if (!root || !img) return;
+    const ir = img.getBoundingClientRect();
+    const rr = root.getBoundingClientRect();
+    if (ir.width < 2 || ir.height < 2) {
+      hotspotRef.current = { hx: 27, hy: 22 };
+      return;
+    }
+    hotspotRef.current = {
+      hx: ir.left + ir.width * 0.5 - rr.left,
+      hy: ir.top + ir.height * 0.34 - rr.top,
+    };
+  }, []);
+
+  const flushTransform = useCallback(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const v = visualRef.current;
+    const { hx, hy } = hotspotRef.current;
+    el.style.transform = `translate3d(${v.x - hx}px, ${v.y - hy}px, 0)`;
+  }, []);
+
+  /** Hotspot vs root depends on inner CSS â€” measure after paint */
+  useLayoutEffect(() => {
+    if (!active) return;
+    const schedule = () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (cursorUi.mode === "genie") measureGenieHotspot();
+          else measureKnifeHotspot();
+          flushTransform();
+        });
+      });
+    };
+    schedule();
+    window.addEventListener("resize", schedule);
+    return () => window.removeEventListener("resize", schedule);
+  }, [
+    active,
+    cursorUi.mode,
+    cursorUi.mood,
+    measureKnifeHotspot,
+    measureGenieHotspot,
+    flushTransform,
+  ]);
+
+  useEffect(() => {
+    const mq = window.matchMedia(CURSOR_MQ);
+    const syncActive = () => setActive(mq.matches);
+
+    syncActive();
+    mq.addEventListener("change", syncActive);
+
+    return () => mq.removeEventListener("change", syncActive);
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
+
+    const html = document.documentElement;
+    html.setAttribute("data-custom-cursor", "true");
+
+    const onMove = (e: MouseEvent) => {
+      posRef.current = { x: e.clientX, y: e.clientY };
+      const hit = document.elementFromPoint(e.clientX, e.clientY);
+      const card = hit?.closest(".category-wish-section .category-wish-card");
+      const mood =
+        card instanceof HTMLElement
+          ? parseCategoryMood(card.dataset.categoryMood)
+          : null;
+      const mode: "knife" | "genie" = mood ? "genie" : "knife";
+      const grow =
+        !!hit?.closest(INTERACTIVE_FOR_HOVER) &&
+        !hit?.closest("[data-no-cursor-grow]");
+
+      setCursorUi((prev) => {
+        if (
+          prev.mode === mode &&
+          prev.mood === mood &&
+          prev.grow === grow
+        ) {
+          return prev;
+        }
+        const next = { ...prev, mode, mood, grow };
+        if (mode === "knife") next.genieWink = false;
+        else next.knifeClick = false;
+        return next;
+      });
+
+      if (!syncedRef.current) {
+        visualRef.current = { x: e.clientX, y: e.clientY };
+        syncedRef.current = true;
+        flushTransform();
+      }
+    };
+
+    /** Left button only â€” no animation on right/middle; never preventDefault (forms/links untouched). */
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      setCursorUi((prev) => {
+        if (prev.mode === "genie") {
+          window.clearTimeout(clickAnimRef.current);
+          clickAnimRef.current = window.setTimeout(() => {
+            setCursorUi((p) => ({ ...p, genieWink: false }));
+          }, 380);
+          return { ...prev, genieWink: true, knifeClick: false };
+        }
+        window.clearTimeout(clickAnimRef.current);
+        clickAnimRef.current = window.setTimeout(() => {
+          setCursorUi((p) => ({ ...p, knifeClick: false }));
+        }, CLICK_MS);
+        return { ...prev, knifeClick: true, genieWink: false };
+      });
+    };
+
+    const loop = () => {
+      const el = rootRef.current;
+      if (el && syncedRef.current) {
+        const t = posRef.current;
+        const v = visualRef.current;
+        v.x += (t.x - v.x) * SMOOTH;
+        v.y += (t.y - v.y) * SMOOTH;
+        const { hx, hy } = hotspotRef.current;
+        el.style.transform = `translate3d(${v.x - hx}px, ${v.y - hy}px, 0)`;
+      }
+      rafRef.current = requestAnimationFrame(loop);
+    };
+
+    document.addEventListener("mousemove", onMove, { passive: true });
+    document.addEventListener("mousedown", onMouseDown);
+    rafRef.current = requestAnimationFrame(loop);
+
+    return () => {
+      html.removeAttribute("data-custom-cursor");
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mousedown", onMouseDown);
+      window.clearTimeout(clickAnimRef.current);
+      cancelAnimationFrame(rafRef.current);
+      syncedRef.current = false;
+    };
+  }, [active, flushTransform]);
+
+  /** Same-origin Sweet Catch iframe: pointer events hit the iframe document, not ours â€” relay via postMessage. */
+  useEffect(() => {
+    if (!active) return;
+
+    const onMsg = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      const d = e.data;
+      if (!d || typeof d !== "object") return;
+
+      if (d.type === "sweet-catch-pointer") {
+        const vx = typeof d.vx === "number" ? d.vx : 0;
+        const vy = typeof d.vy === "number" ? d.vy : 0;
+        posRef.current = { x: vx, y: vy };
+        if (typeof d.grow === "boolean") {
+          setCursorUi((prev) => ({
+            ...prev,
+            mode: "knife",
+            mood: null,
+            grow: d.grow,
+          }));
+        }
+      } else if (d.type === "sweet-catch-pointer-leave") {
+        setCursorUi((prev) => ({
+          ...prev,
+          mode: "knife",
+          mood: null,
+          grow: false,
+        }));
+      } else if (d.type === "sweet-catch-click") {
+        window.clearTimeout(clickAnimRef.current);
+        setCursorUi((prev) => ({
+          ...prev,
+          knifeClick: true,
+          genieWink: false,
+        }));
+        clickAnimRef.current = window.setTimeout(() => {
+          setCursorUi((p) => ({ ...p, knifeClick: false }));
+        }, CLICK_MS);
+      }
+    };
+
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [active]);
+
+  if (!active) return null;
+
+  const innerClassName = [
+    cursorUi.mode === "knife"
+      ? "custom-knife-cursor-inner"
+      : "custom-genie-cursor-inner",
+    cursorUi.mode === "knife"
+      ? cursorUi.knifeClick
+        ? "custom-knife-cursor-inner--click"
+        : cursorUi.grow
+          ? "custom-knife-cursor-inner--hover"
+          : ""
+      : cursorUi.genieWink
+        ? "custom-genie-cursor-inner--wink"
+        : cursorUi.grow
+          ? "custom-genie-cursor-inner--hover"
+          : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const genieSrc =
+    cursorUi.mood != null ? GENIE_BY_MOOD[cursorUi.mood] : GENIE_BY_MOOD.birthdays;
+
+  return (
+    <div
+      ref={rootRef}
+      className="custom-cursor pointer-events-none fixed left-0 top-0 z-[9999] overflow-visible will-change-transform"
+      style={{ transform: "translate3d(0px, 0px, 0)" }}
+      aria-hidden
+    >
+      <div ref={innerRef} className={innerClassName}>
+        {cursorUi.mode === "knife" ? (
+          <svg
+            ref={svgRef}
+            width={KNIFE_PX}
+            height={KNIFE_PX}
+            viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}
+            xmlns="http://www.w3.org/2000/svg"
+            className="custom-knife-cursor-svg block overflow-visible"
+            fill="currentColor"
+          >
+            <path d={KNIFE_PATH_D} />
+          </svg>
+        ) : (
+          <img
+            key={cursorUi.mood ?? "genie"}
+            ref={genieImgRef}
+            src={genieSrc}
+            width={54}
+            height={66}
+            alt=""
+            draggable={false}
+            className="custom-genie-cursor-img block h-[66px] w-[54px]"
+            onLoad={() => {
+              measureGenieHotspot();
+              flushTransform();
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+################################################################################
+FILE: src/app/globals.css — lines 102-224 (custom cursor knife + genie)
+################################################################################
+
+/* Custom knife cursor â€” hide native OS cursor everywhere (desktop test), see CustomCursor.tsx */
+html[data-custom-cursor="true"],
+html[data-custom-cursor="true"] body,
+html[data-custom-cursor="true"] button,
+html[data-custom-cursor="true"] a,
+html[data-custom-cursor="true"] input,
+html[data-custom-cursor="true"] textarea,
+html[data-custom-cursor="true"] select,
+html[data-custom-cursor="true"] [role="button"],
+html[data-custom-cursor="true"] * {
+  cursor: none !important;
+}
+
+.custom-cursor {
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/*
+ * Knife: hotspot = blade tip (path M â‰ˆ 98.83% 2.79%).
+ * Idle 290Â° â†’ hover micro lift (+3Â°, scale 1.22) â†’ click strike (+8Â°, scale 1.28).
+ */
+.custom-knife-cursor-inner {
+  line-height: 0;
+  transform: translate(-98.83%, -2.79%) rotate(290deg) scale(1.15);
+  transform-origin: 98.83% 2.79%;
+  transition: transform 150ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.custom-knife-cursor-inner--hover:not(.custom-knife-cursor-inner--click) {
+  transform: translate(-98.83%, -2.79%) rotate(293deg) scale(1.22);
+}
+
+.custom-knife-cursor-inner--flip {
+  transform: translate(-1.17%, -2.79%) scaleX(-1) rotate(290deg) scale(1.15);
+  transform-origin: 1.17% 2.79%;
+}
+
+.custom-knife-cursor-inner--flip.custom-knife-cursor-inner--hover:not(
+    .custom-knife-cursor-inner--click
+  ) {
+  transform: translate(-1.17%, -2.79%) scaleX(-1) rotate(293deg) scale(1.22);
+}
+
+.custom-knife-cursor-inner--click {
+  transform: translate(-98.83%, -2.79%) rotate(298deg) scale(1.28);
+}
+
+.custom-knife-cursor-inner--flip.custom-knife-cursor-inner--click {
+  transform: translate(-1.17%, -2.79%) scaleX(-1) rotate(298deg) scale(1.28);
+}
+
+/* Color via currentColor; no transparency; premium lift from surface */
+.custom-knife-cursor-svg {
+  color: #000000 !important;
+  opacity: 1;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+  transition: filter 150ms ease-out;
+}
+
+.custom-knife-cursor-inner--hover:not(.custom-knife-cursor-inner--click)
+  .custom-knife-cursor-svg {
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.18));
+}
+
+.custom-knife-cursor-inner--click .custom-knife-cursor-svg {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.22));
+}
+
+/* Category Wish: genie on cards only â€” graphic from CustomCursor (not cursor:url). */
+.custom-genie-cursor-inner {
+  line-height: 0;
+  transform: translate(-50%, -36%) scale(1);
+  transform-origin: 50% 36%;
+  transition: transform 180ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.custom-genie-cursor-inner--hover:not(.custom-genie-cursor-inner--wink) {
+  transform: translate(-50%, -36%) scale(1.07);
+}
+
+.custom-genie-cursor-inner--wink {
+  animation: custom-genie-wink 0.38s cubic-bezier(0.45, 0.02, 0.32, 1) forwards;
+}
+
+@keyframes custom-genie-wink {
+  0% {
+    transform: translate(-50%, -36%) scale(1, 1);
+  }
+  18% {
+    transform: translate(-50%, -36%) scale(1.06, 0.84);
+  }
+  38% {
+    transform: translate(-50%, -36%) scale(0.97, 1.04);
+  }
+  65% {
+    transform: translate(-50%, -36%) scale(1.01, 0.98);
+  }
+  100% {
+    transform: translate(-50%, -36%) scale(1, 1);
+  }
+}
+
+.custom-genie-cursor-img {
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.14));
+  transition: filter 180ms ease-out;
+  pointer-events: none;
+}
+
+.custom-genie-cursor-inner--hover:not(.custom-genie-cursor-inner--wink) .custom-genie-cursor-img {
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.17));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-genie-cursor-inner {
+    transition: none;
+  }
+
+  .custom-genie-cursor-inner--wink {
+    animation: none;
+    transform: translate(-50%, -36%) scale(1);
+  }
+}
+
+
+################################################################################
+FILE: src/app/globals.css — lines 1889-2328 (category-wish section)
+################################################################################
+
+/* --------------------------------------------------------------------------
+ * Category Wish Section â€” champagne editorial fan between hero shrink & taste
+ * -------------------------------------------------------------------------- */
+.category-wish-section {
+  position: relative;
+  z-index: 2;
+  isolation: isolate;
+  overflow: clip;
+  background: linear-gradient(180deg, #fdf8f3 0%, #fbf4eb 48%, #fbf4eb 100%);
+  color: #2a201a;
+  padding-top: clamp(72px, 11vw, 120px);
+  padding-right: clamp(20px, 5vw, 72px);
+  padding-bottom: clamp(56px, 10vw, 112px);
+  padding-left: clamp(20px, 5vw, 72px);
+  transition:
+    background 0.85s ease,
+    background-color 0.85s ease;
+}
+
+.category-wish-section[data-cw-mood="birthdays"] {
+  background: linear-gradient(180deg, #fff9f3 0%, #fceee0 42%, #f8e4d4 100%);
+}
+
+.category-wish-section[data-cw-mood="weddings"] {
+  background: linear-gradient(180deg, #f8f6f2 0%, #eef2ee 45%, #e8ebe6 100%);
+}
+
+.category-wish-section[data-cw-mood="kids"] {
+  background: linear-gradient(180deg, #fdf8ff 0%, #f5eef8 48%, #efe8f4 100%);
+}
+
+.category-wish-section[data-cw-mood="corporate"] {
+  background: linear-gradient(180deg, #fdf5f8 0%, #f8eaf4 45%, #f3e3ef 100%);
+}
+
+.category-wish-section__inner {
+  margin: 0 auto;
+  width: 100%;
+  max-width: min(98vw, 1360px);
+}
+
+.category-wish-section__header {
+  text-align: center;
+  margin-bottom: clamp(10px, 3vw, 28px);
+}
+
+.category-wish-section__wish-row {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.8vw, 20px);
+  margin-bottom: 10px;
+  min-height: clamp(52px, 12vw, 72px);
+}
+
+.category-wish-eyebrow-cluster {
+  position: relative;
+  flex: 1;
+  min-width: min(100%, 420px);
+  min-height: clamp(48px, 10vw, 68px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 6px 2px;
+}
+
+.category-wish-smoke-svg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(52px, 11vw, 76px);
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+
+.category-wish-smoke-svg__path {
+  filter: drop-shadow(0 2px 5px rgba(26, 18, 8, 0.07));
+}
+
+.category-wish-eyebrow-stack {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 1.6em;
+  padding: 4px 8px;
+}
+
+.category-wish-section__eyebrow-smoke {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  pointer-events: none;
+  font-family: "Eighties Comeback", "Roslindale Display Condensed", var(--font-cake-serif), serif;
+  font-size: clamp(10px, 1.25vw, 12.5px);
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  font-weight: 500;
+  background: linear-gradient(
+    105deg,
+    #5c2836 0%,
+    #b8892e 38%,
+    #e7d6b4 65%,
+    #f2ebe0 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0;
+  will-change: filter, opacity, transform, letter-spacing;
+}
+
+.category-wish-section__eyebrow {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  font-family: "Eighties Comeback", "Roslindale Display Condensed", var(--font-cake-serif), serif;
+  font-size: clamp(11px, 1.35vw, 13px);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: rgba(74, 51, 42, 0.58);
+  will-change: filter, opacity, transform, letter-spacing;
+}
+
+.category-wish-header-lamp {
+  flex: 0 0 auto;
+  align-self: center;
+  line-height: 0;
+  filter: drop-shadow(0 4px 14px rgba(212, 175, 104, 0.22));
+  transition: filter 0.9s ease, opacity 0.9s ease, transform 0.9s ease;
+  will-change: filter, opacity, transform;
+  /* Spout meets smoke trail â€” optical nudge vs centered eyebrow cluster */
+  margin-top: clamp(10px, 1.8vw, 18px);
+  margin-right: clamp(-6px, -0.9vw, -2px);
+}
+
+.category-wish-header-lamp__img {
+  display: block;
+  width: clamp(44px, 9vw, 56px);
+  height: auto;
+}
+
+.category-wish-header-lamp--glow {
+  filter:
+    drop-shadow(0 0 16px rgba(236, 201, 120, 0.62)) drop-shadow(0 6px 18px rgba(212, 175, 104, 0.38))
+    drop-shadow(0 2px 8px rgba(196, 54, 112, 0.12));
+}
+
+.category-wish-section__title {
+  margin: 0;
+  font-family: "Roslindale Display Condensed", "Canela Deck", "Eighties Comeback", var(--font-cake-serif), serif;
+  font-weight: 400;
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+  color: #2a201a;
+  will-change: opacity, transform;
+}
+
+@media (max-width: 720px) {
+  .category-wish-section__wish-row {
+    flex-direction: column;
+    align-items: center;
+    min-height: 0;
+    gap: clamp(10px, 3vw, 18px);
+  }
+
+  .category-wish-eyebrow-cluster {
+    min-width: 100%;
+    min-height: clamp(44px, 14vw, 56px);
+  }
+
+  .category-wish-smoke-svg {
+    max-width: 100%;
+  }
+}
+
+.category-wish-magic-genie {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 58px;
+  height: auto;
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0;
+}
+
+.category-wish-fan {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  max-width: min(98vw, 1320px);
+  height: clamp(440px, 54vw, 620px);
+}
+
+.category-wish-fan__slot {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: clamp(220px, 21.5vw, 304px);
+  transform: translateX(-50%) translateX(var(--cw-tx, 0rem)) translateY(var(--cw-lift, 0px));
+}
+
+.category-wish-card {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: clamp(28px, 3vw, 42px);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.category-wish-card:hover,
+.category-wish-card:focus-visible {
+  cursor: pointer;
+}
+
+.category-wish-card:focus-visible {
+  outline: 2px solid rgba(196, 54, 112, 0.55);
+  outline-offset: 5px;
+}
+
+.category-wish-card__lift {
+  transform-origin: bottom center;
+  will-change: transform, opacity, filter;
+}
+
+.category-wish-card__tilt {
+  transform-origin: bottom center;
+  transform: rotate(var(--cw-rot, 0deg));
+  border-radius: clamp(28px, 3vw, 42px);
+  overflow: hidden;
+  background: #faf7f3;
+  border: 1px solid rgba(42, 32, 26, 0.06);
+  box-shadow:
+    0 28px 56px rgba(26, 18, 8, 0.11),
+    0 12px 28px rgba(26, 18, 8, 0.07),
+    0 2px 8px rgba(26, 18, 8, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.45s ease;
+}
+
+.category-wish-card:hover .category-wish-card__tilt,
+.category-wish-card:focus-visible .category-wish-card__tilt {
+  transform: rotate(0deg) translateY(-16px);
+  box-shadow:
+    0 40px 72px rgba(26, 18, 8, 0.14),
+    0 16px 36px rgba(26, 18, 8, 0.09),
+    0 4px 12px rgba(26, 18, 8, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  border-color: rgba(196, 54, 112, 0.22);
+}
+
+.category-wish-card--selected .category-wish-card__tilt {
+  border-color: rgba(196, 54, 112, 0.42);
+  box-shadow:
+    0 28px 62px rgba(196, 54, 112, 0.14),
+    0 14px 34px rgba(26, 18, 8, 0.11),
+    0 0 0 1px rgba(251, 217, 229, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.category-wish-fan__slot:has(.category-wish-card--selected) {
+  z-index: 28 !important;
+}
+
+.category-wish-card__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+}
+
+.category-wish-card__img {
+  object-fit: cover;
+}
+
+.category-wish-card__scrim {
+  position: absolute;
+  inset: 0;
+  /* Light wash â€” keep PNG colours clear; slight depth only for title strip */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(42, 32, 26, 0.03) 48%,
+    rgba(26, 18, 8, 0.14) 88%,
+    rgba(18, 12, 8, 0.26) 100%
+  );
+  pointer-events: none;
+}
+
+.category-wish-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  pointer-events: none;
+}
+
+.category-wish-card__overlay-title {
+  font-family: "Roslindale Display Condensed", "Canela Deck", "Eighties Comeback", var(--font-cake-serif), serif;
+  font-weight: 400;
+  font-size: clamp(22px, 3.2vw, 30px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-align: center;
+  color: #fffef9;
+  text-shadow:
+    0 1px 16px rgba(0, 0, 0, 0.35),
+    0 2px 40px rgba(0, 0, 0, 0.22);
+}
+
+.category-wish-card__brand {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 10px 12px 14px;
+  pointer-events: none;
+}
+
+.category-wish-card__wordmark {
+  width: min(64%, 132px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.25));
+}
+
+.category-wish-card__spell {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 140%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    circle,
+    rgba(236, 201, 120, 0.55) 0%,
+    rgba(236, 140, 180, 0.22) 38%,
+    transparent 68%
+  );
+  filter: blur(3px);
+}
+
+@media (max-width: 1023px) {
+  .category-wish-fan {
+    height: auto;
+    max-width: min(96vw, 520px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(22px, 5.5vw, 34px);
+    padding-bottom: 12px;
+  }
+
+  .category-wish-fan__slot {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: 100%;
+    max-width: min(96vw, 440px);
+    margin-left: auto;
+    margin-right: auto;
+    transform: none;
+    margin-bottom: 0;
+    z-index: 1;
+  }
+
+  .category-wish-fan__slot:last-child {
+    margin-bottom: 0;
+  }
+
+  .category-wish-fan__slot:nth-child(1) {
+    z-index: 4;
+  }
+  .category-wish-fan__slot:nth-child(2) {
+    z-index: 5;
+  }
+  .category-wish-fan__slot:nth-child(3) {
+    z-index: 6;
+  }
+  .category-wish-fan__slot:nth-child(4) {
+    z-index: 7;
+  }
+
+  .category-wish-card__tilt {
+    transform: rotate(-2deg);
+    max-width: min(96vw, 440px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .category-wish-fan__slot:nth-child(even) .category-wish-card__tilt {
+    transform: rotate(2deg);
+  }
+
+  .category-wish-card:hover .category-wish-card__tilt,
+  .category-wish-card:focus-visible .category-wish-card__tilt {
+    transform: rotate(0deg) translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-wish-card__tilt {
+    transition: none;
+  }
+
+  .category-wish-section {
+    transition: none;
+  }
+
+  .category-wish-header-lamp {
+    transition: none;
+  }
+}

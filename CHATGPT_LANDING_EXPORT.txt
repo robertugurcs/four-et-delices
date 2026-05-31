@@ -1,0 +1,2989 @@
+Landing page bundle — 13 files. Paste into ChatGPT or attach this file.
+Excluded by request: Hero.tsx, HeroStorySplit.tsx, inquiry/, api/orders, .env.local, package-lock.json
+
+
+========================================================================
+package.json
+========================================================================
+{
+  "name": "cake-website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "build:wordmark": "node scripts/build-wordmark-transparent.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "next": "16.2.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "resend": "^6.12.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+
+
+========================================================================
+src/app/page.tsx
+========================================================================
+import type { Metadata } from "next";
+import { MiniSweetCatchFooter } from "@/components/footer/MiniSweetCatchFooter";
+import { IntroController } from "@/components/hero/IntroController";import HeroScrollShrink from "@/components/hero/HeroScrollShrink";
+import TasteRevealSection from "@/components/hero/TasteRevealSection";
+import { SiteHeader } from "@/components/site-header/SiteHeader";
+
+export const metadata: Metadata = {
+  title: "Custom Cake Studio",
+  description: "Bespoke celebration cakes, crafted to order.",
+};
+
+export default function Home() {
+  return (
+    <main className="m-0 w-full max-w-full overflow-x-clip p-0">
+      <IntroController />
+      <SiteHeader />
+      <HeroScrollShrink />
+      <TasteRevealSection />
+      <MiniSweetCatchFooter />    </main>
+  );
+}
+
+
+========================================================================
+src/app/layout.tsx
+========================================================================
+import type { Metadata } from "next";
+import { Nunito_Sans, Playfair_Display } from "next/font/google";
+import { CustomCursor } from "@/components/CustomCursor";
+import { IntroReadyGate } from "@/components/IntroReadyGate";
+import "./globals.css";
+
+/**
+ * Editorial display serif (luxury patisserie).
+ * Preferred retail faces: Canela, Reckless Neue â€” swap via local @font-face on
+ * `--font-cake-serif` when licensed; until then Google Playfair Display ~400/500.
+ */
+const display = Playfair_Display({
+  variable: "--font-cake-serif",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+const body = Nunito_Sans({
+  variable: "--font-cake-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "Custom Cake Studio",
+    template: "%s | Custom Cake Studio",
+  },
+  description: "Bespoke celebration cakes, crafted to order.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="en"
+      className={`${display.variable} ${body.variable} antialiased`}
+    >
+      <body className="m-0 min-h-screen p-0 font-sans">
+        <IntroReadyGate />
+        <CustomCursor />
+        {children}
+      </body>
+    </html>
+  );
+}
+
+
+========================================================================
+src/app/globals.css
+========================================================================
+@import "tailwindcss";
+
+:root {
+  --background: #fbf4eb;
+  --foreground: #4b332a;
+  --header-cream: #f8f4ef;
+  --header-espresso: #2a201a;
+  /** From `four-et-delices-wordmark.png`: darkest ~12% opaque glyph cores (warm espresso, ~#402d27) */
+  --wordmark-ink: #402d27;
+
+  --color-espresso: #4b332a;
+  --color-plum: #34206f;
+  --color-cream: #fffaf4;
+
+  --text-primary: var(--color-espresso);
+  --text-accent: var(--color-plum);
+  --border-accent: var(--color-plum);
+  --shadow-accent: rgba(52, 32, 111, 0.14);
+  /* Floating header: top inset + ~pill height + buffer for anchor scroll */
+  --site-header-scroll-margin: calc(24px + 3.5rem + 0.75rem);
+  --site-header-enter-duration: 2s;
+  --site-header-enter-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-cake-wordmark: "Eighties Comeback", serif;
+}
+
+@media (max-width: 639px) {
+  :root {
+    --site-header-scroll-margin: calc(24px + 3.25rem + 0.75rem);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-cake-sans), system-ui, sans-serif;
+  --font-serif: "Eighties Comeback", serif;
+}
+
+html {
+  overflow-x: clip;
+  overflow-y: scroll;
+  margin: 0;
+  padding: 0;
+  background: #fbf4eb;
+  scrollbar-gutter: stable;
+  /* Avoid rubber-band / â€œscroll above topâ€ feel on some browsers */
+  overscroll-behavior-y: none;
+}
+
+/*
+ * Intro first paint â€” veil on <html::before> so it stays visible while body uses opacity.
+ * Body opacity affects all descendants; this pseudo-element is not a descendant of body.
+ */
+html:not(.intro-ready)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #fbf4eb;
+  pointer-events: none;
+}
+
+html.intro-ready::before {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+/* Hero intro â€” no scroll until hand-off completes; header revealed after title settles.
+ * html always has overflow-y:scroll (global rule) so scrollbar gutter never shifts.
+ * height:100% removed â€” scroll lock via body overflow-y:hidden is sufficient.
+ */
+html[data-hero-intro="running"] {
+  overflow-y: scroll;
+  overflow-x: clip;
+}
+
+html[data-hero-intro="running"] body {
+  overflow-y: hidden;
+  overflow-x: clip;
+}
+
+body {
+  background: #fbf4eb;
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+  overflow-x: clip;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior-y: none;
+}
+
+body:not(.intro-ready) {
+  opacity: 0;
+}
+
+body.intro-ready {
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+
+/* Custom knife cursor â€” hide native OS cursor everywhere (desktop test), see CustomCursor.tsx */
+html[data-custom-cursor="true"],
+html[data-custom-cursor="true"] body,
+html[data-custom-cursor="true"] button,
+html[data-custom-cursor="true"] a,
+html[data-custom-cursor="true"] input,
+html[data-custom-cursor="true"] textarea,
+html[data-custom-cursor="true"] select,
+html[data-custom-cursor="true"] [role="button"],
+html[data-custom-cursor="true"] * {
+  cursor: none !important;
+}
+
+.custom-cursor {
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/*
+ * Knife: hotspot = blade tip (path M â‰ˆ 98.83% 2.79%).
+ * Idle 290Â° â†’ hover micro lift (+3Â°, scale 1.22) â†’ click strike (+8Â°, scale 1.28).
+ */
+.custom-knife-cursor-inner {
+  line-height: 0;
+  transform: translate(-98.83%, -2.79%) rotate(290deg) scale(1.15);
+  transform-origin: 98.83% 2.79%;
+  transition: transform 150ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.custom-knife-cursor-inner--hover:not(.custom-knife-cursor-inner--click) {
+  transform: translate(-98.83%, -2.79%) rotate(293deg) scale(1.22);
+}
+
+.custom-knife-cursor-inner--flip {
+  transform: translate(-1.17%, -2.79%) scaleX(-1) rotate(290deg) scale(1.15);
+  transform-origin: 1.17% 2.79%;
+}
+
+.custom-knife-cursor-inner--flip.custom-knife-cursor-inner--hover:not(
+    .custom-knife-cursor-inner--click
+  ) {
+  transform: translate(-1.17%, -2.79%) scaleX(-1) rotate(293deg) scale(1.22);
+}
+
+.custom-knife-cursor-inner--click {
+  transform: translate(-98.83%, -2.79%) rotate(298deg) scale(1.28);
+}
+
+.custom-knife-cursor-inner--flip.custom-knife-cursor-inner--click {
+  transform: translate(-1.17%, -2.79%) scaleX(-1) rotate(298deg) scale(1.28);
+}
+
+/* Color via currentColor; no transparency; premium lift from surface */
+.custom-knife-cursor-svg {
+  color: #000000 !important;
+  opacity: 1;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+  transition: filter 150ms ease-out;
+}
+
+.custom-knife-cursor-inner--hover:not(.custom-knife-cursor-inner--click)
+  .custom-knife-cursor-svg {
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.18));
+}
+
+.custom-knife-cursor-inner--click .custom-knife-cursor-svg {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.22));
+}
+
+/* Hero layers: positioning/scale controlled by GSAP only â€” GPU hints (no CSS translate on % anchors). */
+.brand-title,
+.hero-video-frame,
+.hero-video,
+.hero-split__video {
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.brand-title {
+  will-change: transform;
+}
+
+.hero-video-frame {
+  will-change: transform, width, height, top;
+}
+
+/* Hero video: object-position + filter driven by GSAP where set */
+.hero-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  will-change: transform, opacity, filter;
+}
+
+/* Above video inside .hero-video-frame â€” darkens subtly so copy always reads over bright frames */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0.15) 30%,
+    rgba(0, 0, 0, 0.05) 60%,
+    rgba(0, 0, 0, 0.25) 100%
+  );
+}
+
+.hero-split {
+  background: #ffffff;
+  color: #1f165c;
+  isolation: isolate;
+}
+
+.hero-split__left {
+  position: relative;
+  z-index: 3;
+  min-height: 100svh;
+  width: 50%;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 clamp(28px, 4vw, 72px) clamp(42px, 7vh, 92px);
+  box-sizing: border-box;
+}
+
+.hero-split__content {
+  width: min(100%, 760px);
+}
+
+.hero-split__headline {
+  margin: 0;
+  font-family: "Lander Tall", "Eighties Comeback", serif;
+  font-size: clamp(72px, 9vw, 172px);
+  font-weight: 900;
+  line-height: 0.76;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  color: #21145f;
+}
+
+.hero-split__headline span {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.hero-split__headline span:nth-child(2) {
+  transform: translateX(0.28em);
+}
+
+.hero-split__headline span:nth-child(3) {
+  transform: translateX(0.62em);
+}
+
+.hero-split__headline span:nth-child(4) {
+  transform: translateX(0.96em);
+}
+
+.hero-split__headline-icon {
+  width: 0.72em;
+  height: 0.72em;
+  margin-left: 0.09em;
+  object-fit: contain;
+  transform: translateY(0.02em);
+  filter: brightness(0) saturate(100%) invert(12%) sepia(50%) saturate(2100%)
+    hue-rotate(232deg) brightness(82%) contrast(103%);
+}
+
+.hero-split__copy {
+  max-width: 520px;
+  margin: clamp(28px, 4vh, 52px) 0 0 clamp(18px, 3vw, 56px);
+  font-family: "Eighties Comeback", serif;
+  font-size: clamp(17px, 1.3vw, 24px);
+  line-height: 1.18;
+  letter-spacing: 0.01em;
+  color: rgba(33, 20, 95, 0.84);
+}
+
+.hero-split__right {
+  position: absolute;
+  inset: 0 0 0 50%;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.hero-split__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+}
+
+.hero-split__right::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0)),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
+}
+
+@media (max-width: 900px) {
+  .hero-split__left {
+    width: 100%;
+    min-height: 100svh;
+    padding: 0 24px 48px;
+  }
+
+  .hero-split__right {
+    inset: 0;
+    opacity: 0.38;
+  }
+
+  .hero-split__headline {
+    font-size: clamp(54px, 15vw, 104px);
+  }
+
+  .hero-split__copy {
+    max-width: 420px;
+    margin-left: 0;
+  }
+}
+
+.tagline-line,
+.tagline-line--accent,
+.tagline-word-wrap,
+.tagline-word {
+  display: inline;
+  margin: 0;
+  color: inherit;
+}
+
+/* Portrait: tweak vertical anchor (45% / 48% / 55%) â€” no scale tricks */
+.hero-video.hero-video--portrait-crop {
+  object-position: center 45%;
+}
+
+/* Three floating blocks â€” no full-width bar; video shows between / around pills
+ * `top` must match HEADER_ROW_TOP_PX in `HeroScrollShrink.tsx`. */
+.site-header {
+  position: fixed;
+  top: 24px;
+  left: clamp(28px, 4vw, 64px);
+  right: clamp(28px, 4vw, 64px);
+  z-index: 160;
+  pointer-events: none;
+  box-sizing: border-box;
+  overflow: visible;
+  transition:
+    opacity var(--site-header-enter-duration) var(--site-header-enter-ease),
+    visibility var(--site-header-enter-duration) linear;
+}
+
+/* Home intro: hide header until handoff completes (SSR: no attr â‡’ hidden). */
+html:not([data-hero-intro="done"]) .site-header {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: none;
+}
+
+/* Hero region: hidden until intro client attributes are set â€” avoids wrong layout flash. */
+html:not([data-hero-intro]) .hero-scroll-section {
+  opacity: 0;
+}
+
+html[data-hero-intro="running"] .hero-scroll-section,
+html[data-hero-intro="done"] .hero-scroll-section {
+  opacity: 1;
+}
+
+html[data-hero-intro="done"] .site-header {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0.28s;
+}
+
+.site-header__shell {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: clamp(10px, 2.5vw, 24px);
+  width: 100%;
+  min-width: 0;
+  pointer-events: none;
+  position: relative;
+}
+
+/* Order cluster â€” hero wordmark is pinned separately after intro, no duplicate raster here */
+.site-header__nav-cluster {
+  display: flex;
+  align-items: center;
+  gap: clamp(22px, 3.5vw, 44px);
+}
+
+/* Cake mark â€” scale + translate to sit on nav optical centerline */
+.site-header__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(0) scale(0.82);
+  transform-origin: 50% 50%;
+  text-decoration: none;
+}
+
+.site-header__logo:focus-visible {
+  outline: none;
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px rgba(47, 41, 36, 0.28);
+}
+
+.site-header__cta-text {
+  color: rgba(47, 41, 36, 0.9);
+}
+
+.site-header__cta-text:hover {
+  color: #2f2924;
+}
+
+.site-header__cta-icon {
+  color: rgba(47, 41, 36, 0.9);
+}
+
+.site-header__cta-icon:hover {
+  color: #2f2924;
+}
+
+/* Left cluster: logo + primary nav â€” single row, no wrap */
+.left-header-pill {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex: 1 1 auto;
+  gap: 34px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+@media (min-width: 640px) {
+  .left-header-pill {
+    gap: 34px;
+    padding: 0;
+  }
+}
+
+.nav-left {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: clamp(28px, 3.2vw, 52px);
+  min-width: 0;
+}
+
+.nav-right {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.nav-left a,
+.nav-right a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  font-family: var(--font-serif);
+  font-size: clamp(0.92rem, 1vw, 1.08rem);
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  color: #000000;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0 0 4px;
+  border-radius: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition:
+    color 260ms ease,
+    opacity 260ms ease;
+}
+
+.nav-right a {
+  gap: 0.42em;
+}
+
+/* Header order CTA â€” pill shell; cake only by default; candle rises on hover (no flame) */
+
+/* CTA icon â€” light/default */
+.nav-right a.site-header__order-link .site-header__order-cake {
+  filter: brightness(0) saturate(100%) invert(16%) sepia(14%) saturate(505%) hue-rotate(344deg)
+    brightness(92%) contrast(92%) !important;
+}
+
+.nav-right a.site-header__order-link .site-header__order-candle,
+.nav-right a.site-header__order-link .site-header__order-candle-body,
+.nav-right a.site-header__order-link .site-header__order-candle-tip {
+  filter: brightness(0) saturate(100%) invert(38%) sepia(15%) saturate(690%) hue-rotate(338deg)
+    brightness(91%) contrast(88%) !important;
+}
+
+/* If inline SVG classes exist */
+.nav-right a.site-header__order-link .cake-layer {
+  color: #d88a7a !important;
+  fill: #d88a7a !important;
+}
+
+.nav-right a.site-header__order-link .cake-plate {
+  fill: #2f2924 !important;
+}
+
+.nav-right a.site-header__order-link .candle {
+  color: #7a5a4a !important;
+  fill: #7a5a4a !important;
+}
+
+.nav-right a.site-header__order-link {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: clamp(8px, 1.5vw, 12px);
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px clamp(0.85rem, 2vw, 1.35rem) 8px clamp(0.85rem, 2vw, 1.1rem);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  color: inherit;
+  text-decoration: none;
+  line-height: 1.05;
+  font-size: clamp(0.74rem, 0.32vw + 0.66rem, 0.9rem);
+  letter-spacing: 0.01em;
+  white-space: nowrap !important;
+  flex-shrink: 1;
+  background: transparent;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transform: translateY(0);
+}
+
+.site-header__order-label {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  padding: 0;
+  color: inherit;
+  white-space: nowrap !important;
+}
+
+.site-header__order-icon-wrap {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  width: 38px;
+  height: 32px;
+  flex: 0 0 38px;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  transform: translateY(0);
+}
+
+.site-header__order-cake-stack {
+  position: relative;
+  display: block;
+  width: 36px;
+  height: 32px;
+  transform: translateY(-1px) scale(0.82);
+  transform-origin: 50% 50%;
+  /* Clip candle in default state; allow full rise + wick on hover */
+  overflow: hidden;
+}
+
+.nav-right a.site-header__order-link:hover .site-header__order-cake-stack {
+  overflow: visible;
+}
+
+.site-header__order-cake {
+  position: absolute;
+  display: block;
+  overflow: visible;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  left: 50%;
+  bottom: 0;
+  width: 42px;
+  height: auto;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.site-header__order-candle-body,
+.site-header__order-candle-tip {
+  position: absolute;
+  display: block;
+  overflow: visible;
+  left: 50%;
+  /* Sit on cake top; stubbier candle (scale, origin at base on cake) */
+  bottom: 25px;
+  width: 5px;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(calc(-50% - 1px)) translateY(8px) scale(0.88, 0.48);
+  transform-origin: 50% 100%;
+  transition:
+    opacity 130ms ease,
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-right a.site-header__order-link:hover .site-header__order-candle-body,
+.nav-right a.site-header__order-link:hover .site-header__order-candle-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(calc(-50% - 1px)) translateY(0) scale(0.88, 0.48);
+}
+
+.site-header__order-candle-body {
+  z-index: 2;
+}
+
+.site-header__order-candle-tip {
+  z-index: 3;
+  clip-path: inset(0 0 78% 0);
+  transform-origin: 50% 100%;
+}
+
+.nav-right a.site-header__order-link:hover .site-header__order-candle-tip {
+  animation: candle-tip-wave 1.35s ease-in-out infinite;
+}
+
+@keyframes candle-tip-wave {
+  0%,
+  100% {
+    transform: translateX(calc(-50% - 1px)) translateY(0) scale(0.88, 0.48) rotate(0deg);
+  }
+  33% {
+    transform: translateX(calc(-50% - 1px)) translateY(0) scale(0.88, 0.48) rotate(-0.55deg);
+  }
+  66% {
+    transform: translateX(calc(-50% - 1px)) translateY(0) scale(0.88, 0.48) rotate(0.55deg);
+  }
+}
+
+.site-header__order-flame {
+  display: none !important;
+}
+
+.site-header__order-arrow {
+  flex: 0 0 auto;
+  display: block;
+  width: auto;
+  height: 1rem;
+  margin-left: 0.04em;
+  opacity: 0.9;
+  object-fit: contain;
+  object-position: center;
+  transform: translateX(0) translateY(0);
+  transition: transform 200ms ease;
+}
+
+.nav-right a.site-header__order-link:hover .site-header__order-arrow {
+  transform: translateX(2px);
+}
+
+.section-next {
+  background: #ffffff;
+  padding-top: 120px;
+  min-height: 40vh;
+}
+
+/* Taste reveal â€” post-hero collage / cursor trail + champagne top divider (inside section only) */
+.taste-reveal {
+  position: relative;
+  z-index: 1;
+  min-height: 135svh;
+  overflow: hidden;
+  background: #7d1828;
+  color: #ffffff;
+  isolation: isolate;
+  padding-top: clamp(260px, 30vh, 360px);
+  padding-right: clamp(22px, 5vw, 80px);
+  padding-bottom: clamp(160px, 18vh, 240px);
+  padding-left: clamp(22px, 5vw, 80px);
+}
+
+.taste-reveal::before {
+  content: "";
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: -150px;
+  height: min(320px, 34vw);
+  min-height: 260px;
+  background: #fbf4eb;
+  /* Fuller, smoother champagne belly â€” deeper vertical radius + slight horizontal ease */
+  border-bottom-left-radius: 52% 88%;
+  border-bottom-right-radius: 52% 88%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.taste-reveal__mobile-collage {
+  z-index: 2;
+}
+
+.taste-reveal__content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: min(88vw, 860px);
+  margin: 0 auto;
+  text-align: center;
+  pointer-events: none;
+  transform: translateY(180px);
+}
+
+.taste-reveal__eyebrow {
+  margin: 0 0 18px;
+  font-family: "Eighties Comeback", serif;
+  font-size: clamp(15px, 1vw, 19px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.taste-reveal__title {
+  margin: 0 auto;
+  width: min(84vw, 600px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: clamp(12px, 1.5vw, 24px);
+  font-family: "Roslindale Display Condensed", "Canela Deck", serif;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #fffaf4;
+  position: relative;
+}
+
+.taste-reveal__title-line {
+  display: block;
+  white-space: nowrap;
+}
+
+.taste-reveal__title-line--top {
+  font-size: clamp(32px, 4.1vw, 64px);
+}
+
+.taste-reveal__title-line--middle {
+  font-size: clamp(36px, 4.65vw, 72px);
+}
+
+.taste-reveal__title-line--bottom {
+  font-size: clamp(34px, 4.35vw, 68px);
+}
+
+/* Full-section stacking layer */
+.taste-reveal__red-zone {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.taste-reveal__trail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 80px;
+  bottom: 0;
+  overflow: visible;
+  z-index: 1;
+  pointer-events: none;
+  /* No top fade mask â€” keeps the maroon field visually flat */
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.taste-reveal__trail-image {
+  --trail-rot: 0deg;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  overflow: hidden;
+  border-radius: 34px;
+  background: #7d1828;
+  box-shadow: none;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* rotate kept for reduced-motion / non-animated frames; keyframes include same rotate */
+  transform: translate3d(-50%, -50%, 0) rotate(var(--trail-rot)) scale(1);
+  animation: tasteRevealTrail 1.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.taste-reveal__img {
+  object-fit: cover;
+  filter: none !important;
+  image-rendering: auto;
+  background: transparent;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@keyframes tasteRevealTrail {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) rotate(var(--trail-rot)) scale(0.82);
+  }
+
+  8% {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) rotate(var(--trail-rot)) scale(1);
+  }
+
+  76% {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) rotate(var(--trail-rot)) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) rotate(var(--trail-rot)) scale(0.72);
+  }
+}
+
+.taste-reveal__mobile-collage {
+  display: none;
+}
+
+/* Mobile / coarse pointer / reduced motion â€” static collage, no trail */
+@media (max-width: 900px), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .taste-reveal__red-zone {
+    display: none;
+  }
+
+  .taste-reveal__mobile-collage {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    width: min(100%, 620px);
+    margin-top: 44px;
+  }
+
+  .taste-reveal__mobile-card {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: 22px;
+    background: transparent;
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.2);
+  }
+
+  .taste-reveal__mobile-card--1 {
+    transform: translateY(18px) rotate(-3deg);
+  }
+
+  .taste-reveal__mobile-card--2 {
+    transform: translateY(-8px) rotate(2deg);
+  }
+
+  .taste-reveal__mobile-card--3 {
+    transform: translateY(22px) rotate(4deg);
+  }
+}
+
+@media (max-width: 900px), (pointer: coarse) {
+  .taste-reveal {
+    min-height: auto;
+    padding: 110px 22px 120px;
+  }
+
+  .taste-reveal__mobile-card--4,
+  .taste-reveal__mobile-card--5 {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taste-reveal__trail-image {
+    animation: none;
+  }
+
+  .taste-reveal__mobile-card--1,
+  .taste-reveal__mobile-card--2,
+  .taste-reveal__mobile-card--3 {
+    transform: none;
+  }
+}
+
+/* Hero â€” sticky scroll shrink: editorial text behind video, Poeza-style */
+.hero-scroll-section {
+  position: relative;
+  /* Above .taste-reveal so editorial lines / hero plane are never covered on scroll overlap */
+  z-index: 2;
+  height: 200vh;
+  min-height: 200vh;
+  background: #fbf4eb;
+  padding: 0;
+  box-sizing: border-box;
+  isolation: isolate;
+}
+
+.hero-sticky-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 100svh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #fbf4eb;
+}
+
+.hero-scroll-editorial {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  opacity: calc(var(--hero-shrink-progress, 0) * 0.96);
+  filter: blur(calc(16px - (var(--hero-shrink-progress, 0) * 16px)));
+}
+
+.hero-scroll-editorial__line {
+  position: absolute;
+  display: block;
+  white-space: nowrap;
+  font-family: "Canela Deck", "Eighties Comeback", serif;
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  color: var(--wordmark-ink);
+}
+
+.hero-scroll-editorial__line--1,
+.hero-scroll-editorial__line--2,
+.hero-scroll-editorial__line--3,
+.hero-scroll-editorial__line--4 {
+  font-size: clamp(42px, 5vw, 92px);
+}
+
+.hero-scroll-editorial__line--1,
+.hero-scroll-editorial__line--2,
+.hero-scroll-editorial__line--3 {
+  color: var(--wordmark-ink);
+  opacity: 1;
+}
+
+.hero-scroll-editorial__line--1 {
+  top: 13%;
+  left: 7%;
+}
+
+.hero-scroll-editorial__line--2 {
+  top: 25%;
+  left: 17%;
+}
+
+.hero-scroll-editorial__line--3 {
+  top: 72%;
+  left: 56%;
+}
+
+.hero-scroll-editorial__line--4 {
+  top: 86%;
+  left: 66%;
+  opacity: 0.96;
+}
+
+/* Matches Meet Khoudia (`.nav-left a`) live header color â€” hero vs scrolled */
+html[data-header-theme="hero"] .hero-scroll-editorial__line--4 {
+  color: rgba(248, 244, 239, 0.82) !important;
+}
+
+html[data-header-theme="light"] .hero-scroll-editorial__line--4 {
+  color: #c43670 !important;
+}
+
+.hero-video-shell {
+  position: relative;
+  z-index: 2;
+  width: 100vw;
+  height: 100svh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background: #ffffff;
+  transform-origin: 50% 50%;
+  will-change: transform, border-radius;
+}
+
+.hero-scroll-section .hero-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.hero-video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.08),
+    rgba(0, 0, 0, 0.02)
+  );
+}
+
+@media (max-width: 900px) {
+  .hero-scroll-editorial__line--1,
+  .hero-scroll-editorial__line--2,
+  .hero-scroll-editorial__line--3,
+  .hero-scroll-editorial__line--4 {
+    font-size: clamp(26px, 7.2vw, 58px);
+  }
+
+  .hero-scroll-editorial__line--1 {
+    top: 12%;
+    left: 4%;
+  }
+
+  .hero-scroll-editorial__line--2 {
+    top: 23%;
+    left: 9%;
+  }
+
+  .hero-scroll-editorial__line--3 {
+    top: 85svh;
+    left: 52%;
+  }
+
+  .hero-scroll-editorial__line--4 {
+    top: 94svh;
+    left: 78%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-section {
+    height: auto;
+    min-height: 100svh;
+  }
+
+  .hero-sticky-stage {
+    position: relative;
+    top: auto;
+    height: 100svh;
+    min-height: 100svh;
+  }
+}
+
+.story-split {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(56px, 5vw, 96px);
+  min-height: 100svh;
+  padding: clamp(130px, 16vh, 180px) clamp(44px, 5vw, 92px)
+    clamp(86px, 10vh, 120px);
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #4b332a;
+  overflow: hidden;
+}
+
+.story-split__copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  overflow: visible;
+}
+
+.story-split__headline {
+  margin: 0;
+  width: 100%;
+  max-width: 820px;
+  font-family: "Canela Deck", "Eighties Comeback", serif;
+  font-size: clamp(48px, 5.15vw, 98px);
+  font-weight: 500;
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: #34206f;
+  will-change: transform, opacity;
+}
+
+.story-split__line {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.story-split__line--1 {
+  transform: translateX(0);
+}
+
+.story-split__line--2 {
+  transform: translateX(0.1em);
+  gap: 0.12em;
+}
+
+.story-split__line--3 {
+  transform: translateX(0.24em);
+}
+
+.story-split__line--4 {
+  transform: translateX(0.38em);
+}
+
+.story-split__icon {
+  display: inline-block;
+  width: 0.74em;
+  height: 0.74em;
+  flex: 0 0 auto;
+  object-fit: contain;
+  transform: translateY(0.02em);
+  filter: brightness(0) saturate(100%) invert(14%) sepia(47%) saturate(1850%)
+    hue-rotate(231deg) brightness(87%) contrast(95%);
+}
+
+.story-split__text {
+  max-width: 560px;
+  margin: clamp(28px, 4vh, 46px) 0 0 clamp(8px, 1.4vw, 22px);
+  font-family: "Eighties Comeback", serif;
+  font-size: clamp(18px, 1.2vw, 23px);
+  line-height: 1.16;
+  color: #4b332a;
+  will-change: transform, opacity;
+}
+
+.story-split__media {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  height: min(68svh, 720px);
+  min-height: 520px;
+  overflow: hidden;
+  border-radius: 28px;
+  background: #ffffff;
+  will-change: transform, opacity;
+}
+
+.story-split__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+@media (max-width: 1200px) {
+  .story-split {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 40px;
+    padding: 130px 36px 80px;
+  }
+
+  .story-split__headline {
+    font-size: clamp(42px, 5.4vw, 74px);
+  }
+
+  .story-split__media {
+    height: 62svh;
+    min-height: 470px;
+  }
+}
+
+@media (max-width: 900px) {
+  .story-split {
+    grid-template-columns: 1fr;
+    gap: 34px;
+    min-height: auto;
+    padding: 110px 24px 64px;
+  }
+
+  .story-split__headline {
+    max-width: 100%;
+    font-size: clamp(46px, 12vw, 88px);
+  }
+
+  .story-split__line--2,
+  .story-split__line--3,
+  .story-split__line--4 {
+    transform: translateX(0);
+  }
+
+  .story-split__text {
+    margin-left: 0;
+    max-width: 560px;
+  }
+
+  .story-split__media {
+    height: 58svh;
+    min-height: 420px;
+  }
+}
+
+.hero-stage {
+  background: #ffffff;
+}
+
+/* Eighties Comeback â€” hero tagline only; Bold OTF (zip: EightiesComeback - Bold.otf). */
+
+@font-face {
+  font-family: "Eighties Comeback";
+  src: url("/fonts/eighties-comeback/EightiesComeback-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Roslindale Display Condensed Regular (Testing OTF; license for production). */
+
+@font-face {
+  font-family: "Roslindale Display Condensed";
+  src: url("/fonts/roslindale/Roslindale-DisplayCondensedRegular-Testing.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lander Tall";
+  src: url("/fonts/lander/LanderTall-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Canela Deck trial OTFs â€” public/fonts/canela (Commercial Type; license before production). */
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-Thin-Trial.otf") format("opentype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-ThinItalic-Trial.otf") format("opentype");
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-Light-Trial.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-LightItalic-Trial.otf") format("opentype");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-Regular-Trial.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-RegularItalic-Trial.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-Medium-Trial.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-MediumItalic-Trial.otf") format("opentype");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-Bold-Trial.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-BoldItalic-Trial.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-Black-Trial.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Canela Deck";
+  src: url("/fonts/canela/CanelaDeck-BlackItalic-Trial.otf") format("opentype");
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/*
+ * First-paint anchor: %50 / %50 â€” offset from GSAP xPercent/yPercent (no CSS translate on %).
+ * After intro, GSAP pins the wordmark (fixed); avoid position: fixed in this rule.
+ */
+.brand-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center top;
+  -webkit-font-smoothing: subpixel-antialiased;
+  user-select: none;
+  pointer-events: none;
+  width: max-content;
+  max-width: min(92vw, 42rem);
+  white-space: normal;
+  text-align: center;
+  z-index: 140;
+  box-sizing: border-box;
+  font-family: var(--font-cake-wordmark);
+  font-weight: 400;
+  font-size: clamp(42px, 5vw, 86px);
+  letter-spacing: 0.02em;
+  line-height: 1.06;
+  color: var(--wordmark-ink);
+  text-shadow: none;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Plain-text hero (video Ã¼stÃ¼nde): tek sÄ±kÄ± gÃ¶lge, halo yok */
+.hero-text {
+  color: #f8f4ef;
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+/* Hero wordmark: transparent raster (see scripts/build-wordmark-transparent.mjs) */
+.intro-wordmark {
+  margin: 0;
+  padding: 0;
+}
+
+.intro-wordmark--hero.intro-wordmark--raster {
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+  text-shadow: none;
+}
+
+.hero-wordmark img {
+  vertical-align: top;
+  opacity: 1;
+  /* No drop-shadow: filter multiplies translucent AA edges and reads as muddy halos. */
+  filter: none;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.brand-title::selection {
+  background: transparent;
+  color: inherit;
+}
+
+/*
+ * Intro phase; lifts away as hero video fades in.
+ * (Gradient removed so first paint matches global page background.)
+ */
+.hero-intro-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background: #fbf4eb;
+  will-change: opacity;
+}
+
+.hero-exit-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(251, 244, 235, 0) 0%,
+    rgba(251, 244, 235, 0.6) 60%,
+    rgba(251, 244, 235, 1) 100%
+  );
+  pointer-events: none;
+  z-index: 25;
+  opacity: 0;
+}
+
+.hero-video-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* 100% of sticky stage â€” avoids 100vw scrollbar overflow */
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  background: #ffffff;
+  border-radius: 0;
+  /* Initial fullscreen plate; shrunk â€œcardâ€ end state + centering via GSAP */
+  box-shadow: 0 4px 16px rgba(47, 41, 36, 0.06);
+}
+
+/*
+ * Header: cream nav + glass CTA (stable theme; adaptive scroll variant removed).
+ * Central wordmark (`.brand-title`, `.hero-wordmark-fixed`, `.intro-wordmark__img`) stays unfiltered.
+ */
+
+/* Hero wordmark raster: never inherit header icon filters */
+.brand-title,
+.brand-title.hero-wordmark-fixed,
+.intro-wordmark__img,
+.brand-title .intro-wordmark__img {
+  filter: none !important;
+}
+
+.nav-left a,
+.nav-right a {
+  font-family: "Eighties Comeback", serif;
+  font-size: clamp(16px, 1vw, 19px);
+  font-weight: 700;
+  letter-spacing: 0.015em;
+}
+
+/* Wordmark above hero video / story sections; flatten stacking on scroll layers */
+.brand-title {
+  z-index: 999 !important;
+  pointer-events: none;
+}
+
+.site-header {
+  z-index: 900 !important;
+}
+
+.story-split__media,
+.story-split__video,
+.hero-sticky-stage,
+.hero-video-shell,
+.hero-video {
+  z-index: auto;
+}
+
+.brand-title.hero-wordmark-fixed {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50%;
+  z-index: 9999 !important;
+  width: auto !important;
+  max-width: none !important;
+  overflow: visible !important;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  /* Avoid 3D plane sort fights with composited <video> (preserve-3d on .brand-title). */
+  transform-style: flat !important;
+  isolation: isolate;
+}
+
+.brand-title.hero-wordmark-fixed .intro-wordmark__img {
+  display: block;
+  width: min(72vw, 560px);
+  height: auto;
+  max-width: none;
+  overflow: visible;
+}
+
+/*
+ * Site header themes: `data-header-theme` from HeroScrollShrink (hero = over video,
+ * light = white behind header after shrink; switch near scale â‰¤ 0.82).
+ */
+
+.site-header__logo,
+.site-header__logo svg,
+.nav-left a,
+.nav-right a,
+.nav-right a.site-header__order-link,
+.site-header__order-label,
+.site-header__order-arrow,
+.site-header__order-cake,
+.site-header__order-candle-body,
+.site-header__order-candle-tip {
+  transition:
+    color 220ms ease,
+    background 220ms ease,
+    border-color 220ms ease,
+    filter 220ms ease,
+    box-shadow 220ms ease,
+    transform 200ms ease;
+}
+
+/* Hero / video â€” cream nav */
+html[data-header-theme="hero"] .site-header__logo,
+html[data-header-theme="hero"] .nav-left a,
+html[data-header-theme="hero"] .nav-right a:not(.site-header__order-link) {
+  color: rgba(248, 244, 239, 0.82) !important;
+}
+
+html[data-header-theme="hero"] .nav-left a:hover,
+html[data-header-theme="hero"] .nav-right a:not(.site-header__order-link):hover {
+  color: rgba(248, 244, 239, 0.95) !important;
+  transform: translateY(-0.5px);
+}
+
+html[data-header-theme="hero"] .nav-left a:active,
+html[data-header-theme="hero"] .nav-right a:not(.site-header__order-link):active {
+  transform: translateY(0);
+  color: rgba(248, 244, 239, 0.9) !important;
+}
+
+html[data-header-theme="hero"] .site-header__logo svg {
+  filter: brightness(0) invert(1) !important;
+}
+
+html[data-header-theme="hero"] .site-header__logo:hover {
+  color: rgba(248, 244, 239, 0.95) !important;
+  transform: translateY(-0.5px) scale(0.82);
+}
+
+html[data-header-theme="hero"] .site-header__logo:hover svg {
+  filter: brightness(0) invert(1) !important;
+}
+
+html[data-header-theme="hero"] .site-header__logo:active {
+  transform: translateY(0) scale(0.82);
+  color: rgba(248, 244, 239, 0.9) !important;
+}
+
+/* Light background â€” raspberry rose accents on champagne (see hero theme untouched) */
+html[data-header-theme="light"] .nav-left a,
+html[data-header-theme="light"] .nav-right a:not(.site-header__order-link) {
+  color: #c43670 !important;
+}
+
+html[data-header-theme="light"] .site-header__logo {
+  color: #c43670 !important;
+}
+
+html[data-header-theme="light"] .nav-left a:hover,
+html[data-header-theme="light"] .nav-right a:not(.site-header__order-link):hover {
+  color: #c43670 !important;
+  opacity: 0.92;
+  transform: translateY(-0.5px);
+}
+
+html[data-header-theme="light"] .nav-left a:active,
+html[data-header-theme="light"] .nav-right a:not(.site-header__order-link):active {
+  transform: translateY(0);
+  color: #c43670 !important;
+  opacity: 0.88;
+}
+
+html[data-header-theme="light"] .site-header__logo svg {
+  filter: none !important;
+}
+
+html[data-header-theme="light"] .site-header__logo:hover {
+  color: #c43670 !important;
+  opacity: 0.92;
+  transform: translateY(-0.5px) scale(0.82);
+}
+
+html[data-header-theme="light"] .site-header__logo:hover svg {
+  filter: none !important;
+}
+
+html[data-header-theme="light"] .site-header__logo:active {
+  transform: translateY(0) scale(0.82);
+  color: #c43670 !important;
+  opacity: 0.88;
+}
+
+.nav-right a.site-header__order-link .site-header__order-label {
+  color: inherit !important;
+}
+
+/* CTA â€” over video */
+html[data-header-theme="hero"] .nav-right a.site-header__order-link {
+  background: rgba(248, 244, 239, 0.1) !important;
+  color: rgba(248, 244, 239, 0.82) !important;
+  border-color: rgba(248, 244, 239, 0.24) !important;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.12),
+    0 3px 0 rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-header-theme="hero"] .nav-right a.site-header__order-link .site-header__order-label {
+  color: rgba(248, 244, 239, 0.82) !important;
+}
+
+html[data-header-theme="hero"] .nav-right a.site-header__order-link .site-header__order-arrow {
+  filter: brightness(0) invert(1) !important;
+}
+
+/* CTA icon â€” hero/video dark state */
+html[data-header-theme="hero"] .nav-right a.site-header__order-link .site-header__order-cake {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.96;
+}
+
+html[data-header-theme="hero"] .nav-right a.site-header__order-link .site-header__order-candle,
+html[data-header-theme="hero"] .nav-right a.site-header__order-link .site-header__order-candle-body,
+html[data-header-theme="hero"] .nav-right a.site-header__order-link .site-header__order-candle-tip {
+  filter: brightness(0) saturate(100%) invert(89%) sepia(12%) saturate(493%) hue-rotate(318deg)
+    brightness(101%) contrast(93%) !important;
+}
+
+html[data-header-theme="hero"] .nav-right a.site-header__order-link:hover .site-header__order-candle-body,
+html[data-header-theme="hero"] .nav-right a.site-header__order-link:hover .site-header__order-candle-tip {
+  opacity: 0.96;
+}
+
+html[data-header-theme="hero"] .nav-right a.site-header__order-link .cake-layer {
+  color: #f0b3a6 !important;
+  fill: #f0b3a6 !important;
+}
+
+html[data-header-theme="hero"] .nav-right a.site-header__order-link .cake-plate {
+  fill: #f8f4ef !important;
+}
+
+html[data-header-theme="hero"] .nav-right a.site-header__order-link .candle {
+  color: #f3d8c9 !important;
+  fill: #f3d8c9 !important;
+}
+
+html[data-header-theme="hero"] .nav-right a.site-header__order-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(248, 244, 239, 0.38) !important;
+  background: rgba(248, 244, 239, 0.16) !important;
+  color: rgba(248, 244, 239, 0.95) !important;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.16),
+    0 4px 0 rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.09) !important;
+}
+
+html[data-header-theme="hero"] .nav-right a.site-header__order-link:active {
+  transform: translateY(1px);
+  border-color: rgba(248, 244, 239, 0.28) !important;
+  background: rgba(248, 244, 239, 0.12) !important;
+  color: rgba(248, 244, 239, 0.9) !important;
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(0, 0, 0, 0.12),
+    inset 0 2px 5px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* CTA â€” blush pill on champagne */
+html[data-header-theme="light"] .nav-right a.site-header__order-link {
+  background: #fbd9e5 !important;
+  color: #c43670 !important;
+  border-color: rgba(42, 32, 26, 0.12) !important;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.12),
+    0 3px 0 rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-header-theme="light"] .nav-right a.site-header__order-link .site-header__order-label {
+  color: #c43670 !important;
+}
+
+html[data-header-theme="light"] .nav-right a.site-header__order-link .site-header__order-arrow {
+  filter: brightness(0) saturate(100%) invert(29%) sepia(89%) saturate(2156%) hue-rotate(300deg) brightness(96%)
+    contrast(91%) !important;
+}
+
+html[data-header-theme="light"] .nav-right a.site-header__order-link .site-header__order-cake,
+html[data-header-theme="light"] .nav-right a.site-header__order-link .site-header__order-candle-body,
+html[data-header-theme="light"] .nav-right a.site-header__order-link .site-header__order-candle-tip {
+  filter: none !important;
+}
+
+html[data-header-theme="light"] .nav-right a.site-header__order-link .cake-layer {
+  fill: #c43670 !important;
+  color: #c43670 !important;
+}
+
+html[data-header-theme="light"] .nav-right a.site-header__order-link .cake-plate {
+  fill: #c43670 !important;
+}
+
+html[data-header-theme="light"] .nav-right a.site-header__order-link .candle,
+html[data-header-theme="light"] .nav-right a.site-header__order-link .candle * {
+  fill: #c43670 !important;
+}
+
+html[data-header-theme="light"] .nav-right a.site-header__order-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(42, 32, 26, 0.18) !important;
+  background: #fbd9e5 !important;
+  color: #c43670 !important;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.16),
+    0 4px 0 rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.09) !important;
+}
+
+html[data-header-theme="light"] .nav-right a.site-header__order-link:hover .site-header__order-label {
+  color: #c43670 !important;
+}
+
+html[data-header-theme="light"] .nav-right a.site-header__order-link:active {
+  transform: translateY(1px);
+  border-color: rgba(42, 32, 26, 0.14) !important;
+  color: #c43670 !important;
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.12),
+    0 1px 0 rgba(0, 0, 0, 0.12),
+    inset 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-header-theme="light"] .nav-right a.site-header__order-link:active .site-header__order-label {
+  color: #c43670 !important;
+}
+
+/* Footer: Sweet Catch â€” frosted glass shell + bezel highlight (::before stays under iframe). */
+.mini-sweet-catch-footer-embed .mini-sweet-catch-footer__shell {
+  position: relative;
+  isolation: isolate;
+  background: rgba(255, 255, 255, 0.15);
+  -webkit-backdrop-filter: saturate(185%) blur(18px);
+  backdrop-filter: saturate(185%) blur(18px);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  /* Soft outer lift only â€” avoid heavy bottom inset/strip that reads as a â€œlineâ€. */
+  box-shadow:
+    0 28px 76px rgba(0, 0, 0, 0.1),
+    0 14px 36px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.mini-sweet-catch-footer-embed .mini-sweet-catch-footer__shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.52) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 72%
+  );
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .mini-sweet-catch-footer-embed .mini-sweet-catch-footer__shell {
+    background: rgba(255, 253, 250, 0.92);
+    border-color: rgba(230, 230, 232, 0.85);
+    box-shadow:
+      0 24px 52px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  .mini-sweet-catch-footer-embed .mini-sweet-catch-footer__shell::before {
+    opacity: 0.85;
+  }
+}
+
+
+
+========================================================================
+src/components/hero/IntroController.tsx
+========================================================================
+"use client";
+
+import { useEffect } from "react";
+
+/**
+ * Sets intro phase on <html> only after mount â€” avoids SSR/client hydration mismatch.
+ * Hero sets `dataset.heroIntro = "done"` when the hand-off finishes.
+ * Adds intro-ready on body + html so globals.css can fade the veil and body without flash.
+ */
+export function IntroController() {
+  useEffect(() => {
+    document.documentElement.dataset.heroIntro = "running";
+    document.documentElement.dataset.headerTheme = "hero";
+    document.documentElement.classList.add("intro-ready");
+    document.body.classList.add("intro-ready");
+
+    return () => {
+      document.documentElement.removeAttribute("data-hero-intro");
+      document.documentElement.removeAttribute("data-header-theme");
+    };
+  }, []);
+
+  return null;
+}
+
+
+========================================================================
+src/components/IntroReadyGate.tsx
+========================================================================
+"use client";
+
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+
+/**
+ * Ensures intro veil / body fade CSS does not trap non-home routes with opacity 0.
+ * Home relies on IntroController to add intro-ready after mount.
+ */
+export function IntroReadyGate() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname !== "/") {
+      document.documentElement.classList.add("intro-ready");
+      document.body.classList.add("intro-ready");
+    }
+  }, [pathname]);
+
+  return null;
+}
+
+
+========================================================================
+src/components/hero/HeroScrollShrink.tsx
+========================================================================
+"use client";
+
+import Image from "next/image";
+import { createPortal } from "react-dom";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+
+const INTRO_HOLD_S = 1.05;
+const INTRO_HANDOFF_S = 1.65;
+
+/** Keep in sync with `.site-header { top }` in `globals.css`. */
+const HEADER_ROW_TOP_PX = 24;
+/**
+ * Negative = shift wordmark up after handoff so raster caps align with `.nav-left` / CTA
+ * (PNG padding + scale); tweak only here + in `finishIntro` / timeline together.
+ */
+const WORDMARK_REST_Y_NUDGE_PX = -26;
+
+export default function HeroScrollShrink() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const videoShellRef = useRef<HTMLDivElement>(null);
+  const brandTitleRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const introBackdropRef = useRef<HTMLDivElement>(null);
+  const [wordmarkInBody, setWordmarkInBody] = useState(false);
+
+  useLayoutEffect(() => {
+    setWordmarkInBody(true);
+  }, []);
+
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
+    const brandTitle = brandTitleRef.current;
+    const video = videoRef.current;
+    const introBackdrop = introBackdropRef.current;
+
+    if (!wordmarkInBody || !section || !brandTitle || !video || !introBackdrop)
+      return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    const ctx = gsap.context(() => {
+      gsap.set(brandTitle, {
+        position: "fixed",
+        left: "50%",
+        top: "50%",
+        xPercent: -50,
+        yPercent: -50,
+        x: 0,
+        y: 0,
+        scale: 1,
+        autoAlpha: 1,
+        zIndex: 9999,
+        transformOrigin: "50% 50%",
+        force3D: true,
+      });
+
+      gsap.set(video, {
+        opacity: prefersReducedMotion ? 1 : 0,
+        scale: prefersReducedMotion ? 1 : 1.035,
+        filter: "contrast(1.04) saturate(1.02) brightness(0.94)",
+        force3D: true,
+      });
+
+      gsap.set(introBackdrop, {
+        opacity: prefersReducedMotion ? 0 : 1,
+      });
+
+      const finishIntro = () => {
+        document.documentElement.dataset.heroIntro = "done";
+
+        gsap.set(brandTitle, {
+          position: "fixed",
+          left: "50%",
+          top: HEADER_ROW_TOP_PX,
+          xPercent: -50,
+          yPercent: 0,
+          x: 0,
+          y: WORDMARK_REST_Y_NUDGE_PX,
+          scale: 0.34,
+          autoAlpha: 1,
+          zIndex: 9999,
+          transformOrigin: "50% 0%",
+          force3D: true,
+        });
+      };
+
+      if (prefersReducedMotion) {
+        gsap.set(video, { opacity: 1, scale: 1 });
+        gsap.set(introBackdrop, { opacity: 0 });
+        finishIntro();
+        return;
+      }
+
+      gsap
+        .timeline({
+          delay: INTRO_HOLD_S,
+          onComplete: finishIntro,
+        })
+        .to(
+          video,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: INTRO_HANDOFF_S,
+            ease: "power3.inOut",
+          },
+          0,
+        )
+        .to(
+          introBackdrop,
+          {
+            opacity: 0,
+            duration: INTRO_HANDOFF_S,
+            ease: "power3.inOut",
+          },
+          0,
+        )
+        .to(
+          brandTitle,
+          {
+            left: "50%",
+            top: HEADER_ROW_TOP_PX,
+            xPercent: -50,
+            yPercent: 0,
+            x: 0,
+            y: WORDMARK_REST_Y_NUDGE_PX,
+            scale: 0.34,
+            autoAlpha: 1,
+            zIndex: 9999,
+            duration: INTRO_HANDOFF_S,
+            ease: "power3.inOut",
+            transformOrigin: "50% 0%",
+            force3D: true,
+          },
+          0,
+        );
+    }, section);
+
+    return () => {
+      document.documentElement.removeAttribute("data-hero-intro");
+      ctx.revert();
+    };
+  }, [wordmarkInBody]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.play().catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const shell = videoShellRef.current;
+    if (!section || !shell) return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (prefersReducedMotion) {
+      document.documentElement.dataset.headerTheme = "hero";
+      return () => {
+        document.documentElement.removeAttribute("data-header-theme");
+      };
+    }
+
+    let raf = 0;
+
+    const clamp = (v: number, min: number, max: number) =>
+      Math.min(Math.max(v, min), max);
+
+    const update = () => {
+      if (document.documentElement.dataset.heroIntro !== "done") {
+        shell.style.transform = "";
+        shell.style.borderRadius = "";
+        section.style.setProperty("--hero-shrink-progress", "0");
+        document.documentElement.dataset.headerTheme = "hero";
+        return;
+      }
+
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      const scrollable = Math.max(1, rect.height - vh);
+      const progress = clamp(-rect.top / scrollable, 0, 1);
+
+      const eased = 1 - (1 - progress) ** 3;
+      section.style.setProperty("--hero-shrink-progress", String(eased));
+      const scaleTop = 1;
+      const scaleBottom = 0.28;
+      const scale = scaleTop - eased * (scaleTop - scaleBottom);
+      const radius = eased * 30;
+      const y = eased * 38;
+
+      shell.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
+      shell.style.borderRadius = `${radius}px`;
+
+      if (scale <= 0.82) {
+        document.documentElement.dataset.headerTheme = "light";
+      } else {
+        document.documentElement.dataset.headerTheme = "hero";
+      }
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    const introObs = new MutationObserver(() => {
+      onScroll();
+    });
+    introObs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-hero-intro"],
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      introObs.disconnect();
+      document.documentElement.removeAttribute("data-header-theme");
+    };
+  }, []);
+
+  const wordmark = (
+    <div
+      ref={brandTitleRef}
+      className="brand-title hero-wordmark-fixed hero-wordmark intro-wordmark intro-wordmark--hero intro-wordmark--raster select-none"
+      role="img"
+      aria-label="Four et DÃ©lices"
+    >
+      <span className="sr-only">Four et DÃ©lices</span>
+      <Image
+        src="/assets/four-et-delices-wordmark.png"
+        alt=""
+        width={3072}
+        height={2046}
+        sizes="(max-width: 768px) min(92vw, 560px), 560px"
+        priority
+        unoptimized
+        className="intro-wordmark__img"
+        aria-hidden
+      />
+    </div>
+  );
+
+  return (
+    <>
+      <section
+        ref={sectionRef}
+        aria-label="Introduction"
+        className="hero-scroll-section w-full"
+      >
+        <div className="hero-sticky-stage">
+          <div className="hero-scroll-editorial" aria-hidden>
+            <span className="hero-scroll-editorial__line hero-scroll-editorial__line--1">Every</span>
+            <span className="hero-scroll-editorial__line hero-scroll-editorial__line--2">Celebration</span>
+            <span className="hero-scroll-editorial__line hero-scroll-editorial__line--3">Deserves</span>
+            <span className="hero-scroll-editorial__line hero-scroll-editorial__line--4">
+              a Masterpiece
+            </span>
+          </div>
+
+          <div ref={videoShellRef} className="hero-video-shell">
+            <video
+              ref={videoRef}
+              playsInline
+              autoPlay
+              muted
+              loop
+              preload="auto"
+              controls={false}
+              className="hero-video pointer-events-none opacity-0"
+            >
+              <source src="/assets/hero-video.mp4" type="video/mp4" />
+              <source src="/assets/hero-video3.mp4" type="video/mp4" />
+            </video>
+
+            <div className="hero-video-overlay" aria-hidden />
+          </div>
+
+          <div
+            ref={introBackdropRef}
+            className="hero-intro-backdrop"
+            aria-hidden
+          />
+        </div>
+      </section>
+      {wordmarkInBody ? createPortal(wordmark, document.body) : null}
+    </>
+  );
+}
+
+
+========================================================================
+src/components/site-header/SiteHeader.tsx
+========================================================================
+import Link from "next/link";
+
+
+
+import { CakeLogo } from "./CakeLogo";
+
+import { SiteHeaderOrderLink } from "./SiteHeaderOrderLink";
+
+
+
+/** Sol / saÄŸ nav linkleri `globals.css` (.nav-left a, .nav-right a). SipariÅŸ: `SiteHeaderOrderLink` (kek maskesi + mum, `.site-header__order-link`). */
+
+const navLinkClass =
+
+  "font-serif whitespace-nowrap no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f2924]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+
+
+
+export function SiteHeader() {
+
+  return (
+
+    <header className="site-header" role="banner">
+
+      <div className="site-header__shell">
+
+        <div className="left-header-pill">
+
+          <Link href="/" className="site-header__logo" aria-label="Home">
+
+            <CakeLogo className="h-11 w-auto shrink-0 sm:h-[3rem]" />
+
+          </Link>
+
+          <nav className="nav-left" aria-label="Primary">
+
+            <Link href="/#cakes" className={navLinkClass}>
+
+              Our Cakes
+
+            </Link>
+
+            <Link href="/#meet-khoudia" className={navLinkClass}>
+
+              Meet Khoudia
+
+            </Link>
+
+          </nav>
+
+        </div>
+
+
+
+        <nav
+
+          className="nav-right site-header__right site-header__nav-cluster pointer-events-auto shrink-0"
+
+          aria-label="Order"
+
+        >
+
+          <SiteHeaderOrderLink linkClassName={navLinkClass} />
+
+        </nav>
+
+      </div>
+
+    </header>
+
+  );
+
+}
+
+
+
+========================================================================
+src/components/site-header/CakeLogo.tsx
+========================================================================
+/** Cake mark (Noun Project); attribution text stripped from source SVG. */
+export function CakeLogo({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      version="1.1"
+      viewBox="-5 -10 110 135"
+      className={className}
+      aria-hidden
+    >
+      <path
+        fill="currentColor"
+        d="m69.25 9.6641c-1.9023 0.007813-5.1445 1.4805-7.4688 4.3906-1.8828 2.3633-3.1602 5.0547-3.9102 7.2969-2.0039-2.1992-7.0352-1.3008-8.4961 2.3438-1.4688 3.6602-0.27344 5.4727 0.83203 6.9375-0.87891-0.69531-1.7617-1.4023-2.7109-3.3906-0.09375 1.9648 0.59375 3.6641 2.1367 4.918 1.0664 0.86719 2.5352 1.5234 4.4297 1.9102 4.3398 0.89063 7.2734 0.33984 7.2734 0.33984s-4.1758 2.5312-9.1992 0.91016c-1.8477-0.59766-3.2656-1.3477-4.2305-2.2578-1.6758-1.582-1.9805-3.6523-0.77344-6.2383-2.8789 0.21484-4.6445 1.6133-5.9062 3.5312-1.168 1.7812-1.25 3.2461-0.76953 3.3516s0.69141 0.097657 0.80859 1.0938c0.042969 0.35547 0.26172 0.85156 0.62891 1.4062 1.0898 1.6367 3.5 3.793 6.5664 4.3828 0 0-5.8398 0.32031-7.7656-3.7578-0.40625-0.86328-0.64062-1.9258-0.60156-3.2305 0 0-4.1719 1.8711-3.9297 5.5977 0.003907 0.078125 0.011719 0.16016 0.023438 0.24219 0.40625 3.5664 5.1836 5.6328 9.7383 6.1914 3.9336 0.48438 5.5586-0.13281 7.6758 0.32813 4.9023 1.0625 6.1094-0.46875 7.875-0.46875 0.67969 0 5.0625-0.96875 6.4141-2.5547 1.3242-1.5547 1.1406-3.7109 0.20703-4.5898-1.7852 1.9375-2.4805 2.207-3.2852 2.3203 1.125-0.60156 3.1094-1.9141 3.7539-3.7852 0.26953-0.78125 0.30859-1.6602-0.050781-2.625-1.3086-3.5312-4.2266-3.5742-4.2266-3.5742s0.55469 1.9688-0.41406 3.4961c-0.082031 0.12891-0.16797 0.24609-0.25781 0.35547-1.1641 1.4414-2.8086 1.2695-2.9258 1.1602v-0.007812l-0.003906-0.003906c0.75781-0.57031 1.4648-1.0586 2.0195-1.5781 0.72266-0.67578 1.1836-1.4062 1.1641-2.4336-1.7148 1.2656-2.0078 1.1875-2.6055 1.4062 2.0352-1.0312 2.957-3.1562 3.3086-4.7188 0.76172-3.3672-2.4688-7.5508-5.4453-6.3867 0.60938-1.8633 2.5938-5.7266 4.168-7.1406 4.4492-3.9961 7.8203-2.3477 7.5078-4.2773-0.097657-0.60156-0.6875-0.89844-1.5508-0.89453zm-14.953 12.07c0.33203 0.011719 0.57031 0.074219 0.60156 0.12891v0.003907l0.003906 0.003906v0.015625c0 0.20703-0.54688 0.57422-0.54688 1.4336 0 0.85938 1.9805 2.0586 2.1367 2.1641s0.15234 0.58594-1.5625 0.70312c-2.0039 0.13672-3.168-1.2773-3.1289-2.4766 0.050781-1.4648 1.2461-1.8945 2.1406-1.957 0.125-0.007812 0.24609-0.011718 0.35547-0.007812zm1.8867 0.23047h0.027344c0.33594 0.007812 1.3086 0.57812 1.4023 0.71875 0.10547 0.15625-0.20703 0.57422 0.28516 0.85938 0.49609 0.28516 1.0703-0.26172 1.8281-0.36328 0.75781-0.10547 1.3281 0.57422 1.3281 0.57422-0.99219-0.15625-2.3984 1.3047-4.1953 0.23438-1.7969-1.0703-0.9375-1.8789-0.73047-2.0078 0.015625-0.007813 0.035156-0.015625 0.054688-0.015625zm-5.2656 1.8047c0.015625 0 0.03125 0 0.046875 0.007813 0.39062 0.16797-0.55469 1.3086-0.49609 4.4844-1.0078-2.3477 0.035156-4.4688 0.44922-4.4922zm-6.0742 8.2656c0.54297-0.039062 1.0469 0.95312 1.6797 1.7539 0.070312 0.089844 0.14062 0.17578 0.21484 0.25781 0.69531 0.77344 2.2422 1.7461 1.8516 2.2422-0.39062 0.49609-1.9805-0.28516-2.9453-1.5117-0.10156-0.12891-0.19531-0.25781-0.28125-0.38672-0.74609-1.0977-0.98438-2.1523-0.70703-2.3008 0.0625-0.035156 0.125-0.050782 0.1875-0.054688zm24.285 5.1211c0.03125 0.24609 0.13672 0.55859 0.36328 0.95312 0.92187 1.5859 1.9805 4.8945-1.4375 6.5273-3.8555 1.8398-7.1523 1.1055-7.5195 1.2539-0.27734 0.10938-3.207 1.418-5.7148 1.3633-2.4805-0.054687-3.1875-0.33594-3.8711-1.1406-2.543 1.0078-5.8516 1.25-9.9922-0.36719-3.7734-1.4766-5.0117-4.543-5.4141-6.2188-8.3086 4.3398-17.23 8.9961-18.445 9.6172-2.3477 1.1992-2.2422 3.3398-2.2422 3.3398l-0.050781 34.984c0 3.7031 5.0078 2.7617 5.0078 2.7617s55.996-6.8789 60.688-7.7148 4.1719-5.2148 4.1719-5.2148 0.41797-24.504 0.52344-28.469c0.10547-3.9609-4.4844-6.0469-4.4844-6.0469s-5.707-2.8086-11.578-5.625zm-4.1172 0.16406c0.023437 0 0.042969 0.003907 0.054687 0.011719 0.28516 0.20703-0.52344 2.0352-2.0625 2.6836-1.5391 0.65234-1.668 0.36328-2.4492 0.70312s-2.9727 1.332-4.4062 1.332c-1.4336 0-3.3633 0.3125-3.5195-0.44531-0.3125-0.875 4.6094-0.82422 6.9883-1.4844 2.2656-0.63281 4.9023-2.7812 5.3945-2.8008zm14.832 8.3086c0.55078-0.027344 1.0195 0.39844 1.043 0.95312 0.027343 0.55078-0.39844 1.0195-0.94922 1.0469-22.586 1.0586-32.441 6.1953-59.891 6.9336-0.55469 0.015625-1.0117-0.42188-1.0273-0.97266-0.015625-0.55078 0.42188-1.0117 0.97266-1.0273 27.273-0.73047 37.062-5.8633 59.852-6.9297zm-0.61719 10.586-0.14453 5.9727s-3.8359 0.51562-4.9414 1.1797c-1.1055 0.66406-4.4961-0.14844-5.6016 0.14453-1.1055 0.29688-2.8008 1.0312-4.6445 1.3281s-8.9219 0.66406-10.84 0.95703c-1.918 0.29688-3.6836 1.1797-5.6758 1.4766-1.9922 0.29687-6.2695 0-9.5859 0.44141-3.3164 0.44141-9.8828 1.4727-12.02 1.6953-2.1367 0.22266-8.2578-0.44141-8.2578-0.44141l-0.074219-5.9727s4.8672 1.0312 12.684-0.074219 15.703-2.0664 18.875-2.1406 10.691-1.6953 12.242-1.6953c1.5469 0 4.7188-1.1055 6.3398-1.1797 1.6211-0.074219 6.1953-0.074219 7.8906-0.58984 1.6953-0.51562 3.7578-1.1055 3.7578-1.1055zm0.074219 12.387-0.21875 5.8242s-2.6562 0.51562-3.9062 0.96094c-1.2539 0.44141-2.9492-0.22266-4.793 0.074219-1.8438 0.29687-9.2148 2.1367-11.578 2.3594-2.3594 0.22266-7.0781 0.14844-9.9531 0.66406s-6.3398 1.4023-8.1133 1.4727c-1.7695 0.074219-3.0234-0.29297-5.2344 0.074219-2.2109 0.36719-5.0898 1.3242-9.4414 1.6211s-8.6992 0-8.6992 0l0.074219-5.8984s2.2109 0.44141 3.6875 0.37109c1.4766-0.074219 2.4336-0.44141 3.832-0.58984 1.4023-0.14844 2.3594 0.074219 4.2031-0.14844 1.8438-0.22266 10.25-1.7695 12.387-1.7695s8.0352-0.66406 9.7305-1.1055c1.6953-0.44141 4.5-1.1797 6.7109-1.4023 2.2109-0.22266 4.1289 0.36719 6.1953 0.074219 2.0664-0.29688 6.1172-1.918 7.8867-1.918 1.7695 0 3.0977 0.36719 4.5 0 1.3984-0.36719 2.7266-0.66406 2.7266-0.66406z"
+      />
+    </svg>
+  );
+}
+
+
+========================================================================
+src/components/site-header/SiteHeaderOrderLink.tsx
+========================================================================
+"use client";
+
+import Link from "next/link";
+
+type SiteHeaderOrderLinkProps = {
+  linkClassName: string;
+};
+
+/** Inline SVG â€” fills via `.cake-layer` / `.candle` (`globals.css`). */
+function OrderLinkCandleSvg({ className }: { className: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="124 58 38 172"
+      preserveAspectRatio="xMidYMax meet"
+      width={38}
+      height={172}
+      className={`candle ${className}`}
+      aria-hidden
+      focusable={false}
+    >
+      <path d="M152,223.48H136a6.65,6.65,0,0,1-6.65-6.64V121.69a6.65,6.65,0,0,1,6.65-6.64h16a6.65,6.65,0,0,1,6.65,6.64v95.15A6.65,6.65,0,0,1,152,223.48ZM136,119.05a2.65,2.65,0,0,0-2.65,2.64v95.15a2.65,2.65,0,0,0,2.65,2.64h16a2.65,2.65,0,0,0,2.65-2.64V121.69a2.65,2.65,0,0,0-2.65-2.64Z" />
+      <rect x="142" y="101.06" width="4" height="14.75" />
+      <path d="M144.2,96.67a9.21,9.21,0,0,1-7.74-4.57c-2.17-3.49-1.77-7.18-1.28-9.65,1.3-6.54,4.23-11.71,9.5-16.76a4.49,4.49,0,0,1,1.81-1.11l2.7-.69L149,66.67A23,23,0,0,0,151.47,79a15.07,15.07,0,0,1,1.33,10.44,8.77,8.77,0,0,1-7,7A7.55,7.55,0,0,1,144.2,96.67ZM145,71.1a25.1,25.1,0,0,0-5.92,12.13c-.58,2.91-.35,5,.75,6.76A5,5,0,0,0,145,92.58c2.09-.42,3.32-1.7,3.87-4a11.08,11.08,0,0,0-1-7.74A27.5,27.5,0,0,1,145,71.1Z" />
+      <polygon points="131.33 135.13 156.67 127.38 156.67 150.6 131.33 158.38 131.33 135.13" />
+      <rect x="130.69" y="158.9" width="26.62" height="4" transform="translate(-42.4 51.91) rotate(-17.86)" />
+      <polygon points="131.33 171.64 156.67 163.89 156.67 187.12 131.33 194.9 131.33 171.64" />
+      <rect x="130.69" y="195.42" width="26.62" height="4" transform="translate(-53.6 53.67) rotate(-17.86)" />
+      <path d="M131.33,207.17l25.34-7.75v17.84a4,4,0,0,1-4.22,4l-17.34-1a4,4,0,0,1-3.78-4Z" />
+      <rect x="130.69" y="123.73" width="26.62" height="4" transform="translate(-31.62 50.22) rotate(-17.86)" />
+      <polygon points="132.5 123.59 152.02 117.05 134.2 117.4 132.15 119.07 132.5 123.59" />
+    </svg>
+  );
+}
+
+function OrderLinkCakeSvg({ className }: { className: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="-5 -10 110 88"
+      width={120}
+      height={120}
+      className={className}
+      aria-hidden
+      focusable={false}
+    >
+      <path
+        className="cake-layer"
+        d="m73.035 33.387c-1.0664 0.22656-2.1562 0.33984-3.25 0.33984-2.6758-0.054687-5.3281-0.51953-7.8633-1.3789-3.6992-1.2188-7.6367-2.0703-11.512-0.13672-3.707 1.9766-8.1133 2.0117-13.047 0.085937l0.003907 0.003906c-3.6523-1.7227-7.8398-1.9219-11.641-0.55078v10.133h47.309z"
+      />
+      <path
+        className="cake-layer"
+        d="m39.156 28.055c3.5625 1.3867 6.5898 1.4219 9.1445 0.066406 5.4336-2.7188 10.648-1.6016 15.039-0.15625 3.0898 1.2031 6.4727 1.4297 9.6953 0.65234v-4.875c0-1.5469-1.2539-2.7969-2.7969-2.8008h-41.711c-1.5469 0.003906-2.7969 1.2539-2.8008 2.8008v3.2109c4.4648-1.2344 9.2227-0.84375 13.43 1.1016z"
+      />
+      <path
+        className="cake-layer"
+        d="m29.102 59.113c0.11719 0.027344 0.22656 0.066407 0.33203 0.11328 5.0469 2.1797 10.883 2.1602 18.375-0.050781l0.14453-0.046875c8.0625-2.9727 15.445-2.9922 21.938-0.058594h0.003906c0.13281 0.0625 0.26953 0.11328 0.40625 0.14844 7.3867 1.9375 13.277 2.1172 17.566 0.56641l0.003906-10.496c-0.003906-1.543-1.2539-2.7969-2.8008-2.7969h-70.141c-1.5469 0-2.7969 1.2539-2.8008 2.7969v8.9961c5.6445-1.0977 11.465-0.81641 16.973 0.82812z"
+      />
+      <path
+        className="cake-plate"
+        d="m93.008 74.449h-5.1367v-9.8398c-4.9766 1.3555-11.137 1.0625-18.746-0.93359-0.38672-0.10547-0.76562-0.24219-1.1289-0.40625-5.4219-2.4531-11.457-2.3906-18.445 0.17969-0.14062 0.050781-0.28516 0.097656-0.42969 0.14062-3.7266 1.1758-7.6016 1.8047-11.508 1.875-3.375 0.027344-6.7227-0.62891-9.8359-1.9375-5.0781-1.5508-10.48-1.7266-15.648-0.50391v11.422l-5.1367 0.003907c-1.2734 0-2.3047 1.0312-2.3047 2.3047 0 1.2695 1.0312 2.3047 2.3047 2.3047h86.016c1.2734 0 2.3047-1.0352 2.3047-2.3047 0-1.2734-1.0312-2.3047-2.3047-2.3047z"
+      />
+    </svg>
+  );
+}
+
+/** Cake first in DOM; candle layers above (z-index) + shorter scale, anchored on cake top â€” see `globals.css`. */
+export function SiteHeaderOrderLink({ linkClassName }: SiteHeaderOrderLinkProps) {
+  return (
+    <Link href="/inquiry" className={`${linkClassName} site-header__order-link`}>
+      <span className="site-header__order-icon-wrap" aria-hidden>
+        <span className="site-header__order-cake-stack">
+          <OrderLinkCakeSvg className="site-header__order-cake" />
+          <OrderLinkCandleSvg className="site-header__order-candle-body" />
+          <OrderLinkCandleSvg className="site-header__order-candle-tip" />
+        </span>
+      </span>
+      <span className="site-header__order-label">Order your cake</span>
+      <img
+        src="/icons/noun-arrow.svg"
+        alt=""
+        className="site-header__order-arrow"
+        width={51}
+        height={59}
+        decoding="async"
+        draggable={false}
+      />
+    </Link>
+  );
+}
+
+
+========================================================================
+src/components/hero/TasteRevealSection.tsx
+========================================================================
+"use client";
+
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+const MIN_DISTANCE = 38;
+const MAX_VISIBLE = 10;
+const LIFE_MS = 1900;
+const CARD_WIDTH = 360;
+const CARD_HEIGHT = 440;
+
+/** Align trail with custom knife cursor tip (blade vs mouse hotspot); see CustomCursor.tsx */
+const CURSOR_TIP_OFFSET_X = 10;
+const CURSOR_TIP_OFFSET_Y = 14;
+
+const IMAGES = [
+  "/assets/reveal/B-1-1.png",
+  "/assets/reveal/B-2-1.png",
+  "/assets/reveal/B-3-1.png",
+  "/assets/reveal/B-4-1.png",
+  "/assets/reveal/C-1-1.png",
+  "/assets/reveal/C-2-1.png",
+  "/assets/reveal/C-3-1.png",
+  "/assets/reveal/C-4-1.png",
+  "/assets/reveal/K-1-1.png",
+  "/assets/reveal/K-2-1.png",
+  "/assets/reveal/K-3-1.png",
+  "/assets/reveal/K-4-1.png",
+  "/assets/reveal/W-1-1.png",
+  "/assets/reveal/W-2-1.png",
+  "/assets/reveal/W-3-1.png",
+  "/assets/reveal/W-4-1.png",
+];
+
+type TrailImage = {
+  id: number;
+  src: string;
+  x: number;
+  y: number;
+  rotateDeg: number;
+};
+
+function shuffleImages(images: string[], previousLast?: string) {
+  const shuffled = [...images];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  if (previousLast && shuffled[0] === previousLast && shuffled.length > 1) {
+    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+  }
+
+  return shuffled;
+}
+
+export default function TasteRevealSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const trailRef = useRef<HTMLDivElement>(null);
+  const idRef = useRef(0);
+  const indexRef = useRef(0);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const lastImageRef = useRef<string | undefined>(undefined);
+  const sequenceRef = useRef<string[]>([]);
+  const [trailImages, setTrailImages] = useState<TrailImage[]>([]);
+
+  useEffect(() => {
+    sequenceRef.current = shuffleImages(IMAGES);
+  }, []);
+
+  const staticImages = useMemo(() => IMAGES.slice(0, 5), []);
+
+  const getNextImage = () => {
+    if (!sequenceRef.current.length) {
+      sequenceRef.current = shuffleImages(IMAGES, lastImageRef.current);
+      indexRef.current = 0;
+    }
+
+    const src = sequenceRef.current[indexRef.current];
+    indexRef.current += 1;
+
+    if (indexRef.current >= sequenceRef.current.length) {
+      lastImageRef.current = src;
+      sequenceRef.current = shuffleImages(IMAGES, lastImageRef.current);
+      indexRef.current = 0;
+    } else {
+      lastImageRef.current = src;
+    }
+
+    return src;
+  };
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const trail = trailRef.current;
+    if (!section || !trail) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const finePointer = window.matchMedia("(pointer: fine) and (hover: hover)").matches;
+
+    if (reducedMotion || !finePointer) return;
+
+    let cancelled = false;
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const rect = trail.getBoundingClientRect();
+      const pointerY = event.clientY - rect.top;
+      const redAreaStartY = 48;
+      if (pointerY < redAreaStartY) return;
+
+      const x = event.clientX - rect.left + CURSOR_TIP_OFFSET_X;
+      const y = event.clientY - rect.top + CURSOR_TIP_OFFSET_Y;
+
+      if (y < redAreaStartY) return;
+
+      const lastPoint = lastPointRef.current;
+      let rotateDeg = 0;
+      if (lastPoint) {
+        const dx = x - lastPoint.x;
+        const dy = y - lastPoint.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < MIN_DISTANCE) return;
+        const pathAngleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+        rotateDeg = Math.max(-2, Math.min(2, pathAngleDeg * 0.028));
+      }
+
+      lastPointRef.current = { x, y };
+
+      const src = getNextImage();
+
+      const image: TrailImage = {
+        id: idRef.current++,
+        src,
+        x,
+        y,
+        rotateDeg,
+      };
+
+      setTrailImages((prev) => [...prev, image].slice(-MAX_VISIBLE));
+
+      window.setTimeout(() => {
+        if (cancelled) return;
+        setTrailImages((prev) => prev.filter((item) => item.id !== image.id));
+      }, LIFE_MS);
+    };
+
+    section.addEventListener("pointermove", handlePointerMove);
+
+    return () => {
+      cancelled = true;
+      section.removeEventListener("pointermove", handlePointerMove);
+    };
+  }, []);
+
+  return (
+    <section ref={sectionRef} className="taste-reveal" aria-label="Cake teaser">
+      <div className="taste-reveal__content">
+        <h2
+          className="taste-reveal__title"
+          aria-label="Closer to an unforgettable taste"
+        >
+          <span className="taste-reveal__title-line taste-reveal__title-line--top">
+            CLOSER TO AN
+          </span>
+          <span className="taste-reveal__title-line taste-reveal__title-line--middle">
+            UNFORGETTABLE
+          </span>
+          <span className="taste-reveal__title-line taste-reveal__title-line--bottom">
+            TASTE
+          </span>
+        </h2>
+      </div>
+
+      <div className="taste-reveal__red-zone" aria-hidden>
+        <div ref={trailRef} className="taste-reveal__trail">
+          {trailImages.map((image) => (
+            <div
+              key={image.id}
+              className="taste-reveal__trail-image"
+              style={{
+                ["--x" as string]: `${image.x}px`,
+                ["--y" as string]: `${image.y}px`,
+                width: CARD_WIDTH,
+                height: CARD_HEIGHT,
+                zIndex: image.id,
+                ["--trail-rot" as string]: `${image.rotateDeg}deg`,
+              }}
+            >
+              <Image
+                src={image.src}
+                alt=""
+                fill
+                sizes="380px"
+                quality={100}
+                className="taste-reveal__img"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="taste-reveal__mobile-collage" aria-hidden>
+        {staticImages.map((src, index) => (
+          <div key={src} className={`taste-reveal__mobile-card taste-reveal__mobile-card--${index + 1}`}>
+            <Image src={src} alt="" fill sizes="220px" className="taste-reveal__img" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+
+========================================================================
+src/components/CustomCursor.tsx
+========================================================================
+"use client";
+
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+
+/** Desktop-style pointer: fine control + real hover (excludes most phones). */
+const CURSOR_MQ = "(pointer: fine) and (hover: hover)";
+
+/** Same viewBox as /public/assets/knife.svg */
+const VIEWBOX = 512.8;
+
+/** Rendered SVG size (px); tip offset below must stay in sync (viewBox fraction Ã— this). */
+const KNIFE_PX = 32;
+
+/**
+ * Blade tip = path `M` in knife.svg â€” mouse (clientX/Y) maps to this point so the user
+ * â€œclicks with the tipâ€, not the handle. Keep transform-origin in CSS at the same %.
+ */
+const TIP_UX = 506.8;
+const TIP_UY = 14.319;
+
+/** Fallback until DOM measures tip after CSS translate/rotate/scale */
+const TIP_X = (TIP_UX / VIEWBOX) * KNIFE_PX;
+const TIP_Y = (TIP_UY / VIEWBOX) * KNIFE_PX;
+
+/** Path geometry from knife.svg (SVG Repo) */
+const KNIFE_PATH_D =
+  "M506.8,14.319c-6.4-6.4-17.6-11.6-36-0.8c-91.6,55.2-225.6,180-227.2,181.2c-0.4,0.4-0.4,0.4-0.4,0.8l-0.4,0.4c0,0,0,0.4,0,0.8c0,0.4,0,0.4,0,0.8v44L9.2,452.719c-6,6-9.2,13.6-9.2,22c0,8.4,3.2,16,8.8,22c6.4,6,14.4,8.8,22,8.8c8,0,16-3.2,22-9.2l454-453.6C514.8,34.719,514.8,21.919,506.8,14.319z";
+
+/** Lower = smoother/luxury lag (lerp toward mouse); higher = snappier */
+const SMOOTH = 0.11;
+
+const CLICK_MS = 150;
+
+/** Grow cursor when hovering interactive targets (DOM â€” not CSS ~ sibling) */
+const INTERACTIVE_FOR_HOVER =
+  'button, a[href], [role="button"], input[type="submit"], input[type="button"], input[type="reset"], summary';
+
+export function CustomCursor() {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  /** Blade tip offset from root TL (px), includes inner CSS transforms */
+  const hotspotRef = useRef({ hx: TIP_X, hy: TIP_Y });
+  const clickAnimRef = useRef(0);
+  const posRef = useRef({ x: 0, y: 0 });
+  const visualRef = useRef({ x: 0, y: 0 });
+  const syncedRef = useRef(false);
+  const rafRef = useRef(0);
+  const [active, setActive] = useState(false);
+
+  const measureHotspot = useCallback(() => {
+    const root = rootRef.current;
+    const svg = svgRef.current;
+    if (!root || !svg) return;
+    const pt = svg.createSVGPoint();
+    pt.x = TIP_UX;
+    pt.y = TIP_UY;
+    const m = svg.getScreenCTM();
+    if (!m) return;
+    const scr = pt.matrixTransform(m);
+    const rr = root.getBoundingClientRect();
+    hotspotRef.current = {
+      hx: scr.x - rr.left,
+      hy: scr.y - rr.top,
+    };
+  }, []);
+
+  const flushTransform = useCallback(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const v = visualRef.current;
+    const { hx, hy } = hotspotRef.current;
+    el.style.transform = `translate3d(${v.x - hx}px, ${v.y - hy}px, 0)`;
+  }, []);
+
+  /** Tip vs root offset depends on globals.css rotate/scale â€” measure after paint */
+  useLayoutEffect(() => {
+    if (!active) return;
+    const schedule = () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          measureHotspot();
+          flushTransform();
+        });
+      });
+    };
+    schedule();
+    window.addEventListener("resize", schedule);
+    return () => window.removeEventListener("resize", schedule);
+  }, [active, measureHotspot, flushTransform]);
+
+  useEffect(() => {
+    const mq = window.matchMedia(CURSOR_MQ);
+    const syncActive = () => setActive(mq.matches);
+
+    syncActive();
+    mq.addEventListener("change", syncActive);
+
+    return () => mq.removeEventListener("change", syncActive);
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
+
+    const html = document.documentElement;
+    html.setAttribute("data-custom-cursor", "true");
+
+    const onMove = (e: MouseEvent) => {
+      posRef.current = { x: e.clientX, y: e.clientY };
+      const inner = innerRef.current;
+      if (inner) {
+        const hit = document.elementFromPoint(e.clientX, e.clientY);
+        const grow =
+          !!hit?.closest(INTERACTIVE_FOR_HOVER) &&
+          !hit?.closest("[data-no-cursor-grow]");
+        inner.classList.toggle("custom-knife-cursor-inner--hover", grow);
+      }
+      if (!syncedRef.current) {
+        visualRef.current = { x: e.clientX, y: e.clientY };
+        syncedRef.current = true;
+        flushTransform();
+      }
+    };
+
+    /** Left button only â€” no animation on right/middle; never preventDefault (forms/links untouched). */
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      const inner = innerRef.current;
+      if (!inner) return;
+      inner.classList.add("custom-knife-cursor-inner--click");
+      window.clearTimeout(clickAnimRef.current);
+      clickAnimRef.current = window.setTimeout(() => {
+        inner.classList.remove("custom-knife-cursor-inner--click");
+      }, CLICK_MS);
+    };
+
+    const loop = () => {
+      const el = rootRef.current;
+      if (el && syncedRef.current) {
+        const t = posRef.current;
+        const v = visualRef.current;
+        v.x += (t.x - v.x) * SMOOTH;
+        v.y += (t.y - v.y) * SMOOTH;
+        const { hx, hy } = hotspotRef.current;
+        el.style.transform = `translate3d(${v.x - hx}px, ${v.y - hy}px, 0)`;
+      }
+      rafRef.current = requestAnimationFrame(loop);
+    };
+
+    document.addEventListener("mousemove", onMove, { passive: true });
+    document.addEventListener("mousedown", onMouseDown);
+    rafRef.current = requestAnimationFrame(loop);
+
+    return () => {
+      html.removeAttribute("data-custom-cursor");
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mousedown", onMouseDown);
+      window.clearTimeout(clickAnimRef.current);
+      cancelAnimationFrame(rafRef.current);
+      syncedRef.current = false;
+    };
+  }, [active, flushTransform]);
+
+  /** Same-origin Sweet Catch iframe: pointer events hit the iframe document, not ours â€” relay via postMessage. */
+  useEffect(() => {
+    if (!active) return;
+
+    const onMsg = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      const d = e.data;
+      if (!d || typeof d !== "object") return;
+
+      if (d.type === "sweet-catch-pointer") {
+        const vx = typeof d.vx === "number" ? d.vx : 0;
+        const vy = typeof d.vy === "number" ? d.vy : 0;
+        posRef.current = { x: vx, y: vy };
+        const inner = innerRef.current;
+        if (inner != null && typeof d.grow === "boolean") {
+          inner.classList.toggle("custom-knife-cursor-inner--hover", d.grow);
+        }
+      } else if (d.type === "sweet-catch-pointer-leave") {
+        innerRef.current?.classList.remove("custom-knife-cursor-inner--hover");
+      } else if (d.type === "sweet-catch-click") {
+        const inner = innerRef.current;
+        if (inner == null) return;
+        inner.classList.add("custom-knife-cursor-inner--click");
+        window.clearTimeout(clickAnimRef.current);
+        clickAnimRef.current = window.setTimeout(() => {
+          inner.classList.remove("custom-knife-cursor-inner--click");
+        }, CLICK_MS);
+      }
+    };
+
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [active]);
+
+  if (!active) return null;
+
+  return (
+    <div
+      ref={rootRef}
+      className="custom-cursor pointer-events-none fixed left-0 top-0 z-[9999] overflow-visible will-change-transform"
+      style={{ transform: "translate3d(0px, 0px, 0)" }}
+      aria-hidden
+    >
+      <div ref={innerRef} className="custom-knife-cursor-inner">
+        <svg
+          ref={svgRef}
+          width={KNIFE_PX}
+          height={KNIFE_PX}
+          viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}
+          xmlns="http://www.w3.org/2000/svg"
+          className="custom-knife-cursor-svg block overflow-visible"
+          fill="currentColor"
+        >
+          <path d={KNIFE_PATH_D} />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+
+========================================================================
+src/components/footer/MiniSweetCatchFooter.tsx
+========================================================================
+/**
+ * Full Sweet Catch playground from `sweet_catch_v2.html` â€” served statically and embedded via iframe so the original script/UI runs unchanged (cloud layer, spawning, cakes, audio).
+ */
+export function MiniSweetCatchFooter() {
+  return (
+    <section
+      className="mini-sweet-catch-footer-embed pb-10 pt-8"
+      aria-label="Sweet Catch arcade"
+    >
+      <div className="mini-sweet-catch-footer__shell mx-auto max-w-3xl overflow-hidden rounded-[28px] px-3 py-3 sm:px-5 sm:py-4">
+        {/* Same-origin arcade â€” Order links inside use target=_top */}
+        <iframe
+          src="/sweet-catch-v2.html"
+          title="Sweet Catch â€” collect 15 sweets, avoid bombs"
+          className="relative z-[2] mx-auto block h-[478px] w-full max-w-[min(100%,720px)] overflow-hidden rounded-[22px] border border-white/35 bg-[#FDF8F3] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.45),inset_0_10px_28px_-6px_rgba(255,255,255,0.28)]"
+          loading="lazy"
+        />
+      </div>
+    </section>
+  );
+}
+

@@ -1,0 +1,627 @@
+.cake-inquiry-form {
+  --ci-ink: #3d2228;
+  --ci-accent: #b84d63;
+  --ci-accent-soft: #f3c4cf;
+  --ci-border: #c9848f;
+  --ci-cream: #fff9f2;
+  --ci-footer: #f5c0ce;
+  --ci-cta-fill: #f0c9a8;
+  --ci-muted: #b09298;
+  display: block;
+  color: var(--ci-ink);
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+}
+
+.cake-inquiry-form__main {
+  max-width: 680px;
+  margin-inline: auto;
+  padding: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 5vw, 3rem) 0;
+}
+
+@media (min-width: 900px) {
+  .cake-inquiry-form__main {
+    max-width: 720px;
+  }
+}
+
+.cake-inquiry-section {
+  padding-block: 0.5rem;
+  scroll-margin-top: calc(var(--site-header-scroll-margin, 5rem) + 1.25rem);
+}
+
+.cake-inquiry-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  scroll-margin-top: calc(var(--site-header-scroll-margin, 5rem) + 1.25rem);
+}
+
+.cake-inquiry-section--invalid .cake-inquiry-section-title,
+.cake-inquiry-delivery--invalid .cake-inquiry-delivery__legend {
+  color: #c0392b;
+}
+
+.cake-inquiry-section--shake,
+.cake-inquiry-input--shake,
+.cake-inquiry-delivery.cake-inquiry-section--shake {
+  animation: ci-error-pulse 0.85s ease;
+}
+
+@keyframes ci-error-pulse {
+  0%,
+  100% {
+    box-shadow: none;
+  }
+
+  20%,
+  55% {
+    box-shadow: 0 0 0 4px rgb(184 77 99 / 0.28);
+  }
+
+  38% {
+    box-shadow: 0 0 0 7px rgb(184 77 99 / 0.14);
+  }
+}
+
+.cake-inquiry-section-title {
+  margin: 0 0 1.35rem;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(1.3rem, 2.8vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ci-ink);
+}
+
+.cake-inquiry-divider {
+  height: 1px;
+  margin: 2.75rem 0;
+  border: 0;
+  background: linear-gradient(to right, transparent, rgb(184 77 99 / 0.22), transparent);
+}
+
+.cake-inquiry-label {
+  display: block;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ci-ink);
+}
+
+.cake-inquiry-input,
+.cake-inquiry-textarea {
+  width: 100%;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ci-ink);
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cake-inquiry-input {
+  border: none;
+  border-bottom: 1.5px solid var(--ci-border);
+  padding: 0.55rem 0 0.65rem;
+  box-shadow: none;
+}
+
+.cake-inquiry-input--inline {
+  width: auto;
+  min-width: 6rem;
+  flex: 1 1 6rem;
+  max-width: 10rem;
+  margin-top: 0.15rem;
+}
+
+.cake-inquiry-input--nested {
+  margin-top: 0.35rem;
+  margin-left: 1.65rem;
+  max-width: 14rem;
+}
+
+.cake-inquiry-textarea {
+  min-height: 7.5rem;
+  resize: vertical;
+  border: 1.5px solid var(--ci-border);
+  border-radius: 0.65rem;
+  padding: 0.85rem 1rem;
+  line-height: 1.55;
+  background: #fff;
+  box-shadow: inset 0 1px 3px rgb(184 77 99 / 0.05);
+}
+
+.cake-inquiry-input:focus,
+.cake-inquiry-textarea:focus {
+  outline: none;
+  border-color: var(--ci-accent);
+  box-shadow: 0 1px 0 0 var(--ci-accent-soft);
+}
+
+.cake-inquiry-input::placeholder,
+.cake-inquiry-textarea::placeholder {
+  color: var(--ci-muted);
+  font-style: italic;
+  opacity: 1;
+}
+
+.cake-inquiry-field--error .cake-inquiry-input,
+.cake-inquiry-field--error .cake-inquiry-textarea {
+  border-color: #c0392b;
+}
+
+.cake-inquiry-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #c0392b;
+}
+
+.cake-inquiry-radio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.cake-inquiry-radio-list--columns {
+  display: grid;
+  gap: 0.65rem 2rem;
+}
+
+@media (min-width: 480px) {
+  .cake-inquiry-radio-list--columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cake-inquiry-radio-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cake-inquiry-radio-row--inline-extra {
+  gap: 0.35rem;
+}
+
+.cake-inquiry-radio-row__extra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+  padding-left: 1.65rem;
+}
+
+.cake-inquiry-radio-option {
+  display: inline-flex;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(1rem, 1.8vw, 1.18rem);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ci-ink);
+  padding: 0.25rem 0;
+  transition: color 0.15s ease;
+}
+
+.cake-inquiry-radio-option:hover {
+  color: var(--ci-accent);
+}
+
+.cake-inquiry-radio-option input:checked ~ span:last-child {
+  color: var(--ci-accent);
+}
+
+.cake-inquiry-radio-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cake-inquiry-radio-dot {
+  display: inline-flex;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1.75px solid var(--ci-border);
+  border-radius: 9999px;
+  background: #fff;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cake-inquiry-radio-dot::after {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 9999px;
+  background: var(--ci-accent);
+  content: "";
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.cake-inquiry-radio-option input:checked + .cake-inquiry-radio-dot {
+  border-color: var(--ci-accent);
+  background: rgb(184 77 99 / 0.06);
+  box-shadow: 0 0 0 3px rgb(184 77 99 / 0.12);
+}
+
+.cake-inquiry-radio-option input:checked + .cake-inquiry-radio-dot::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.cake-inquiry-radio-option input:focus-visible + .cake-inquiry-radio-dot {
+  outline: 2px solid var(--ci-accent-soft);
+  outline-offset: 2px;
+}
+
+.cake-inquiry-radio-hint {
+  margin-left: 0.35rem;
+  color: var(--ci-muted);
+  font-size: 0.92em;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.cake-inquiry-delivery {
+  margin-top: 0.5rem;
+  border: 0;
+  padding: 0;
+  scroll-margin-top: calc(var(--site-header-scroll-margin, 5rem) + 1.25rem);
+}
+
+.cake-inquiry-delivery__legend {
+  margin-bottom: 0.85rem;
+  padding: 0;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  font-weight: 700;
+  color: var(--ci-ink);
+}
+
+.cake-inquiry-delivery__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem 2.5rem;
+}
+
+.cake-inquiry-delivery__option {
+  display: inline-flex;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  font-weight: 600;
+  color: var(--ci-ink);
+}
+
+.cake-inquiry-delivery__option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cake-inquiry-delivery__dot {
+  display: inline-flex;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--ci-border);
+  border-radius: 9999px;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.cake-inquiry-delivery__dot::after {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+  background: var(--ci-accent);
+  content: "";
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.cake-inquiry-delivery__option input:checked + .cake-inquiry-delivery__dot {
+  border-color: var(--ci-accent);
+}
+
+.cake-inquiry-delivery__option input:checked + .cake-inquiry-delivery__dot::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.cake-inquiry-delivery__option input:focus-visible + .cake-inquiry-delivery__dot {
+  outline: 2px solid var(--ci-accent-soft);
+  outline-offset: 2px;
+}
+
+.cake-inquiry-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid rgb(184 77 99 / 0.18);
+  border-radius: 0.85rem;
+  background: linear-gradient(135deg, #fff 0%, #fff4f6 100%);
+  box-shadow: 0 2px 14px rgb(184 77 99 / 0.07);
+}
+
+.cake-inquiry-preview__sparkle {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.cake-inquiry-preview__text {
+  margin: 0;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  line-height: 1.55;
+  color: var(--ci-ink);
+}
+
+.cake-inquiry-preview__highlight {
+  color: var(--ci-accent);
+  font-weight: 700;
+}
+
+.cake-inquiry-footer {
+  width: 100%;
+  margin-top: 2.75rem;
+  padding: 3.25rem clamp(1.5rem, 5vw, 2rem) 3.75rem;
+  background: #f5c0ce;
+  text-align: center;
+  border-top: 1.5px solid rgb(184 77 99 / 0.22);
+  transition: background 0.45s ease;
+}
+
+.cake-inquiry-footer--ready {
+  background: #f5c0ce;
+}
+
+.cake-inquiry-footer__inner {
+  max-width: 36rem;
+  margin-inline: auto;
+}
+
+.cake-inquiry-validation-banner {
+  margin: 0 0 1.25rem;
+  padding: 0.9rem 1.2rem;
+  border: 2px solid rgb(192 57 43 / 0.45);
+  border-radius: 0.65rem;
+  background: #fff9f2;
+  color: #8b2e2e;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+  animation: ci-banner-attention 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes ci-banner-attention {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+    box-shadow: 0 0 0 0 rgb(192 57 43 / 0);
+  }
+
+  18% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 4px 16px rgb(192 57 43 / 0.22);
+  }
+
+  32% {
+    transform: translateY(0) scale(1) translateX(-5px);
+  }
+
+  46% {
+    transform: translateX(5px);
+  }
+
+  58% {
+    transform: translateX(-4px);
+  }
+
+  70% {
+    transform: translateX(3px);
+  }
+
+  82% {
+    transform: translateX(-2px);
+  }
+
+  100% {
+    transform: translateX(0) scale(1);
+    box-shadow: 0 2px 10px rgb(192 57 43 / 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cake-inquiry-validation-banner {
+    animation: ci-banner-in 0.3s ease;
+  }
+}
+
+@keyframes ci-banner-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cake-inquiry-cta {
+  display: inline-flex;
+  width: 100%;
+  max-width: 100%;
+  min-height: 3.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-inline: 2.5rem;
+  border: 2.5px solid #1a1a1a;
+  border-radius: 9999px;
+  background: var(--ci-cta-fill);
+  color: #2e1218;
+  cursor: pointer;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(1.25rem, 2.8vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow: 0 4px 0 #1a1a1a;
+  overflow: hidden;
+  opacity: 0.88;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.35s ease,
+    background 0.45s ease,
+    border-color 0.45s ease,
+    color 0.45s ease,
+    opacity 0.45s ease;
+}
+
+.cake-inquiry-cta--ready {
+  opacity: 1;
+  border-color: #1a1a1a;
+  background: linear-gradient(135deg, #3d2228 0%, #2a151c 100%);
+  color: #fff9f2;
+  box-shadow:
+    0 4px 0 #1a1a1a,
+    0 0 0 0 rgb(212 168 75 / 0);
+  animation: ci-cta-glow 2.4s ease-in-out infinite;
+}
+
+.cake-inquiry-cta--ready-pop {
+  animation:
+    ci-cta-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    ci-cta-glow 2.4s ease-in-out 0.55s infinite;
+}
+
+@keyframes ci-cta-pop {
+  0% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.04);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ci-cta-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 4px 0 #1a1a1a,
+      0 0 0 0 rgb(212 168 75 / 0.15);
+  }
+
+  50% {
+    box-shadow:
+      0 5px 0 #1a1a1a,
+      0 0 20px 5px rgb(212 168 75 / 0.45);
+  }
+}
+
+.cake-inquiry-cta--ready:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4a2830 0%, #2e1218 100%);
+  box-shadow:
+    0 7px 0 #1a1a1a,
+    0 0 24px 7px rgb(212 168 75 / 0.5);
+  transform: translateY(-3px) scale(1.01);
+}
+
+.cake-inquiry-cta:hover:not(:disabled):not(.cake-inquiry-cta--ready) {
+  box-shadow: 0 6px 0 #1a1a1a;
+  transform: translateY(-2px);
+  opacity: 1;
+}
+
+.cake-inquiry-cta:active:not(:disabled) {
+  box-shadow: 0 1px 0 #1a1a1a;
+  transform: translateY(1px);
+}
+
+.cake-inquiry-cta:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cake-inquiry-cta--ready,
+  .cake-inquiry-cta--ready-pop {
+    animation: none;
+  }
+}
+
+.cake-inquiry-footer__note {
+  margin: 1.15rem auto 0;
+  max-width: 22rem;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(0.85rem, 1.5vw, 0.98rem);
+  font-style: italic;
+  line-height: 1.5;
+  color: rgb(61 34 40 / 0.85);
+  transition: color 0.35s ease;
+}
+
+.cake-inquiry-footer__note--ready {
+  color: #3d2228;
+  font-weight: 600;
+}
+
+.cake-inquiry-grid {
+  display: grid;
+  gap: 1.75rem 2rem;
+}
+
+@media (min-width: 640px) {
+  .cake-inquiry-grid--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cake-inquiry-grid__full {
+  grid-column: 1 / -1;
+}
+
+.cake-inquiry-server-error {
+  margin-top: 1.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgb(192 57 43 / 0.25);
+  border-radius: 0.15rem;
+  background: rgb(255 245 245 / 0.9);
+  color: #8b2e2e;
+  font-size: 0.9rem;
+}

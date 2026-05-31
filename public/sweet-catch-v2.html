@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sweet Catch</title>
+<style>
+html,body{height:100%;margin:0;overflow:hidden;background:#FDF8F3;}
+.arcade{font-family:"Courier New","Lucida Console",monospace;font-weight:700;letter-spacing:.08em;}
+@keyframes blink{0%,100%{opacity:1}49%{opacity:1}50%{opacity:0}}
+@keyframes bob{0%,100%{transform:translateY(0) translateX(-50%)}50%{transform:translateY(-5px) translateX(-50%)}}
+@keyframes death{0%{transform:translateX(-50%) rotate(0) scale(1);opacity:1}40%{transform:translateX(-50%) rotate(-18deg)}70%{transform:translateX(-50%) rotate(22deg) scale(0.85);opacity:0.5}100%{transform:translateX(-50%) scale(0) translateY(50px);opacity:0}}
+@keyframes bombHit{0%,100%{transform:translateX(-50%)}20%{transform:translateX(calc(-50% - 10px)) rotate(-4deg)}40%{transform:translateX(calc(-50% + 10px)) rotate(4deg)}60%{transform:translateX(calc(-50% - 6px))}80%{transform:translateX(calc(-50% + 6px))}}
+@keyframes floatUp{0%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-42px)}}
+@keyframes titleGlow{0%,100%{text-shadow:0 0 10px #F4A62A,0 0 20px #F4A62A}50%{text-shadow:0 0 20px #F4A62A,0 0 40px #F4A62A,0 0 60px #F4A62A}}
+@keyframes keyPulseL{0%,100%{transform:translateX(0);background:#fff}50%{transform:translateX(-5px);background:#f5e6cc}}
+@keyframes keyPulseR{0%,100%{transform:translateX(0);background:#fff}50%{transform:translateX(5px);background:#f5e6cc}}
+html[data-sweet-catch-embedded="true"],
+html[data-sweet-catch-embedded="true"] body,
+html[data-sweet-catch-embedded="true"] *,
+html[data-sweet-catch-embedded="true"] *::before,
+html[data-sweet-catch-embedded="true"] *::after{cursor:none !important;}
+/* Desktop — keyboard; hide touch chrome */
+@media (min-width:769px) and (pointer:fine){
+  #sndBtn{display:none!important;}
+  #touchRow{display:none!important;}
+}
+/* Phone touch — centered paddles (thumb-friendly); skipped when parent marks iPad/tablet */
+@media (max-width:719px){
+  html:not([data-sweet-catch-tablet="true"]) #touchRow{display:flex!important;justify-content:center;gap:12px;width:calc(100% - 24px);max-width:360px;margin-left:auto;margin-right:auto;left:0!important;right:0!important;transform:none!important;bottom:10px!important;z-index:9!important;padding-bottom:env(safe-area-inset-bottom,.5rem);}
+  html:not([data-sweet-catch-tablet="true"]) #sndBtn{display:flex!important;}
+}
+/* iPad / tablet touch — ← left edge, → right edge (data attr: iframe is often <720px wide) */
+html[data-sweet-catch-tablet="true"] #touchRow{display:flex!important;justify-content:space-between!important;align-items:flex-end;width:calc(100% - 28px)!important;max-width:none!important;margin:0!important;left:14px!important;right:14px!important;transform:none!important;bottom:clamp(12px,2.5vh,18px)!important;z-index:9!important;gap:0!important;padding-bottom:env(safe-area-inset-bottom,.5rem);}
+html[data-sweet-catch-tablet="true"] #touchRow #kL,
+html[data-sweet-catch-tablet="true"] #touchRow #kR{width:clamp(58px,11vw,76px)!important;height:clamp(58px,11vw,76px)!important;font-size:clamp(22px,4.5vw,28px)!important;border-radius:12px!important;box-shadow:0 5px 0 #1a1208!important;flex-shrink:0;}
+html[data-sweet-catch-tablet="true"] #sndBtn{display:flex!important;bottom:clamp(80px,18vw,96px)!important;left:14px!important;}
+@media (min-width:720px) and (pointer:coarse){
+  #touchRow{display:flex!important;justify-content:space-between!important;align-items:flex-end;width:calc(100% - 28px)!important;max-width:none!important;margin:0!important;left:14px!important;right:14px!important;transform:none!important;bottom:clamp(12px,2.5vh,18px)!important;z-index:9!important;gap:0!important;padding-bottom:env(safe-area-inset-bottom,.5rem);}
+  #touchRow #kL,#touchRow #kR{width:clamp(58px,11vw,76px)!important;height:clamp(58px,11vw,76px)!important;font-size:clamp(22px,4.5vw,28px)!important;border-radius:12px!important;box-shadow:0 5px 0 #1a1208!important;flex-shrink:0;}
+  #sndBtn{display:flex!important;bottom:clamp(80px,18vw,96px)!important;left:14px!important;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;}
+}
+</style>
+</head>
+<body>
+<div style="width:100%;background:#FDF8F3;border-radius:16px;overflow:hidden;border:1px solid #e8ddd0;">
+<div id="scene" style="position:relative;height:472px;overflow:hidden;background:#FDF8F3;">
+
+  <div id="sl" style="position:absolute;inset:0;pointer-events:none;z-index:2;"></div>
+  <div id="pt" style="position:absolute;inset:0;pointer-events:none;z-index:3;"></div>
+
+  <div id="chr" style="position:absolute;z-index:6;bottom:44px;left:50%;width:88px;transform:translateX(-50%);">
+    <svg id="es" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" width="88" height="110">
+      <path id="elfBody" fill="#E85D75" d="M16.01,51.838a4.064,4.064,0,0,0,2.889,4.02,4.533,4.533,0,0,0,.546.106,8.752,8.752,0,0,0,2.619,5.125A3.517,3.517,0,0,0,25.5,64h2a3.52,3.52,0,0,0,2.476-1.022A3.461,3.461,0,0,0,30.655,62h2.69a3.449,3.449,0,0,0,.677.977A3.525,3.525,0,0,0,36.5,64h2A3.516,3.516,0,0,0,41.929,61.1a8.738,8.738,0,0,0,2.626-5.131,4.654,4.654,0,0,0,.558-.109,4.063,4.063,0,0,0,2.877-4.02c-.231-9.227-4.031-14.508-6.476-16.386l-.593-2.564a2.958,2.958,0,0,0,1.183-.363,2.888,2.888,0,0,0,1.462-2.288,14.08,14.08,0,0,0-2.7-9.621,5.493,5.493,0,0,1-.887-4.48,16.031,16.031,0,0,0,0-7.365C38.625,3.122,34.4,0,32,0c-1.783,0-1.873,1.8-1.96,3.544a17.835,17.835,0,0,1-1.924,7.989,16,16,0,0,1-2.008,2.929,14.548,14.548,0,0,1-2.54,2.282A10.689,10.689,0,0,0,19,24.968a10.519,10.519,0,0,0,2.879,7.455,2.969,2.969,0,0,0,1.127.746l-.526,2.281C19.355,37.832,16.215,43.7,16.01,51.838Zm5.426,3.894A4.057,4.057,0,0,0,24,51.9V49a1,1,0,0,0-2,0v2.9a2.071,2.071,0,0,1-1.431,2.026,1.318,1.318,0,0,1-.345.055A1.678,1.678,0,0,0,20,54a2.383,2.383,0,0,1-.586-.075,2.038,2.038,0,0,1-1.4-2.04,23.012,23.012,0,0,1,3.557-12.471l-.171.743a1.927,1.927,0,0,0,.372,1.644,1.871,1.871,0,0,0,2.016.657l-.565,3.921a1.933,1.933,0,0,0,2.51,2.095L26,48.389V52.07A1.932,1.932,0,0,0,27.93,54l.24-.054.509,2.544a1.893,1.893,0,0,0,.514.966A3.452,3.452,0,0,0,27.5,57h-2a3.521,3.521,0,0,0-2.477,1.023,3.454,3.454,0,0,0-.48.615A9.144,9.144,0,0,1,21.436,55.732Zm16.785-13.1.563,3.906-.248-.078A1.93,1.93,0,0,0,36,48.29L36.07,52h-.31a1.943,1.943,0,0,0-1.891,1.554l-.483,2.418-.019-.019a1.913,1.913,0,0,0-2.736,0l-.017.017-.484-2.424A1.942,1.942,0,0,0,28.24,52l-.24.07V48.29a1.929,1.929,0,0,0-2.519-1.834l-.265.083.565-3.918a1.928,1.928,0,0,0-.687-1.748,1.9,1.9,0,0,0-1.725-.374l1.682-7.293a2.888,2.888,0,0,0,.752-.379,10.872,10.872,0,0,1,1.612-.917c.2-.093.418-.164.628-.243A2.465,2.465,0,0,0,28,32c0,1.682,1.757,3,4,3s4-1.318,4-3a2.334,2.334,0,0,0-.071-.549,17.173,17.173,0,0,1,1.745.494c.391.135.747.282,1.073.421l.891,3.847,0,.013.99,4.272a1.891,1.891,0,0,0-1.956.6A1.93,1.93,0,0,0,38.221,42.633ZM33.055,60H30.949a3.474,3.474,0,0,0-1.2-2.158,1.514,1.514,0,0,0,.82.2,1.936,1.936,0,0,0,1.369-.568l.012-.11.112.112a1.9,1.9,0,0,0,1.367.562,1.915,1.915,0,0,0,.772-.168A3.459,3.459,0,0,0,33.055,60ZM36,25a1,1,0,1,1,1-1A1,1,0,0,1,36,25ZM35,11a1,1,0,1,1,1-1A1,1,0,0,1,35,11Zm-4,8a1,1,0,1,1,1-1A1,1,0,0,1,31,19Zm-5,8a1,1,0,1,1,1-1A1,1,0,0,1,26,27Zm6,4h.106c1.157.033,1.894.613,1.894,1s-.8,1-2,1-2-.6-2-1S30.8,31,32,31Zm7.61.651v0h0Zm6.38,20.23A2.039,2.039,0,0,1,44.6,53.922a2.717,2.717,0,0,1-.651.082.988.988,0,0,0-.172-.023,1.415,1.415,0,0,1-.38-.065A2.065,2.065,0,0,1,42,51.9V49a1,1,0,0,0-2,0v2.9a4.049,4.049,0,0,0,2.564,3.834,9.158,9.158,0,0,1-1.106,2.9A3.427,3.427,0,0,0,38.5,57h-2a3.5,3.5,0,0,0-1.657.421,1.886,1.886,0,0,0,.477-.925l.44-2.5h.31A1.932,1.932,0,0,0,38,52.07V48.389l.254.08a1.934,1.934,0,0,0,2.526-2.1l-.564-3.907a1.906,1.906,0,0,0,1.8-.431,1.947,1.947,0,0,0,.59-1.875L42.43,39.4C44.133,41.888,45.843,45.995,45.99,51.881Z"/>
+      <path id="elfBeard" fill="#E85D75" d="M33.553,35.306a3.85,3.85,0,0,1-3.106,0,1,1,0,1,0-.894,1.789,5.253,5.253,0,0,0,2.366.549,6.138,6.138,0,0,0,2.528-.549,1,1,0,1,0-.894-1.789Z"/>
+    </svg>
+  </div>
+
+  <!-- HUD -->
+  <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:5px;">
+    <div class="arcade" style="font-size:9px;color:#1a1208;background:rgba(255,255,255,0.92);border:2px solid #1a1208;border-radius:6px;padding:5px 12px;white-space:nowrap;"><span id="sc">00</span> / 15</div>
+    <button id="pauseBtn" onclick="togglePause()" data-no-cursor-grow="" class="arcade" style="display:none;background:rgba(255,255,255,0.92);border:2px solid #1a1208;border-radius:6px;padding:3px 10px;font-size:8px;color:#1a1208;cursor:pointer;line-height:1;">⏸ PAUSE</button>
+  </div>
+  <div id="livesHud" class="arcade" style="position:absolute;top:12px;left:12px;z-index:8;font-size:18px;line-height:1;color:#E85D75;">♥♥♥</div>
+  <div id="touchRow" style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:8;display:flex;gap:8px;">
+    <div id="kL" role="button" tabindex="0" data-no-cursor-grow="" style="-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:none;width:clamp(52px,16vw,64px);height:clamp(52px,16vw,64px);border:2px solid #1a1208;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:clamp(17px,5.5vw,22px);color:#1a1208;background:rgba(255,255,255,0.94);box-shadow:0 4px 0 #1a1208;">←</div>
+    <div id="kR" role="button" tabindex="0" data-no-cursor-grow="" style="-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:none;width:clamp(52px,16vw,64px);height:clamp(52px,16vw,64px);border:2px solid #1a1208;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:clamp(17px,5.5vw,22px);color:#1a1208;background:rgba(255,255,255,0.94);box-shadow:0 4px 0 #1a1208;">→</div>
+  </div>
+  <div id="sndBtn" role="button" tabindex="0" aria-label="Ses aç/kapat" data-no-cursor-grow="" style="display:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:none;position:absolute;bottom:clamp(76px,22vw,96px);left:12px;z-index:9;width:clamp(44px,12vw,52px);height:clamp(44px,12vw,52px);border:2px solid #1a1208;border-radius:10px;align-items:center;justify-content:center;font-size:clamp(18px,5vw,22px);color:#1a1208;background:rgba(255,255,255,0.94);box-shadow:0 4px 0 #1a1208;padding-bottom:env(safe-area-inset-bottom,0);">🔊</div>
+  <a href="/inquiry" target="_top" class="arcade" style="position:absolute;top:10px;right:10px;z-index:8;background:#1a1208;color:#FDF8F3;border-radius:6px;padding:5px 9px;font-size:7px;text-decoration:none;">ORDER →</a>
+
+  <!-- START -->
+  <div id="oS" style="position:absolute;inset:0;z-index:10;background:#FDF8F3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
+    <img src="/assets/sweet-catch-wordmark.webp" alt="Four et Délices" width="360" height="240" decoding="async" style="height:clamp(38px,9vw,52px);width:auto;opacity:0.96;" />
+    <div class="arcade" style="font-size:clamp(14px,3.4vw,22px);color:#1a1208;text-align:center;line-height:1.4;animation:titleGlow 2s ease-in-out infinite;">SWEET<br>CATCH</div>
+    <div style="width:80%;height:2px;background:#1a1208;opacity:0.12;"></div>
+    <div class="arcade" style="font-size:8px;color:#888;text-align:center;line-height:2.2;">COLLECT 15 SWEETS<br>AVOID THE BOMBS<br>BOMB = -1 PT · 3 LIVES</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+      <div id="iL" style="width:36px;height:36px;border:2px solid #1a1208;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1a1208;background:#fff;box-shadow:0 3px 0 #1a1208;font-weight:bold;">←</div>
+      <div class="arcade" style="font-size:7px;color:#aaa;">MOVE</div>
+      <div id="iR" style="width:36px;height:36px;border:2px solid #1a1208;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1a1208;background:#fff;box-shadow:0 3px 0 #1a1208;font-weight:bold;">→</div>
+    </div>
+    <div class="arcade" style="font-size:9px;color:#F4A62A;animation:blink 1s infinite;margin-top:4px;">▶ PRESS START ◀</div>
+    <button onclick="startGame()" class="arcade" style="background:#1a1208;color:#FDF8F3;border:none;border-radius:6px;padding:12px 28px;font-size:10px;cursor:pointer;margin-top:2px;">START GAME</button>
+  </div>
+
+  <!-- WIN -->
+  <div id="oW" style="position:absolute;inset:0;z-index:10;background:#FDF8F3;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+    <img src="/assets/sweet-catch-wordmark.webp" alt="Four et Délices" width="360" height="240" loading="lazy" decoding="async" style="height:clamp(32px,7vw,44px);width:auto;opacity:0.94;" />
+    <div class="arcade" style="font-size:clamp(12px,3vw,18px);color:#F4A62A;text-align:center;line-height:1.5;animation:titleGlow 1.5s ease-in-out infinite;">YOU WIN!</div>
+    <div class="arcade" style="font-size:8px;color:#888;text-align:center;line-height:2.2;">SCORE: <span id="winScore">15</span> / 15<br>WELL PLAYED!</div>
+    <div style="width:70%;height:1px;background:#1a1208;opacity:0.1;"></div>
+    <div class="arcade" style="font-size:7px;color:#1a1208;text-align:center;line-height:2.2;">YOU DESERVE<br>A MASTERPIECE.</div>
+    <a href="/inquiry" target="_top" class="arcade" style="background:#1a1208;color:#FDF8F3;border-radius:6px;padding:12px 20px;font-size:8px;text-decoration:none;margin-top:4px;">ORDER YOUR CAKE →</a>
+    <button onclick="resetGame()" class="arcade" style="background:transparent;border:2px solid #c4a882;color:#1a1208;border-radius:6px;padding:8px 20px;font-size:8px;cursor:pointer;">PLAY AGAIN</button>
+    <button type="button" onclick="quitToTitle()" class="arcade" style="background:transparent;border:2px solid #bbbbbb;color:#888;border-radius:6px;padding:8px 20px;font-size:8px;cursor:pointer;margin-top:-4px;">QUIT</button>
+  </div>
+
+  <!-- GAME OVER -->
+  <div id="oD" style="position:absolute;inset:0;z-index:10;background:#FDF8F3;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
+    <div class="arcade" style="font-size:clamp(14px,3vw,22px);color:#EF4444;text-align:center;line-height:1.4;animation:blink 0.8s infinite;">GAME OVER</div>
+    <div class="arcade" style="font-size:8px;color:#888;text-align:center;line-height:2.2;">SCORE: <span id="finalSc">0</span> / 15<br>TOO MANY BOMBS!</div>
+    <div class="arcade" style="font-size:7px;color:#c4a882;">INSERT COIN TO CONTINUE</div>
+    <button onclick="resetGame()" class="arcade" style="background:#1a1208;color:#FDF8F3;border:none;border-radius:6px;padding:12px 28px;font-size:9px;cursor:pointer;margin-top:8px;">TRY AGAIN</button>
+    <button type="button" onclick="quitToTitle()" class="arcade" style="background:transparent;border:2px solid #bbbbbb;color:#888;border-radius:6px;padding:8px 20px;font-size:8px;cursor:pointer;margin-top:-2px;">QUIT</button>
+  </div>
+
+  <!-- PAUSE -->
+  <div id="oP" style="position:absolute;inset:0;z-index:10;background:rgba(253,248,243,0.96);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+    <div class="arcade" style="font-size:clamp(18px,4vw,28px);color:#1a1208;text-align:center;line-height:1.4;letter-spacing:0.08em;">PAUSE</div>
+    <div style="width:60%;height:2px;background:#1a1208;opacity:0.1;"></div>
+    <button onclick="resumeGame()" class="arcade" style="background:#1a1208;color:#FDF8F3;border:none;border-radius:6px;padding:12px 28px;font-size:10px;cursor:pointer;margin-top:4px;">▶ DEVAM ET</button>
+    <button type="button" onclick="quitToTitle()" class="arcade" style="background:transparent;border:2px solid #bbbbbb;color:#888;border-radius:6px;padding:8px 20px;font-size:8px;cursor:pointer;margin-top:-4px;">QUIT</button>
+  </div>
+
+  <!-- BULUTLAR — görünür warm grey rengi, z-index:5 (kekler altında) -->
+  <svg viewBox="0 0 680 90" xmlns="http://www.w3.org/2000/svg"
+    style="position:absolute;top:0;left:0;width:100%;height:90px;z-index:5;pointer-events:none;"
+    preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <path id="cl" d="m91.562 51.301c-1.6953-3.1406-4.6211-5.0273-8.3008-5.3711 0.89844-1.6719 0.95312-3.5156 0.14844-5.2773-1.1055-2.418-3.7305-4.2812-6.3789-4.5352-1.6641-0.15625-3.1719 0.3125-4.3828 1.3398 0.66406-8.4844-5.6484-13.512-12.152-14.637-6.707-1.1602-14.609 1.6602-16.547 10.484-1.5703-0.94922-3.6289-0.85938-5.5586 0.28516-2.0312 1.2031-3.8086 3.5781-3.6836 6.4102-1.3789-0.8125-2.9141-0.94531-4.3359-0.35156-1.3633 0.57031-2.375 1.7227-2.7617 3.0781-3.3516-2.8906-7.418-2.375-9.9258-0.55469-2.1016 1.5273-2.9648 3.7578-2.3047 5.7461-3.8125 0.27344-6.6367 2.1328-7.8086 5.1719-1.2773 3.3164-0.3125 7.5 2.2969 9.9492 2.4297 2.2773 5.8438 2.7266 9.4375 1.2539 0.89062 2.9883 3.5781 5.4609 7.0195 6.3906 3.3594 0.90625 6.6719 0.16797 9.0312-1.9688 1.2773 3.918 5.4531 7.1211 10.922 8.2891 1.2109 0.25781 2.5273 0.41016 3.8594 0.41016 3.3672 0 6.8516-0.97656 9.0742-3.6758 3.1719 2.4062 8.0156 3.0703 13.086 1.7773 4.7305-1.2109 8.4414-3.8281 9.7969-6.8828h0.042969c3.9062 0 7.1133-1.7266 9.0625-4.8906 2.2617-3.6562 2.4062-8.6562 0.36328-12.441z"/>
+      <filter id="cs"><feGaussianBlur stdDeviation="1"/></filter>
+    </defs>
+    <!-- Gölge -->
+    <g filter="url(#cs)" opacity="0.12">
+      <use href="#cl" transform="translate(-8,6)   scale(0.72,0.52)" fill="#1a1208"/>
+      <use href="#cl" transform="translate(90,4)   scale(0.98,0.70)" fill="#1a1208"/>
+      <use href="#cl" transform="translate(210,1)  scale(1.12,0.80)" fill="#1a1208"/>
+      <use href="#cl" transform="translate(358,5)  scale(0.90,0.65)" fill="#1a1208"/>
+      <use href="#cl" transform="translate(488,2)  scale(1.04,0.76)" fill="#1a1208"/>
+      <use href="#cl" transform="translate(618,7)  scale(0.82,0.60)" fill="#1a1208"/>
+    </g>
+    <!-- Bulutlar — warm grey, görünür -->
+    <use href="#cl" transform="translate(-8,2)   scale(0.72,0.52)" fill="#D8CFC4"/>
+    <use href="#cl" transform="translate(55,18)  scale(0.38,0.28)" fill="#D8CFC4"/>
+    <use href="#cl" transform="translate(90,0)   scale(0.98,0.70)" fill="#D8CFC4"/>
+    <use href="#cl" transform="translate(175,20) scale(0.42,0.32)" fill="#D8CFC4"/>
+    <use href="#cl" transform="translate(210,-3) scale(1.12,0.80)" fill="#D8CFC4"/>
+    <use href="#cl" transform="translate(322,18) scale(0.46,0.34)" fill="#D8CFC4"/>
+    <use href="#cl" transform="translate(358,1)  scale(0.90,0.65)" fill="#D8CFC4"/>
+    <use href="#cl" transform="translate(450,16) scale(0.54,0.40)" fill="#D8CFC4"/>
+    <use href="#cl" transform="translate(488,-2) scale(1.04,0.76)" fill="#D8CFC4"/>
+    <use href="#cl" transform="translate(582,19) scale(0.60,0.44)" fill="#D8CFC4"/>
+    <use href="#cl" transform="translate(618,3)  scale(0.82,0.60)" fill="#D8CFC4"/>
+    <rect x="0" y="0" width="680" height="3" fill="#FDF8F3"/>
+  </svg>
+
+</div>
+</div>
+
+<script>
+const scene=document.getElementById('scene');
+const sl=document.getElementById('sl');
+const pt=document.getElementById('pt');
+const chrEl=document.getElementById('chr');
+const scEl=document.getElementById('sc');
+const kL=document.getElementById('kL');
+const kR=document.getElementById('kR');
+const iL=document.getElementById('iL');
+const iR=document.getElementById('iR');
+const oS=document.getElementById('oS');
+const oW=document.getElementById('oW');
+const oD=document.getElementById('oD');
+const elfS=document.getElementById('es');
+const elfBody=document.getElementById('elfBody');
+const elfBeard=document.getElementById('elfBeard');
+const livesHud=document.getElementById('livesHud');
+const finalSc=document.getElementById('finalSc');
+const winScore=document.getElementById('winScore');
+let _sw=0,_sh=0;
+function _cacheSceneSize(){_sw=scene.offsetWidth||680;_sh=scene.offsetHeight||472;}
+_cacheSceneSize();
+window.addEventListener('resize',_cacheSceneSize,{passive:true});
+function sceneW(){return _sw;}
+function sceneH(){return _sh;}
+/** Elf konteyner genişliği 88px; merkez `left` ile hizalı, translateX(-50%). */
+const ELF_HALF=44;
+const CLOUD_BOTTOM=62;
+
+const DARK_COLS=['#8B1A4A','#1A5C4A','#7A3A0A','#1A3A7A','#5C1A7A','#7A1A1A','#1A5C1A','#5C4A0A'];
+const ELF_COLORS=['#E85D75','#4DB8A4','#9B6FD4','#F4A62A','#3A8FD4','#E8623A','#7BC67A','#D45A8F'];
+let lastElfColor='';
+function randomElfColor(){let c;do{c=ELF_COLORS[Math.floor(Math.random()*ELF_COLORS.length)];}while(c===lastElfColor);lastElfColor=c;elfBody.setAttribute('fill',c);elfBeard.setAttribute('fill',c);}
+
+let pulseInt=null;
+function unbindTitlePulse(){
+  if(pulseInt!=null){clearInterval(pulseInt);pulseInt=null;}
+  if(iL)iL.style.animation='';
+  if(iR)iR.style.animation='';
+}
+function bindTitlePulse(){
+  if(pulseInt!=null)return;
+  if(!oS||oS.style.display==='none')return;
+  pulseInt=setInterval(()=>{
+    iL.style.animation='keyPulseL 0.4s ease';
+    setTimeout(()=>{
+      iL.style.animation='';
+      setTimeout(()=>{
+        iR.style.animation='keyPulseR 0.4s ease';
+        setTimeout(()=>{iR.style.animation='';},400);
+      },200);
+    },400);
+  },1200);
+}
+bindTitlePulse();
+
+let elfX=sceneW()/2,score=0,lives=3,gameOn=false,paused=false,raf=0,last=0;
+const pauseBtn=document.getElementById('pauseBtn');
+const oP=document.getElementById('oP');
+const keys={l:false,r:false};
+const prefersReducedMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const lowPowerMode=prefersReducedMotion||(window.matchMedia&&window.matchMedia('(max-width: 768px)').matches);
+const items=[];
+/** Düşürme RAF ile senkron; arka planda RAF kesilince spawn birikmez (setInterval yerine). */
+let spawnAccumulator=0;
+let parentSuspended=false;
+const SPAWN_EVERY_S=lowPowerMode?0.9:0.7;
+let actx=null;
+let masterGain=null;
+let soundMuted=false;
+function getCtx(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();if(!masterGain){masterGain=actx.createGain();masterGain.gain.value=soundMuted?0:1;masterGain.connect(actx.destination);}return actx;}
+function audioOut(){getCtx();return masterGain;}
+function applySoundMute(){if(masterGain)masterGain.gain.value=soundMuted?0:1;}
+function updateSoundBtn(){const b=document.getElementById('sndBtn');if(!b)return;b.textContent=soundMuted?'🔇':'🔊';b.setAttribute('aria-pressed',soundMuted?'true':'false');}
+function toggleSoundMuted(){soundMuted=!soundMuted;applySoundMute();updateSoundBtn();}
+function playCollect(){const c=getCtx();const out=audioOut();[330,415,523,659].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(out);o.type='square';o.frequency.setValueAtTime(f,c.currentTime+i*0.04);g.gain.setValueAtTime(0,c.currentTime+i*0.04);g.gain.linearRampToValueAtTime(0.12,c.currentTime+i*0.04+0.005);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.04+0.14);o.start(c.currentTime+i*0.04);o.stop(c.currentTime+i*0.04+0.14);});}
+function playBomb(){const c=getCtx();const out=audioOut();const o=c.createOscillator(),g=c.createGain(),d=c.createWaveShaper();const cv=new Float32Array(256);for(let i=0;i<256;i++)cv[i]=i<128?-1:1;d.curve=cv;o.connect(d);d.connect(g);g.connect(out);o.type='sawtooth';o.frequency.setValueAtTime(280,c.currentTime);o.frequency.exponentialRampToValueAtTime(55,c.currentTime+0.18);g.gain.setValueAtTime(0.18,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.22);o.start();o.stop(c.currentTime+0.22);const o2=c.createOscillator(),g2=c.createGain();o2.connect(g2);g2.connect(out);o2.type='square';o2.frequency.setValueAtTime(140,c.currentTime+0.02);o2.frequency.exponentialRampToValueAtTime(28,c.currentTime+0.2);g2.gain.setValueAtTime(0.1,c.currentTime+0.02);g2.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.24);o2.start(c.currentTime+0.02);o2.stop(c.currentTime+0.24);}
+function playDeath(){const c=getCtx();const out=audioOut();[{f:523,t:0},{f:494,t:0.12},{f:466,t:0.24},{f:440,t:0.38},{f:392,t:0.54},{f:349,t:0.72}].forEach(({f,t})=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(out);o.type='square';o.frequency.setValueAtTime(f,c.currentTime+t);g.gain.setValueAtTime(0,c.currentTime+t);g.gain.linearRampToValueAtTime(0.14,c.currentTime+t+0.01);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+0.16);o.start(c.currentTime+t);o.stop(c.currentTime+t+0.16);});}
+
+// Cake paths
+const CAKE_PATHS=[
+`m14.375 48.68c-0.80469-0.21875-1.6406-0.47656-2.5-0.62891 0.14844-2.332 0.57812-7.6055 0.99609-9.9062 0.21484-1.0547 0.51172-2.1328 1.5586-2.5898 1.0742-0.46875 2.418-0.58203 3.5469-0.80078 15.586-3.0391 31.801-4.4258 47.707-4.3047 2.8203 0.019531 5.6719 0.0625 8.4922 0.26953 2.5273 0.1875 5.6719 0.26172 7.9023 1.625 1.8008 1.0977 2.4453 3.2227 2.7422 5.1836 0.40234 2.3828 0.34766 4.8633 0.40234 7.2734l0.027344 0.23438c-2.5547 0.96094-5 2.1602-7.2852 3.6211-2.25 1.4141-3.4062 2.1055-6.1289 1.2773-4.2461-1.2891-7.793-4.5977-12.523-3.9062-2.7695 0.41016-5 2.1641-7.5781 3.0625-2.4727 0.85156-5.1055 0.93359-7.6055 0.22266-2.6328-0.73828-4.6758-2.7695-7.3359-3.3398-2.8477-0.60547-5.6992 0.24609-8.3047 1.3516-2.9844 1.2617-5.75 2.6562-9.0586 2.3945-1.7227-0.13281-3.3906-0.59375-5.0547-1.0391zm30.801-20.637c2.7148-0.21094 5.4297-0.375 8.1445-0.49219 0.56641-0.58984 1.2383-1.125 1.6914-1.7305 0.96875-1.2383 1.668-2.75 1.7734-4.3242 0.21484-2.5898-1.0469-5.3125-3.5469-6.3125-0.73047-0.28906-1.5742-0.46094-2.4531-0.51953 0.19531-2.0586 0.80078-4.0859 2.2969-5.3672 0.41016-0.35156 0.46094-0.97266 0.10938-1.3828-0.35156-0.41016-0.97266-0.46094-1.3828-0.10937-1.9727 1.6836-2.7773 4.2227-2.9922 6.9062-1.3711 0.15625-2.6992 0.55859-3.7188 1.1875-2.043 1.2422-3.332 3.6406-3.2266 6.0195 0.054687 1.1836 0.48438 2.3945 1.1016 3.3984 0.61719 1.0078 1.5859 1.7461 2.2031 2.7266zm-32.711 48.156c0.082031 1.3906 0.24219 2.7891 0.34766 4.1758 3.0117-0.25781 6.0195-0.46875 9.0312-0.60938 12.043-0.54688 24.109-0.54688 36.148-0.63281 8.8945-0.066406 17.766-0.13281 26.637-0.19531 0.67578-9.5117 0.89062-20.695 0.69922-30.207-0.96875 0.39453-1.9102 0.83203-2.8477 1.3203-1.4531 0.76172-2.8203 1.7031-4.2734 2.4531-2.582 1.332-5.293 1.4336-8.0078 0.42188-4.4844-1.6758-7.6953-4.9844-12.5-3.0117-2.4727 1.0117-4.6758 2.3711-7.3633 2.7852-2.7695 0.42578-5.6719 0.1875-8.2773-0.83203-2.6328-1.0195-4.7578-3.1914-7.7422-3.0547-5.1484 0.23438-8.9023 5.0078-16.719 3.4258-2.1133-0.42578-3.8789-1.0781-5.8594-1.8242-0.29688 5.6758-0.26953 11.379 0.027344 17.055 0.16406 2.9141 0.45703 5.8164 0.69922 8.7305zm61.629 6.1992c-12.121 0.015624-24.242-0.023438-36.367 0.054687-5.9414 0.039063-11.879 0.18359-17.82 0.37891-2.9023 0.097657-5.9844 0.22656-8.8945 0.41406-1.5039 0.085937-3.0117 0.20312-4.5156 0.28906 0.34766 1.1328 0.72656 2.2656 1.1016 3.3984 0.42969 1.3398 0.80469 3.0273 2.1484 3.7422 1.2344 0.64453 2.7422 0.60938 4.0586 0.625 1.9609 0.019531 3.9258 0.039063 5.8594 0.074219 21.102 0.37891 42.121 1.6992 63.215 0.65625 1.5586-0.074219 3.332 0.046875 4.8633-0.34766 1.2891-0.34766 2.043-2.1172 2.6602-3.1875 1.1562-1.9766 2.0703-4.0781 3.0898-6.1211z`,
+`m91.672 77.289c0 0.26563-0.10547 0.51953-0.29297 0.70703s-0.44531 0.29297-0.70703 0.29297h-39.672v6.8984h13v0.003906c0.55078 0 1 0.44531 1 1 0 0.55078-0.44922 1-1 1h-27.93c-0.55078 0-1-0.44922-1-1 0-0.55469 0.44922-1 1-1h12.93v-6.8984l-39.691-0.003907c-0.55078 0-1-0.44531-1-1 0-0.55078 0.44922-1 1-1h8v-6.7578h65.41v6.7891h8c0.52344 0.027344 0.9375 0.44922 0.95312 0.96875zm-43.672-54.609c0.40234 0.64062 0.66797 1.3594 0.78125 2.1094-1.3398 0.59766-2.0547 2.0742-1.6875 3.4922 0.36719 1.4219 1.7031 2.3672 3.1641 2.2383 1.4609-0.12891 2.6172-1.293 2.7305-2.7539s-0.84375-2.793-2.2695-3.1445c-0.125-1.0703-0.49219-2.0938-1.0703-3-0.35547-0.55859-0.60938-1.1758-0.75781-1.8203-0.41016-1.0586-0.29688-2.25 0.30859-3.2109 0.57812-0.86719 1.4258-1.5195 2.4102-1.8594 0.30078-0.050781 0.55859-0.23828 0.70703-0.50391 0.14844-0.26562 0.16406-0.58594 0.046875-0.86719-0.11719-0.28125-0.35547-0.49219-0.64844-0.57812-0.29297-0.082031-0.60547-0.027344-0.85547 0.14844-1.3555 0.49609-2.5156 1.4141-3.3086 2.6211-0.91797 1.4258-1.1211 3.1953-0.55078 4.7891 0.19922 0.83203 0.53906 1.6211 1 2.3398zm34.719 36.879c-0.54297 0.59375-1.1953 1.082-1.918 1.4414-0.52344 0.25-1.0664 0.45703-1.6211 0.62109-0.59375 0.125-1.2031 0.1875-1.8086 0.1875-1.8203 0.058594-3.5859-0.62109-4.9023-1.8789-0.76562-0.86719-1.3789-1.8594-1.8203-2.9297-0.33594-1.0742-1.0039-2.0195-1.9102-2.6914-0.8125-0.43359-1.7578-0.53906-2.6484-0.29688-0.64062 0.13281-1.2656 0.32812-1.8711 0.57812-0.39844 0.15234-0.80078 0.29297-1.1992 0.42188-2.2852 0.75391-4.6719 1.1445-7.0781 1.1484-0.55469 0-1-0.44922-1-1 0-0.55078 0.44531-1 1-1 2.2031-0.007812 4.3945-0.36328 6.4883-1.0586 0.39062-0.12109 0.76172-0.26172 1.1211-0.39062 0.71094-0.29297 1.4453-0.51563 2.1992-0.67188 1.3516-0.32812 2.7812-0.14062 4 0.53125 1.2734 0.85547 2.2266 2.1055 2.7188 3.5586 0.33594 0.85547 0.80469 1.6484 1.3906 2.3516 1.332 1.1523 3.1406 1.5859 4.8516 1.1602 0.41797-0.14062 0.82812-0.30469 1.2305-0.49219 1.7148-0.85547 2.7852-2.6211 2.7578-4.5391v-12.82c-0.003907-5.1289-4.1602-9.2852-9.2891-9.2891h-46.84c-5.1289 0.003906-9.2852 4.1602-9.2891 9.2891v3.7227c0.011719 2.0781 0.96484 4.0391 2.5938 5.332 1.6289 1.2891 3.7578 1.7695 5.7852 1.3047h0.10156c1.2188-0.25 2.5117-0.44922 3.8398-0.60938 1.7031-0.19531 3.4102 0.35156 4.6875 1.5 1.2773 1.1445 2.0039 2.7852 1.9922 4.5v2.2422c0 1.0742 0.42578 2.1094 1.1875 2.8711 0.76172 0.76172 1.793 1.1875 2.8711 1.1875h0.19922c1.0781 0.007812 2.1133-0.42188 2.8711-1.1914 0.76172-0.76172 1.1875-1.793 1.1914-2.8672 0-1.7773 0.79297-3.4648 2.1602-4.6016 1.418-1.168 3.2852-1.6367 5.0898-1.2812l0.32031 0.050781c0.50391 0.085937 0.85938 0.53906 0.82812 1.0508-0.097656 0.53125-0.59766 0.89062-1.1289 0.80859l-0.33984-0.058594c-1.2383-0.25391-2.5273 0.0625-3.5 0.87109-0.93359 0.75391-1.4727 1.8906-1.4609 3.0898 0 3.3125-2.6875 6-6 6h-0.19922c-3.3164 0-6-2.6875-6-6v-2.1992c-0.015625-1.1484-0.51172-2.2383-1.3711-3-0.85547-0.76953-2-1.1367-3.1406-1-1.2695 0.14844-2.5117 0.35156-3.6719 0.57812h-0.10938 0.11328c-2.6406 0.62109-5.418 0-7.543-1.6914-0.50391-0.41406-0.96484-0.88281-1.3672-1.3984v16.578h65.438z`,
+`m25.648 47.477v4.1406h48.785v-6.5742c-0.19141 0.027343-0.39062 0.039062-0.58984 0.039062-1.2227 0-2.3398-0.5-3.1484-1.3125-0.80859-0.81641-1.3125-1.9297-1.3125-3.1523v-1.9023c0-0.33984-0.13672-0.64844-0.35547-0.87109-0.22266-0.21875-0.53125-0.35547-0.87109-0.35547h-0.21875c-0.33984 0-0.64844 0.13672-0.87109 0.35547-0.21875 0.22266-0.35547 0.53125-0.35547 0.87109v0.34375c0 1.2266-0.50391 2.3477-1.3125 3.1523-0.80859 0.80859-1.9219 1.3125-3.1523 1.3125-1.1328 0-2.1719-0.43359-2.9648-1.1367-0.80078-0.70703-1.3438-1.707-1.4688-2.8242-0.066406-0.59375-0.34766-1.1133-0.75781-1.4805-0.41406-0.36719-0.96484-0.58984-1.5664-0.58984h-0.12109c-0.64063 0-1.2266 0.26562-1.6758 0.71094-0.41797 0.4375-0.66016 1.0039-0.66016 1.6211v0.41797c0 1.2266-0.50391 2.3477-1.3125 3.1523-0.80859 0.80859-1.9258 1.3086-3.1523 1.3086-1.2227 0-2.3398-0.5-3.1484-1.3125-0.80859-0.81641-1.3125-1.9297-1.3125-3.1484v-0.41797c0-0.64062-0.26562-1.2266-0.70703-1.6719-0.44141-0.41797-1.0078-0.66016-1.6289-0.66016h-1.8945c-0.64062 0-1.2266 0.26562-1.6758 0.71094-0.42188 0.4375-0.66016 1.0039-0.66016 1.6211v3.2188c0 1.2266-0.50391 2.3438-1.3125 3.1484-0.80859 0.80859-1.9258 1.3125-3.1484 1.3125-1.2266 0-2.3477-0.5-3.1523-1.3086l-0.30859-0.34375-0.30859 0.34375c-0.80859 0.80859-1.9219 1.3125-3.1523 1.3125-0.16797 0-0.33594-0.007812-0.5-0.027343zm8.9805 49.02c-0.55078 0-1-0.44922-1-1 0-0.55078 0.44922-1 1-1h7.5977l2.4414-13.141h-28.945c-2.8125 0-5.1953-0.74219-6.9062-1.9453-1.8828-1.3242-2.9688-3.207-2.9688-5.293 0-0.55078 0.44922-1 1-1h8.0938v-13.086c0-2.3125 0.94922-4.418 2.4688-5.9414 1.5234-1.5234 3.6289-2.4727 5.9414-2.4727h0.28906v-4.8828c-0.23438-0.16016-0.44922-0.33984-0.65234-0.53906-0.80859-0.80859-1.3125-1.9219-1.3125-3.1484v-8.4766c0-1.2266 0.50391-2.3438 1.3125-3.1484 0.80859-0.80859 1.9219-1.3125 3.1484-1.3125h6.4023v-6.5039c0-2.3086 0.93359-4.4062 2.4648-5.9727 1.5703-1.5703 3.6953-2.5273 6.0352-2.5273h5.1328c-0.51562-0.74609-0.82031-1.6562-0.82031-2.6328 0-1.2773 0.52344-2.4375 1.3555-3.2734 0.83984-0.84375 1.9961-1.3633 3.2734-1.3633s2.4336 0.51953 3.2734 1.3633c0.83203 0.83594 1.3516 1.9883 1.3516 3.2734 0 0.97656-0.30469 1.8867-0.82031 2.6328h5.1328c2.3398 0 4.4688 0.95703 6.0078 2.4961 1.5391 1.5469 2.4961 3.6719 2.4961 6.0078v6.5039h6.3984c1.2266 0 2.3438 0.50391 3.1484 1.3125 0.80859 0.80859 1.3125 1.9258 1.3125 3.1484v6.0547c0 1.2266-0.50391 2.3477-1.3125 3.1523-0.17578 0.17578-0.36328 0.33594-0.5625 0.47656v7.3672h0.19922c2.3125 0 4.4219 0.94922 5.9414 2.4688 1.5234 1.5234 2.4727 3.6289 2.4727 5.9414v13.086h8.0938c0.55078 0 1 0.44922 1 1 0 2.0898-1.0859 3.9648-2.9688 5.293-1.7109 1.1992-4.0938 1.9453-6.9062 1.9453h-28.945l2.4453 13.141h7.5977c0.55078 0 1 0.44922 1 1s-0.44922 1-1 1h-30.73z`,
+`m69.25 9.6641c-1.9023 0.007813-5.1445 1.4805-7.4688 4.3906-1.8828 2.3633-3.1602 5.0547-3.9102 7.2969-2.0039-2.1992-7.0352-1.3008-8.4961 2.3438-1.4688 3.6602-0.27344 5.4727 0.83203 6.9375-0.87891-0.69531-1.7617-1.4023-2.7109-3.3906-0.09375 1.9648 0.59375 3.6641 2.1367 4.918 1.0664 0.86719 2.5352 1.5234 4.4297 1.9102 4.3398 0.89063 7.2734 0.33984 7.2734 0.33984s-4.1758 2.5312-9.1992 0.91016c-1.8477-0.59766-3.2656-1.3477-4.2305-2.2578-1.6758-1.582-1.9805-3.6523-0.77344-6.2383-2.8789 0.21484-4.6445 1.6133-5.9062 3.5312-1.168 1.7812-1.25 3.2461-0.76953 3.3516s0.69141 0.097657 0.80859 1.0938c0.042969 0.35547 0.26172 0.85156 0.62891 1.4062 1.0898 1.6367 3.5 3.793 6.5664 4.3828 0 0-5.8398 0.32031-7.7656-3.7578-0.40625-0.86328-0.64062-1.9258-0.60156-3.2305 0 0-4.1719 1.8711-3.9297 5.5977 0.40625 3.5664 5.1836 5.6328 9.7383 6.1914 3.9336 0.48438 5.5586-0.13281 7.6758 0.32813 4.9023 1.0625 6.1094-0.46875 7.875-0.46875 0.67969 0 5.0625-0.96875 6.4141-2.5547 1.3242-1.5547 1.1406-3.7109 0.20703-4.5898-1.7852 1.9375-2.4805 2.207-3.2852 2.3203 1.125-0.60156 3.1094-1.9141 3.7539-3.7852 0.76172-3.3672-2.4688-7.5508-5.4453-6.3867 0.60938-1.8633 2.5938-5.7266 4.168-7.1406 4.4492-3.9961 7.8203-2.3477 7.5078-4.2773-0.097657-0.60156-0.6875-0.89844-1.5508-0.89453zm0.19141 27.074c0.92187 1.5859 1.9805 4.8945-1.4375 6.5273-3.8555 1.8398-7.1523 1.1055-7.5195 1.2539-0.27734 0.10938-3.207 1.418-5.7148 1.3633-2.4805-0.054687-3.1875-0.33594-3.8711-1.1406-2.543 1.0078-5.8516 1.25-9.9922-0.36719-3.7734-1.4766-5.0117-4.543-5.4141-6.2188-8.3086 4.3398-17.23 8.9961-18.445 9.6172-2.3477 1.1992-2.2422 3.3398-2.2422 3.3398l-0.050781 34.984c0 3.7031 5.0078 2.7617 5.0078 2.7617s55.996-6.8789 60.688-7.7148 4.1719-5.2148 4.1719-5.2148 0.41797-24.504 0.52344-28.469c0.10547-3.9609-4.4844-6.0469-4.4844-6.0469s-5.707-2.8086-11.578-5.625z`
+];
+
+function makeCakeSVG(z){
+  const c=DARK_COLS[Math.floor(Math.random()*DARK_COLS.length)];
+  const p=CAKE_PATHS[Math.floor(Math.random()*CAKE_PATHS.length)];
+  return `<svg width="${z}" height="${z}" viewBox="-5 -10 110 135" xmlns="http://www.w3.org/2000/svg"><path fill="${c}" d="${p}"/></svg>`;
+}
+function makeBombSVG(z){return`<svg width="${z}" height="${z}" viewBox="0 0 100 100"><circle cx="50" cy="58" r="34" fill="#1a1208"/><circle cx="38" cy="46" r="8" fill="white" opacity=".18"/><rect x="47" y="16" width="6" height="20" rx="3" fill="#666"/><path d="M52 16 Q62 8 68 14" stroke="#F4A62A" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="68" cy="13" r="5" fill="#F4A62A"/></svg>`;}
+
+const MAX_ITEMS=lowPowerMode?8:12;
+const SPRITE_POOL={cakes:[],bomb:''};
+(function initSpritePool(){
+  for(var i=0;i<6;i++)SPRITE_POOL.cakes.push(makeCakeSVG(32+(i%3)*8));
+  SPRITE_POOL.bomb=makeBombSVG(40);
+})();
+function pickSprite(isBomb){return isBomb?SPRITE_POOL.bomb:SPRITE_POOL.cakes[Math.floor(Math.random()*SPRITE_POOL.cakes.length)];}
+
+function bindTouchMovePad() {
+  function wire(el, key) {
+    if (!el) return;
+    const down = function (ev) {
+      if (ev.type === 'touchstart') ev.preventDefault();
+      keys[key] = true;
+    };
+    const up = function () {
+      keys[key] = false;
+    };
+    el.addEventListener('touchstart', down, { passive: false });
+    el.addEventListener('touchend', up);
+    el.addEventListener('touchcancel', up);
+    el.addEventListener('mousedown', function (e) {
+      if (e.button === 0) keys[key] = true;
+    });
+    el.addEventListener('mouseup', up);
+    el.addEventListener('mouseleave', up);
+  }
+  wire(kL, 'l');
+  wire(kR, 'r');
+}
+
+bindTouchMovePad();
+(function bindSoundToggle(){
+  const b=document.getElementById('sndBtn');
+  if(!b)return;
+  updateSoundBtn();
+  b.addEventListener('pointerdown',function(ev){ev.preventDefault();toggleSoundMuted();},{passive:false});
+  b.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleSoundMuted();}});
+})();
+
+function updateLives(){livesHud.textContent='♥'.repeat(lives)||'';livesHud.style.color=lives===1?'#EF4444':'#E85D75';}
+function updateScore(){scEl.textContent=String(score).padStart(2,'0');}
+
+/** Bomba çarpması — can / puan / animasyon (true = game over). */
+function applyBombPenalty(){
+  playBomb();floatEmoji('!',elfX);
+  score=Math.max(0,score-1);updateScore();
+  floatText('-1',elfX+28,'#EF4444');
+  lives--;updateLives();randomElfColor();
+  chrEl.style.animation='bombHit 0.4s ease';
+  scene.style.background='#ffe8e8';
+  setTimeout(()=>{scene.style.background='#FDF8F3';if(gameOn)chrEl.style.animation='bob 0.5s ease-in-out infinite';},380);
+  return lives<=0;
+}
+
+function spawnItem(){
+  if(!gameOn||items.length>=MAX_ITEMS)return;
+  const sw=sceneW();
+  const isBomb=Math.random()<0.22;
+  const z=32+Math.floor(Math.random()*22);
+  const x=16+Math.random()*Math.max(8,sw-70);
+  const speed=55+Math.random()*42;
+  const el=document.createElement('div');
+  el.style.cssText=`position:absolute;left:${x}px;top:${CLOUD_BOTTOM}px;pointer-events:none;will-change:transform;`;
+  el.innerHTML=pickSprite(isBomb);
+  sl.appendChild(el);
+  items.push({el,cx:x+z/2,y:0,speed,isBomb,done:false});
+}
+
+function floatText(t,x,color){const p=document.createElement('div');p.className='arcade';p.style.cssText=`position:absolute;left:${x}px;bottom:155px;font-size:9px;pointer-events:none;color:${color};animation:floatUp 0.6s ease forwards;transform:translateX(-50%);`;p.textContent=t;pt.appendChild(p);setTimeout(()=>p.parentNode&&p.parentNode.removeChild(p),620);}
+function floatEmoji(e,x){const p=document.createElement('div');p.style.cssText=`position:absolute;left:${x}px;bottom:152px;font-size:20px;pointer-events:none;animation:floatUp 0.55s ease forwards;transform:translateX(-50%);`;p.textContent=e;pt.appendChild(p);setTimeout(()=>p.parentNode&&p.parentNode.removeChild(p),580);}
+
+function doDeath(){gameOn=false;paused=false;cancelAnimationFrame(raf);spawnAccumulator=0;unbindTitlePulse();pauseBtn.style.display='none';oP.style.display='none';playDeath();chrEl.style.animation='death 0.9s ease forwards';scene.style.background='#ffe0e0';setTimeout(()=>{scene.style.background='#FDF8F3';finalSc.textContent=score;oD.style.display='flex';},980);}
+
+function loop(ts){
+  if(!gameOn)return;
+  const dt=last?Math.min((ts-last)/1000,0.05):0.016;last=ts;
+  spawnAccumulator+=dt;
+  while(spawnAccumulator>=SPAWN_EVERY_S){
+    spawnAccumulator-=SPAWN_EVERY_S;
+    spawnItem();
+  }
+  const SP=280;
+  const sw=sceneW();const sh=sceneH();const pad=ELF_HALF;
+  elfX=Math.max(pad,Math.min(sw-pad,elfX));
+  if(keys.l){elfX=Math.max(pad,elfX-SP*dt);kL.style.background='#f5e6cc';}else kL.style.background='rgba(255,255,255,0.85)';
+  if(keys.r){elfX=Math.min(sw-pad,elfX+SP*dt);kR.style.background='#f5e6cc';}else kR.style.background='rgba(255,255,255,0.85)';
+  chrEl.style.left=elfX+'px';
+  if(keys.l)elfS.style.transform='scaleX(-1)';else if(keys.r)elfS.style.transform='scaleX(1)';
+  const catchY=sh-44-95;
+  for(let i=items.length-1;i>=0;i--){
+    const it=items[i];if(it.done)continue;
+    it.y+=it.speed*dt;it.el.style.transform=`translateY(${it.y}px)`;
+    if(it.y>catchY-CLOUD_BOTTOM-10&&it.y<catchY-CLOUD_BOTTOM+80&&Math.abs(it.cx-elfX)<58){
+      it.done=true;it.el.style.visibility='hidden';
+      items.splice(i,1);it.el.parentNode&&it.el.parentNode.removeChild(it.el);
+      if(it.isBomb){
+        if(applyBombPenalty()){doDeath();return;}
+      }else{
+        playCollect();floatEmoji('+',elfX);
+        score++;updateScore();
+        floatText('+1',elfX-28,'#4DB8A4');
+        if(score>=15){endGame();return;}
+      }
+    }else if(it.y>sh-CLOUD_BOTTOM+20){items.splice(i,1);it.el.parentNode&&it.el.parentNode.removeChild(it.el);}
+  }
+  raf=requestAnimationFrame(loop);
+}
+
+function pauseGame(){
+  if(!gameOn||paused)return;
+  parentSuspended=false;paused=true;cancelAnimationFrame(raf);
+  pauseBtn.textContent='▶ DEVAM';
+  oP.style.display='flex';
+}
+function resumeGame(){
+  if(!gameOn||!paused)return;
+  paused=false;last=0;
+  pauseBtn.textContent='⏸ PAUSE';
+  oP.style.display='none';
+  raf=requestAnimationFrame(loop);
+}
+function togglePause(){if(paused)resumeGame();else pauseGame();}
+
+function startGame(){
+  getCtx();unbindTitlePulse();oS.style.display='none';parentSuspended=false;
+  score=0;lives=3;elfX=sceneW()/2;gameOn=true;paused=false;last=0;spawnAccumulator=0;
+  updateScore();updateLives();randomElfColor();
+  sl.innerHTML='';pt.innerHTML='';items.length=0;
+  chrEl.style.left=elfX+'px';chrEl.style.opacity='1';
+  chrEl.style.animation='bob 0.5s ease-in-out infinite';
+  pauseBtn.style.display='inline-flex';pauseBtn.textContent='⏸ PAUSE';
+  spawnItem();spawnItem();spawnItem();
+  raf=requestAnimationFrame(loop);
+}
+function endGame(){gameOn=false;paused=false;cancelAnimationFrame(raf);spawnAccumulator=0;unbindTitlePulse();chrEl.style.animation='none';pauseBtn.style.display='none';oP.style.display='none';winScore.textContent=score;oW.style.display='flex';}
+function resetGame(){oW.style.display='none';oD.style.display='none';oP.style.display='none';sl.innerHTML='';pt.innerHTML='';items.length=0;chrEl.style.opacity='1';randomElfColor();startGame();}
+function quitToTitle(){
+  gameOn=false;paused=false;
+  parentSuspended=false;
+  cancelAnimationFrame(raf);
+  spawnAccumulator=0;
+  keys.l=keys.r=false;
+  kL.style.background='rgba(255,255,255,0.85)';
+  kR.style.background='rgba(255,255,255,0.85)';
+  oW.style.display='none';
+  oD.style.display='none';
+  oP.style.display='none';
+  pauseBtn.style.display='none';
+  oS.style.display='flex';
+  sl.innerHTML='';
+  pt.innerHTML='';
+  items.length=0;
+  score=0;
+  lives=3;
+  elfX=sceneW()/2;
+  last=0;
+  chrEl.style.left=elfX+'px';
+  chrEl.style.opacity='1';
+  chrEl.style.animation='none';
+  elfS.style.transform='scaleX(1)';
+  scene.style.background='#FDF8F3';
+  updateScore();
+  updateLives();
+  randomElfColor();
+  bindTitlePulse();
+}
+
+/** Parent page visibility — pause timers/RAF when section scrolls off-screen. */
+function suspendEmbedded(){
+  unbindTitlePulse();
+  if(gameOn&&!paused){
+    parentSuspended=true;
+    paused=true;
+    cancelAnimationFrame(raf);
+    spawnAccumulator=0;
+  }
+}
+function resumeEmbedded(){
+  if(gameOn&&parentSuspended){
+    parentSuspended=false;
+    paused=false;
+    last=0;
+    pauseBtn.textContent='⏸ PAUSE';
+    oP.style.display='none';
+    raf=requestAnimationFrame(loop);
+  }else if(!gameOn&&oS&&oS.style.display!=='none'){
+    bindTitlePulse();
+  }
+}
+window.addEventListener('message',function(e){
+  var O=(typeof window.location.origin==='string'&&window.location.origin)?window.location.origin:'*';
+  if(e.origin!==O&&O!=='*')return;
+  var d=e.data;
+  if(!d||typeof d!=='object')return;
+  if(d.type==='sweet-catch-suspend')suspendEmbedded();
+  else if(d.type==='sweet-catch-resume')resumeEmbedded();
+  else if(d.type==='sweet-catch-layout')syncTabletTouchLayout(!!d.tabletTouch);
+});
+function syncTabletTouchLayout(tablet){
+  if(tablet)document.documentElement.setAttribute('data-sweet-catch-tablet','true');
+  else document.documentElement.removeAttribute('data-sweet-catch-tablet');
+}
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden)suspendEmbedded();
+  else resumeEmbedded();
+});
+
+(function(){
+var O=(typeof window.location.origin==='string'&&window.location.origin)?window.location.origin:'*';
+var fe=window.frameElement;if(!fe)return;
+document.documentElement.setAttribute('data-sweet-catch-embedded','true');
+try{
+  var _tabMq=window.parent.matchMedia('(min-width:721px) and (pointer:coarse)');
+  function _syncTab(){syncTabletTouchLayout(_tabMq.matches);}
+  _syncTab();
+  if(typeof _tabMq.addEventListener==='function')_tabMq.addEventListener('change',_syncTab);
+  else if(typeof _tabMq.addListener==='function')_tabMq.addListener(_syncTab);
+}catch(_e){}
+/* Cache iframe rect — getBoundingClientRect on every mousemove forces a reflow.
+   Mark dirty on resize/scroll; refresh lazily on the next mousemove only. */
+var _r=fe.getBoundingClientRect();
+var _rectDirty=false;
+function _markDirty(){_rectDirty=true;}
+var _parentListeners=false;
+function _bindParentListeners(){
+  if(_parentListeners)return;
+  _parentListeners=true;
+  window.parent.addEventListener('resize',_markDirty,{passive:true});
+  window.parent.addEventListener('scroll',_markDirty,{passive:true,capture:true});
+}
+function _unbindParentListeners(){
+  if(!_parentListeners)return;
+  _parentListeners=false;
+  window.parent.removeEventListener('resize',_markDirty);
+  window.parent.removeEventListener('scroll',_markDirty,{capture:true});
+}
+var _hovering=false;
+var _last=null;
+function _onEnter(){_hovering=true;_bindParentListeners();}
+function _onLeave(){
+  _hovering=false;
+  _unbindParentListeners();
+  var msg={type:'sweet-catch-pointer-leave'};
+  if(_last){msg.vx=_last.vx;msg.vy=_last.vy;}
+  window.parent.postMessage(msg,O);
+  _pending=null;
+  if(_pmRaf){cancelAnimationFrame(_pmRaf);_pmRaf=0;}
+}
+document.addEventListener('mouseenter',_onEnter,{passive:true});
+document.addEventListener('mouseleave',_onLeave,{passive:true});
+/* Throttle postMessage to one per animation frame — high-DPI mice can fire
+   1000+ mousemove events/sec; sending that many messages bogs the main thread. */
+var _pending=null;var _pmRaf=0;
+document.addEventListener('mousemove',function(ev){
+if(!_hovering)return;
+if(_rectDirty){_r=fe.getBoundingClientRect();_rectDirty=false;}
+var vx=_r.left+ev.clientX;var vy=_r.top+ev.clientY;
+var hit=ev.target;
+while(hit&&hit.nodeType!==1)hit=hit.parentNode;
+var ok=hit&&typeof hit.closest==='function'?hit.closest('button,a[href],[role=\"button\"]'):null;
+var noGrow=hit&&typeof hit.closest==='function'?hit.closest('[data-no-cursor-grow]'):null;
+var grow=!!ok&&!noGrow;
+_last={vx:vx,vy:vy,grow:grow};
+_pending={type:'sweet-catch-pointer',vx:vx,vy:vy,grow:grow};
+if(!_pmRaf)_pmRaf=requestAnimationFrame(function(){
+  if(_pending)window.parent.postMessage(_pending,O);
+  _pending=null;_pmRaf=0;
+});
+},{passive:true});
+document.addEventListener('mousedown',function(ev){if(ev.button===0&&_hovering)window.parent.postMessage({type:'sweet-catch-click'},O);},{passive:true});
+})();
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a'){if(!paused){keys.l=true;}e.preventDefault();}
+  else if(e.key==='ArrowRight'||e.key==='d'){if(!paused){keys.r=true;}e.preventDefault();}
+  else if((e.key==='p'||e.key==='P'||e.key==='Escape')&&gameOn){e.preventDefault();togglePause();}
+});
+document.addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.l=false;if(e.key==='ArrowRight'||e.key==='d')keys.r=false;});
+</script>
+</body>
+</html>

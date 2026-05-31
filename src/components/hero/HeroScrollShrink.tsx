@@ -1,0 +1,347 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { createPortal } from "react-dom";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useSyncExternalStore,
+  type MouseEvent,
+} from "react";
+
+const noopSubscribe = () => () => {};
+
+/** SSR `false`, then client `true` — avoids setState inside an effect for portal hydration. */
+function useHydrated() {
+  return useSyncExternalStore(noopSubscribe, () => true, () => false);
+}
+import { gsap } from "gsap";
+
+import {
+  markHeroIntroSeen,
+  markSkipHeroIntro,
+  shouldSkipHeroIntro,
+} from "@/lib/skip-hero-intro";
+import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
+import { isHomePath } from "@/i18n/routing";
+
+const INTRO_HOLD_S = 1.05;
+const INTRO_HANDOFF_S = 1.65;
+
+/** Keep in sync with `.site-header { top }` in `globals.css`. */
+const HEADER_ROW_TOP_PX = 24;
+/**
+ * Negative = shift wordmark up after handoff so raster caps align with `.nav-left` / CTA
+ * (PNG padding + scale); tweak only here + in `finishIntro` / timeline together.
+ */
+const WORDMARK_REST_Y_NUDGE_PX = -26;
+
+export default function HeroScrollShrink() {
+  const pathname = usePathname();
+  const t = useTranslations();
+  const { path } = useLocale();
+  const sectionRef = useRef<HTMLElement>(null);
+  const videoShellRef = useRef<HTMLDivElement>(null);
+  const brandTitleRef = useRef<HTMLAnchorElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const introBackdropRef = useRef<HTMLDivElement>(null);
+  const skipIntroRef = useRef<(() => void) | null>(null);
+  const wordmarkInBody = useHydrated();
+
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
+    const brandTitle = brandTitleRef.current;
+    const video = videoRef.current;
+    const introBackdrop = introBackdropRef.current;
+
+    if (!wordmarkInBody || !section || !brandTitle || !video || !introBackdrop)
+      return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const skipIntro = shouldSkipHeroIntro();
+
+    const dockedWordmark = () => ({
+      position: "fixed" as const,
+      left: "50%",
+      top: HEADER_ROW_TOP_PX,
+      xPercent: -50,
+      yPercent: 0,
+      x: 0,
+      y: WORDMARK_REST_Y_NUDGE_PX,
+      scale: 0.34,
+      autoAlpha: 1,
+      zIndex: 9999,
+      transformOrigin: "50% 0%",
+      force3D: true,
+    });
+
+    const ctx = gsap.context(() => {
+      gsap.set(video, {
+        opacity: prefersReducedMotion ? 1 : 0,
+        scale: prefersReducedMotion ? 1 : 1.035,
+        filter: "contrast(1.04) saturate(1.02) brightness(0.94)",
+        force3D: true,
+      });
+
+      gsap.set(introBackdrop, {
+        opacity: prefersReducedMotion ? 0 : 1,
+      });
+
+      const finishIntro = () => {
+        markHeroIntroSeen();
+        document.documentElement.dataset.heroIntro = "done";
+        gsap.set(brandTitle, dockedWordmark());
+      };
+
+      skipIntroRef.current = () => {
+        gsap.killTweensOf([brandTitle, video, introBackdrop]);
+        gsap.set(video, { opacity: 1, scale: 1 });
+        gsap.set(introBackdrop, { opacity: 0 });
+        finishIntro();
+      };
+
+      if (prefersReducedMotion || skipIntro) {
+        gsap.set(video, { opacity: 1, scale: 1 });
+        gsap.set(introBackdrop, { opacity: 0 });
+        finishIntro();
+        return;
+      }
+
+      gsap.set(brandTitle, {
+        position: "fixed",
+        left: "50%",
+        top: "50%",
+        xPercent: -50,
+        yPercent: -50,
+        x: 0,
+        y: 0,
+        scale: 1,
+        autoAlpha: 1,
+        zIndex: 9999,
+        transformOrigin: "50% 50%",
+        force3D: true,
+      });
+
+      gsap
+        .timeline({
+          delay: INTRO_HOLD_S,
+          onComplete: finishIntro,
+        })
+        .to(
+          video,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: INTRO_HANDOFF_S,
+            ease: "power3.inOut",
+          },
+          0,
+        )
+        .to(
+          introBackdrop,
+          {
+            opacity: 0,
+            duration: INTRO_HANDOFF_S,
+            ease: "power3.inOut",
+          },
+          0,
+        )
+        .to(
+          brandTitle,
+          {
+            left: "50%",
+            top: HEADER_ROW_TOP_PX,
+            xPercent: -50,
+            yPercent: 0,
+            x: 0,
+            y: WORDMARK_REST_Y_NUDGE_PX,
+            scale: 0.34,
+            autoAlpha: 1,
+            zIndex: 9999,
+            duration: INTRO_HANDOFF_S,
+            ease: "power3.inOut",
+            transformOrigin: "50% 0%",
+            force3D: true,
+          },
+          0,
+        );
+    }, section);
+
+    return () => {
+      skipIntroRef.current = null;
+      document.documentElement.removeAttribute("data-hero-intro");
+      ctx.revert();
+    };
+  }, [wordmarkInBody]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.play().catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const shell = videoShellRef.current;
+    if (!section || !shell) return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (prefersReducedMotion) {
+      document.documentElement.dataset.headerTheme = "hero";
+      return () => {
+        document.documentElement.removeAttribute("data-header-theme");
+      };
+    }
+
+    let raf = 0;
+
+    const clamp = (v: number, min: number, max: number) =>
+      Math.min(Math.max(v, min), max);
+
+    const update = () => {
+      if (document.documentElement.dataset.heroIntro !== "done") {
+        shell.style.transform = "";
+        shell.style.borderRadius = "";
+        section.style.setProperty("--hero-shrink-progress", "0");
+        document.documentElement.dataset.headerTheme = "hero";
+        return;
+      }
+
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      const scrollable = Math.max(1, rect.height - vh);
+      const progress = clamp(-rect.top / scrollable, 0, 1);
+
+      const eased = 1 - (1 - progress) ** 3;
+      section.style.setProperty("--hero-shrink-progress", String(eased));
+      const scaleTop = 1;
+      const scaleBottom = 0.28;
+      const scale = scaleTop - eased * (scaleTop - scaleBottom);
+      const radius = eased * 30;
+      const y = eased * 38;
+
+      shell.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
+      shell.style.borderRadius = `${radius}px`;
+
+      if (scale <= 0.82) {
+        document.documentElement.dataset.headerTheme = "light";
+      } else {
+        document.documentElement.dataset.headerTheme = "hero";
+      }
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    const introObs = new MutationObserver(() => {
+      onScroll();
+    });
+    introObs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-hero-intro"],
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      introObs.disconnect();
+      document.documentElement.removeAttribute("data-header-theme");
+    };
+  }, []);
+
+  const handleWordmarkClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    markSkipHeroIntro();
+
+    if (isHomePath(pathname)) {
+      event.preventDefault();
+      skipIntroRef.current?.();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const wordmark = (
+    <Link
+      ref={brandTitleRef}
+      href={path("/")}
+      onClick={handleWordmarkClick}
+      className="brand-title hero-wordmark-fixed hero-wordmark intro-wordmark intro-wordmark--hero intro-wordmark--raster hero-wordmark-home-link select-none"
+      aria-label={t.nav.brandHome}
+    >
+      <span className="sr-only">{t.nav.brandName}</span>
+      <Image
+        src="/assets/four-et-delices-wordmark.png"
+        alt=""
+        width={3072}
+        height={2046}
+        sizes="(max-width: 900px) min(92vw, 560px), 560px"
+        loading="eager"
+        fetchPriority="high"
+        unoptimized
+        className="intro-wordmark__img"
+        aria-hidden
+      />
+    </Link>
+  );
+
+  return (
+    <>
+      <section
+        ref={sectionRef}
+        aria-label={t.home.intro}
+        className="hero-scroll-section w-full"
+      >
+        <div className="hero-sticky-stage">
+          <div className="hero-scroll-editorial" aria-hidden>
+            <span className="hero-scroll-editorial__line hero-scroll-editorial__line--1">{t.home.heroLine1}</span>
+            <span className="hero-scroll-editorial__line hero-scroll-editorial__line--2">{t.home.heroLine2}</span>
+            <span className="hero-scroll-editorial__line hero-scroll-editorial__line--3">{t.home.heroLine3}</span>
+            <span className="hero-scroll-editorial__line hero-scroll-editorial__line--4">
+              {t.home.heroLine4}
+            </span>
+          </div>
+
+          <div ref={videoShellRef} className="hero-video-shell">
+            <video
+              ref={videoRef}
+              playsInline
+              autoPlay
+              muted
+              loop
+              preload="auto"
+              controls={false}
+              className="hero-video pointer-events-none opacity-0"
+            >
+              <source src="/assets/hero-video.mp4" type="video/mp4" />
+              <source src="/assets/hero-video3.mp4" type="video/mp4" />
+            </video>
+
+            <div className="hero-video-overlay" aria-hidden />
+          </div>
+
+          <div
+            ref={introBackdropRef}
+            className="hero-intro-backdrop"
+            aria-hidden
+          />
+        </div>
+      </section>
+      {wordmarkInBody ? createPortal(wordmark, document.body) : null}
+    </>
+  );
+}
