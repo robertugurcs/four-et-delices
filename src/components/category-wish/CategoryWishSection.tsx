@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { WISH_ANCHOR_TO_CATEGORY } from "@/data/our-cakes";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 import { playGenieArrivalPuff } from "@/lib/magic-sfx";
@@ -24,42 +23,6 @@ const CANDLE_BURST_SRC = "/icons/candle.svg";
 const LAMP_SRC     = "/assets/category-wish/noun-genies-lamp-5353843.svg";
 const WORDMARK_SRC = "/assets/category-wish/four-et-delices-wordmark.png";
 const GENIE_SIZE   = 96;
-const MOBILE_DECK_MQ = "(max-width: 720px)";
-
-const clamp = (n: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, n));
-
-/** Scroll-scrubbed mobile deck — cards slide as one wheel, no sticky respawn. */
-function applyMobileDeckProgress(
-  progress: number,
-  slots: HTMLElement[],
-  cardHeight: number,
-) {
-  const n = slots.length;
-  if (n < 1 || cardHeight < 1) return;
-
-  const frontier = progress * (n - 1);
-  const enterDist = cardHeight * 0.94;
-
-  for (let i = 0; i < n; i++) {
-    const slot = slots[i];
-    const behind = Math.max(0, i - frontier);
-    const y = behind * enterDist;
-
-    gsap.set(slot, { xPercent: -50, y, force3D: true });
-
-    const tilt = slot.querySelector(
-      ".category-wish-card__tilt",
-    ) as HTMLElement | null;
-    if (!tilt) continue;
-
-    const covered = i < n - 1 ? clamp(frontier - i, 0, 1) : 0;
-    const level =
-      covered < 0.07 ? 0 : covered < 0.34 ? 1 : covered < 0.62 ? 2 : 3;
-    const next = String(level);
-    if (tilt.dataset.cwCover !== next) tilt.dataset.cwCover = next;
-  }
-}
 
 /** Touch tablets (iPad / iPad Pro) — desktop-style open fan, mobile-style tap; not phones ≤720px */
 const IPAD_FAN_MQ = "(min-width: 721px) and (pointer: coarse)";
@@ -148,8 +111,6 @@ export default function CategoryWishSection() {
   const t = useTranslations();
   const { path } = useLocale();
   const rootRef         = useRef<HTMLElement>(null);
-  const deckSpacerRef   = useRef<HTMLDivElement>(null);
-  const fanRef          = useRef<HTMLDivElement>(null);
   const lampWrapRef     = useRef<HTMLDivElement>(null);
   const proseRef        = useRef<HTMLDivElement>(null);
   const magicGenieRef   = useRef<HTMLImageElement>(null);
@@ -239,15 +200,10 @@ export default function CategoryWishSection() {
       /* initial hidden states */
       if (!narrowMobile) {
         gsap.set(lampWrap, { opacity: 0, scale: 0.4, y: -20 });
-        gsap.set(lifts, { opacity: 0, y: 44 });
-        if (proseLines.length) gsap.set(proseLines, { opacity: 0, y: 14 });
-        if (wishLine) gsap.set(wishLine, { opacity: 0, y: 18 });
-      } else {
-        /* Mobile sticky deck: avoid y-transform — causes iOS sticky jitter */
-        gsap.set(lifts, { opacity: 0 });
-        if (proseLines.length) gsap.set(proseLines, { opacity: 0, y: 14 });
-        if (wishLine) gsap.set(wishLine, { opacity: 0, y: 18 });
       }
+      gsap.set(lifts, { opacity: 0, y: 44 });
+      if (proseLines.length) gsap.set(proseLines, { opacity: 0, y: 14 });
+      if (wishLine) gsap.set(wishLine, { opacity: 0, y: 18 });
 
       const WISH_AT = 1.95;
       const GENIE_AT = 2.15;
@@ -270,26 +226,17 @@ export default function CategoryWishSection() {
         }
 
         /* 2 — Cards stagger in */
-        if (narrowMobile) {
-          tl.to(lifts, {
+        tl.to(
+          lifts,
+          {
             opacity: (_, el) => readOp(el),
-            duration: 0.55,
-            stagger: 0.08,
-            ease: "power2.out",
-          }, 0.35);
-        } else {
-          tl.to(
-            lifts,
-            {
-              opacity: (_, el) => readOp(el),
-              y: 0,
-              duration: 1.05,
-              stagger: 0.14,
-              ease: "expo.out",
-            },
-            0.72,
-          );
-        }
+            y: 0,
+            duration: narrowMobile ? 0.65 : 1.05,
+            stagger: narrowMobile ? 0.08 : 0.14,
+            ease: "expo.out",
+          },
+          narrowMobile ? 0.35 : 0.72,
+        );
 
         /* 3 — Wish CTA after cards */
         if (wishLine) {
@@ -299,12 +246,6 @@ export default function CategoryWishSection() {
             duration: 0.55,
             ease: "power3.out",
           }, narrowMobile ? 1.05 : WISH_AT);
-        }
-
-        if (narrowMobile) {
-          tl.call(() => {
-            requestAnimationFrame(() => ScrollTrigger.refresh());
-          });
         }
 
         /* Desktop/tablet — lamp + genie after cards & wish */
@@ -377,106 +318,93 @@ export default function CategoryWishSection() {
     };
   }, []);
 
-  /* ── Mobile: scroll-scrubbed 4-card wheel (replaces sticky deck — no jump / skip) ─ */
+  /* ── Mobile deck: blur lower card as the next slides over it ───────────── */
   useEffect(() => {
-    const mq = window.matchMedia(MOBILE_DECK_MQ);
-    const root = rootRef.current;
-    const spacer = deckSpacerRef.current;
-    const fan = fanRef.current;
-    if (!root || !spacer || !fan) return;
+    const mq = window.matchMedia("(max-width: 720px)");
+    let raf = 0;
 
-    gsap.registerPlugin(ScrollTrigger);
+    const clamp = (n: number, min: number, max: number) =>
+      Math.min(max, Math.max(min, n));
 
-    let ctx: gsap.Context | null = null;
-    let refreshTimer = 0;
-
-    const getSlots = () =>
-      Array.from(fan.querySelectorAll<HTMLElement>(".category-wish-fan__slot"));
-
-    const measureCardHeight = () => {
-      const card = cardButtonRefs.current[0];
-      const h = card?.getBoundingClientRect().height ?? 0;
-      return h > 48 ? h : 0;
+    const clearAllBlur = () => {
+      for (const btn of cardButtonRefs.current) {
+        const tilt = btn?.querySelector(
+          ".category-wish-card__tilt",
+        ) as HTMLElement | null;
+        if (tilt) tilt.style.removeProperty("filter");
+      }
     };
 
-    const mountScrollDeck = () => {
-      ctx?.revert();
-      ctx = null;
-
+    const updateDeckBlur = () => {
       if (!mq.matches) {
-        getSlots().forEach((slot) => gsap.set(slot, { clearProps: "transform" }));
+        clearAllBlur();
         return;
       }
 
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const slots = getSlots();
-      const cardH = measureCardHeight();
-      if (!slots.length || cardH < 1) return;
+      const maxBlurPx = 9;
+      const n = CATEGORIES.length;
 
-      ctx = gsap.context(() => {
-        if (reduced) {
-          applyMobileDeckProgress(1, slots, cardH);
-          return;
+      for (let i = 0; i < n; i++) {
+        const btn0 = cardButtonRefs.current[i];
+        const tilt = btn0?.querySelector(
+          ".category-wish-card__tilt",
+        ) as HTMLElement | null;
+        if (!btn0 || !tilt) continue;
+
+        const btn1 = cardButtonRefs.current[i + 1];
+        if (!btn1) {
+          tilt.style.removeProperty("filter");
+          continue;
         }
 
-        const scrollDistance = Math.round((CATEGORIES.length - 1) * cardH * 0.98);
-        applyMobileDeckProgress(0, slots, cardH);
+        const r0 = btn0.getBoundingClientRect();
+        const r1 = btn1.getBoundingClientRect();
+        const obscured = clamp(r0.bottom - r1.top, 0, r0.height);
+        const frac = r0.height > 0 ? obscured / r0.height : 0;
+        const blurPx = frac * maxBlurPx;
 
-        ScrollTrigger.create({
-          trigger: spacer,
-          start: "top 13%",
-          end: () => `+=${scrollDistance}`,
-          pin: fan,
-          pinSpacing: true,
-          scrub: 0.9,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            applyMobileDeckProgress(self.progress, slots, measureCardHeight() || cardH);
-          },
-        });
-      }, root);
-
-      ScrollTrigger.refresh();
-    };
-
-    const scheduleRefresh = () => {
-      window.clearTimeout(refreshTimer);
-      refreshTimer = window.setTimeout(() => {
-        mountScrollDeck();
-      }, 120);
-    };
-
-    const tryMount = (attempt = 0) => {
-      if (!mq.matches) {
-        mountScrollDeck();
-        return;
+        if (blurPx < 0.4) {
+          tilt.style.removeProperty("filter");
+        } else {
+          tilt.style.filter = `blur(${blurPx.toFixed(2)}px)`;
+        }
       }
-      if (measureCardHeight() > 0 || attempt > 24) {
-        mountScrollDeck();
-        return;
-      }
-      window.setTimeout(() => tryMount(attempt + 1), 80);
     };
 
-    tryMount();
-    window.addEventListener("resize", scheduleRefresh);
+    const onScrollOrResize = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(updateDeckBlur);
+    };
 
-    const card = cardButtonRefs.current[0];
-    const ro =
-      typeof ResizeObserver !== "undefined" && card
-        ? new ResizeObserver(scheduleRefresh)
-        : null;
-    if (card && ro) ro.observe(card);
+    const detachListeners = () => {
+      window.removeEventListener("scroll", onScrollOrResize);
+      window.removeEventListener("resize", onScrollOrResize);
+    };
 
-    mq.addEventListener("change", scheduleRefresh);
+    const attachListeners = () => {
+      window.addEventListener("scroll", onScrollOrResize, { passive: true });
+      window.addEventListener("resize", onScrollOrResize);
+    };
+
+    const syncMode = () => {
+      cancelAnimationFrame(raf);
+      detachListeners();
+      if (mq.matches) {
+        attachListeners();
+        updateDeckBlur();
+      } else {
+        clearAllBlur();
+      }
+    };
+
+    syncMode();
+    mq.addEventListener("change", syncMode);
 
     return () => {
-      window.removeEventListener("resize", scheduleRefresh);
-      mq.removeEventListener("change", scheduleRefresh);
-      window.clearTimeout(refreshTimer);
-      ro?.disconnect();
-      ctx?.revert();
+      cancelAnimationFrame(raf);
+      detachListeners();
+      mq.removeEventListener("change", syncMode);
+      clearAllBlur();
     };
   }, []);
 
@@ -638,10 +566,8 @@ export default function CategoryWishSection() {
           </div>
         </header>
 
-        {/* Cards — scroll-scrubbed wheel on phones; fan spread on desktop / iPad */}
-        <div ref={deckSpacerRef} className="category-wish-deck-spacer">
+        {/* Cards — each floating on its own cloud */}
         <div
-          ref={fanRef}
           className={`category-wish-fan${fanOpen ? " category-wish-fan--open" : ""}`}
           role="list"
           onMouseEnter={() => setFanOpen(true)}
@@ -706,7 +632,6 @@ export default function CategoryWishSection() {
               </button>
             </div>
           ))}
-        </div>
         </div>
 
         {/* Lamp lives at the bottom — magic source that fuels the cards above */}

@@ -3218,33 +3218,33 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     margin-top: clamp(1.5rem, 6vw, 2.5rem);
     padding-top: clamp(0.75rem, 3vw, 1.15rem);
   }
-  .category-wish-deck-spacer {
-    width: 100%;
-  }
-
   .category-wish-fan {
-    display: block;
-    width: min(88vw, 400px);
-    max-width: min(88vw, 400px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
     height: auto;
-    min-height: clamp(400px, 108vw, 500px);
-    margin-inline: auto;
+    min-height: 0;
     padding-top: clamp(8px, 2vw, 16px);
-    padding-bottom: clamp(32px, 8vw, 56px);
+    padding-bottom: clamp(48px, 12vw, 88px);
   }
 
-  /* Pinned stage — slots stacked; GSAP scrubs y (no sticky respawn) */
+  /* Scroll deck — lower cards stick and slide over the stack */
   .category-wish-fan__slot {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 100%;
+    position: sticky;
+    left: auto;
+    bottom: auto;
+    top: clamp(72px, 14vw, 108px);
+    width: min(88vw, 400px);
     max-width: none;
     flex: none;
-    margin: 0;
-    will-change: transform;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
+    margin-bottom: clamp(34vh, 44vw, 48vh);
+    scroll-margin-top: clamp(72px, 14vw, 108px);
+    transform: none;
+  }
+
+  .category-wish-fan__slot:last-child {
+    margin-bottom: clamp(18vh, 26vw, 34vh);
   }
 
   .category-wish-fan__slot:nth-child(1) {
@@ -3263,30 +3263,25 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     z-index: 14 !important;
   }
 
-  .category-wish-fan:not(.category-wish-fan--open) .category-wish-card__tilt,
-  .category-wish-card__tilt {
-    transform: rotate(calc(var(--cw-rot, 0deg) * 0.35));
-    transition: box-shadow 0.35s ease, border-color 0.35s ease;
-  }
-
-  .category-wish-card__lift {
-    will-change: auto;
-  }
-
-  .category-wish-card__tilt[data-cw-cover="1"] {
-    filter: blur(3px);
-  }
-
-  .category-wish-card__tilt[data-cw-cover="2"] {
-    filter: blur(6px);
-  }
-
-  .category-wish-card__tilt[data-cw-cover="3"] {
-    filter: blur(9px);
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(1),
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(2),
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(3),
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(4) {
+    transform: none;
   }
 
   .category-wish-lamp-base {
     display: none !important;
+  }
+
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-card__tilt,
+  .category-wish-card__tilt {
+    transform: rotate(calc(var(--cw-rot, 0deg) * 0.35));
+    transition:
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.45s ease,
+      filter 0.22s ease-out;
   }
 
   .category-wish-card:active .category-wish-card__tilt {
