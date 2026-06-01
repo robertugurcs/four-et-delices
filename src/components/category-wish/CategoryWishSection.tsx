@@ -168,6 +168,9 @@ export default function CategoryWishSection() {
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let io: IntersectionObserver | null = null;
+    let fallbackTimer = 0;
+    let scrollRevealAttached = false;
+    let onScrollReveal: (() => void) | null = null;
 
     const ctx = gsap.context(() => {
       const lifts     = cardLiftRefs.current.filter(Boolean) as HTMLDivElement[];
@@ -205,8 +208,8 @@ export default function CategoryWishSection() {
       const WISH_AT = 1.95;
       const GENIE_AT = 2.15;
 
-      io = new IntersectionObserver(([entry]) => {
-        if (!entry?.isIntersecting || revealedRef.current) return;
+      const runReveal = () => {
+        if (revealedRef.current) return;
         revealedRef.current = true;
 
         const tl = gsap.timeline({ defaults: { ease: "power3.out" }, smoothChildTiming: true });
@@ -216,14 +219,24 @@ export default function CategoryWishSection() {
           tl.to(proseLines, {
             opacity: 1,
             y: 0,
-            duration: 0.5,
-            stagger: 0.065,
+            duration: narrowMobile ? 0.35 : 0.5,
+            stagger: narrowMobile ? 0.04 : 0.065,
             ease: "power3.out",
           }, 0.08);
         }
 
         /* 2 — Cards stagger in */
-        tl.to(lifts, { opacity: (_, el) => readOp(el), y: 0, duration: 1.05, stagger: 0.14, ease: "expo.out" }, 0.72);
+        tl.to(
+          lifts,
+          {
+            opacity: (_, el) => readOp(el),
+            y: 0,
+            duration: narrowMobile ? 0.65 : 1.05,
+            stagger: narrowMobile ? 0.08 : 0.14,
+            ease: "expo.out",
+          },
+          narrowMobile ? 0.35 : 0.72,
+        );
 
         /* 3 — Wish CTA after cards */
         if (wishLine) {
@@ -232,7 +245,7 @@ export default function CategoryWishSection() {
             y: 0,
             duration: 0.55,
             ease: "power3.out",
-          }, WISH_AT);
+          }, narrowMobile ? 1.05 : WISH_AT);
         }
 
         /* Desktop/tablet — lamp + genie after cards & wish */
@@ -257,12 +270,52 @@ export default function CategoryWishSection() {
             }, undefined, GENIE_AT);
           }
         }
-      }, { threshold: 0.22, rootMargin: "0px 0px -8% 0px" });
+      };
+
+      const isSectionVisible = () => {
+        const rect = root.getBoundingClientRect();
+        const vh = window.innerHeight;
+        return rect.top < vh * 0.88 && rect.bottom > vh * 0.06;
+      };
+
+      const ioThreshold = narrowMobile ? 0.05 : 0.22;
+      const ioRootMargin = narrowMobile ? "0px 0px 0px 0px" : "0px 0px -8% 0px";
+
+      io = new IntersectionObserver(([entry]) => {
+        if (!entry?.isIntersecting) return;
+        runReveal();
+      }, { threshold: ioThreshold, rootMargin: ioRootMargin });
 
       io.observe(root);
+
+      /* iPhone Safari: sticky hero + scroll deck often skip IO — scroll + timeout fallbacks */
+      onScrollReveal = () => {
+        if (revealedRef.current) return;
+        if (isSectionVisible()) runReveal();
+      };
+
+      if (narrowMobile) {
+        window.addEventListener("scroll", onScrollReveal, { passive: true });
+        scrollRevealAttached = true;
+        requestAnimationFrame(() => {
+          requestAnimationFrame(onScrollReveal!);
+        });
+      }
+
+      fallbackTimer = window.setTimeout(() => {
+        if (!revealedRef.current) runReveal();
+      }, narrowMobile ? 1500 : 3500);
     }, root);
 
-    return () => { revealedRef.current = false; io?.disconnect(); ctx.revert(); };
+    return () => {
+      revealedRef.current = false;
+      io?.disconnect();
+      window.clearTimeout(fallbackTimer);
+      if (scrollRevealAttached && onScrollReveal) {
+        window.removeEventListener("scroll", onScrollReveal);
+      }
+      ctx.revert();
+    };
   }, []);
 
   /* ── Mobile deck: blur lower card as the next slides over it ───────────── */
