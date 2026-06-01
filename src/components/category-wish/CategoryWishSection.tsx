@@ -111,7 +111,6 @@ export default function CategoryWishSection() {
   const t = useTranslations();
   const { path } = useLocale();
   const rootRef         = useRef<HTMLElement>(null);
-  const fanRef          = useRef<HTMLDivElement>(null);
   const lampWrapRef     = useRef<HTMLDivElement>(null);
   const proseRef        = useRef<HTMLDivElement>(null);
   const magicGenieRef   = useRef<HTMLImageElement>(null);
@@ -333,51 +332,7 @@ export default function CategoryWishSection() {
     };
   }, []);
 
-  /* ── Mobile deck: fixed px scroll steps (vh margins jitter on iOS URL bar) ─ */
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 720px)");
-    const fan = fanRef.current;
-
-    const applyDeckMetrics = () => {
-      if (!fan || !mq.matches) {
-        fan?.style.removeProperty("--cw-deck-step");
-        fan?.style.removeProperty("--cw-stack-overlap");
-        fan?.style.removeProperty("--cw-card-h");
-        return;
-      }
-
-      const card = cardButtonRefs.current[0];
-      if (!card) return;
-
-      const height = card.getBoundingClientRect().height;
-      if (height < 1) return;
-
-      const step = Math.round(height * 0.84);
-      const overlap = Math.round(height * 0.16);
-      fan.style.setProperty("--cw-deck-step", `${step}px`);
-      fan.style.setProperty("--cw-stack-overlap", `${overlap}px`);
-      fan.style.setProperty("--cw-card-h", `${Math.round(height)}px`);
-    };
-
-    applyDeckMetrics();
-    window.addEventListener("resize", applyDeckMetrics);
-    const remeasure = window.setTimeout(applyDeckMetrics, 1600);
-
-    const card = cardButtonRefs.current[0];
-    const ro =
-      typeof ResizeObserver !== "undefined" && card
-        ? new ResizeObserver(() => applyDeckMetrics())
-        : null;
-    if (card && ro) ro.observe(card);
-
-    return () => {
-      window.removeEventListener("resize", applyDeckMetrics);
-      window.clearTimeout(remeasure);
-      ro?.disconnect();
-    };
-  }, []);
-
-  /* ── Mobile deck blur — throttled discrete levels (smooth scroll, blurred stack) ─ */
+  /* ── Mobile deck blur — throttled steps on card (stack overlap, no per-frame jitter) ─ */
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 720px)");
     let throttleTimer = 0;
@@ -426,7 +381,7 @@ export default function CategoryWishSection() {
         const obscured = clamp(r0.bottom - r1.top, 0, r0.height);
         const frac = r0.height > 0 ? obscured / r0.height : 0;
         const level =
-          frac < 0.1 ? 0 : frac < 0.38 ? 1 : frac < 0.68 ? 2 : 3;
+          frac < 0.08 ? 0 : frac < 0.32 ? 1 : frac < 0.58 ? 2 : 3;
         setCoverLevel(tilt, level);
       }
     };
@@ -623,7 +578,6 @@ export default function CategoryWishSection() {
 
         {/* Cards — each floating on its own cloud */}
         <div
-          ref={fanRef}
           className={`category-wish-fan${fanOpen ? " category-wish-fan--open" : ""}`}
           role="list"
           onMouseEnter={() => setFanOpen(true)}

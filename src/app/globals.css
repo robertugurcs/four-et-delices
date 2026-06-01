@@ -3198,10 +3198,6 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 }
 
 @media (max-width: 720px) {
-  .category-wish-section {
-    overflow-x: hidden;
-  }
-
   .category-wish-section__prose {
     max-width: 100%;
     font-size: clamp(1.02rem, 4.5vw + 0.55rem, 1.28rem);
@@ -3223,10 +3219,6 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     padding-top: clamp(0.75rem, 3vw, 1.15rem);
   }
   .category-wish-fan {
-    --cw-sticky-top: clamp(72px, 14vw, 108px);
-    --cw-deck-step: 360px;
-    --cw-stack-overlap: 64px;
-    --cw-card-h: 420px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -3234,28 +3226,28 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     height: auto;
     min-height: 0;
     padding-top: clamp(8px, 2vw, 16px);
-    padding-bottom: clamp(64px, 14vw, 96px);
+    padding-bottom: clamp(48px, 12vw, 88px);
   }
 
-  /* Scroll deck — cards share one sticky anchor (true stack, no vh jitter) */
+  /* Scroll deck — cards stick and slide over each other while scrolling */
   .category-wish-fan__slot {
     position: sticky;
-    top: var(--cw-sticky-top);
     left: auto;
     bottom: auto;
+    top: clamp(72px, 14vw, 108px);
     width: min(88vw, 400px);
     max-width: none;
     flex: none;
-    margin-bottom: calc(var(--cw-deck-step) - var(--cw-stack-overlap));
-    scroll-margin-top: var(--cw-sticky-top);
+    /* svh = stable viewport on iOS (less URL-bar jump than vh) */
+    margin-bottom: clamp(34svh, 44vw, 48svh);
+    scroll-margin-top: clamp(72px, 14vw, 108px);
     transform: none;
-    contain: layout style;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
   }
 
   .category-wish-fan__slot:last-child {
-    margin-bottom: calc(var(--cw-deck-step) * 0.42);
+    margin-bottom: clamp(18svh, 26vw, 34svh);
   }
 
   .category-wish-fan__slot:nth-child(1) {
@@ -3287,7 +3279,7 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 
   .category-wish-fan:not(.category-wish-fan--open) .category-wish-card__tilt,
   .category-wish-card__tilt {
-    transform: rotate(calc(var(--cw-rot, 0deg) * 0.28));
+    transform: rotate(calc(var(--cw-rot, 0deg) * 0.35));
     transition:
       box-shadow 0.35s ease,
       border-color 0.35s ease;
@@ -3297,24 +3289,20 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     will-change: auto;
   }
 
-  .category-wish-card__img {
-    transition: filter 0.32s ease;
+  .category-wish-card__tilt[data-cw-cover="1"] {
+    filter: blur(3px);
   }
 
-  .category-wish-card__tilt[data-cw-cover="1"] .category-wish-card__img {
-    filter: blur(2.5px);
+  .category-wish-card__tilt[data-cw-cover="2"] {
+    filter: blur(6px);
   }
 
-  .category-wish-card__tilt[data-cw-cover="2"] .category-wish-card__img {
-    filter: blur(5.5px);
-  }
-
-  .category-wish-card__tilt[data-cw-cover="3"] .category-wish-card__img {
-    filter: blur(8.5px);
+  .category-wish-card__tilt[data-cw-cover="3"] {
+    filter: blur(9px);
   }
 
   .category-wish-card:active .category-wish-card__tilt {
-    transform: rotate(calc(var(--cw-rot, 0deg) * 0.28)) translateY(4px);
+    transform: rotate(calc(var(--cw-rot, 0deg) * 0.35)) translateY(5px);
     box-shadow:
       0 12px 22px rgba(26, 18, 8, 0.07),
       0 5px 12px rgba(26, 18, 8, 0.055),
