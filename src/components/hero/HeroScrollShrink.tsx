@@ -20,6 +20,7 @@ function useHydrated() {
 }
 import { gsap } from "gsap";
 
+import { ensureVideoPlays } from "@/lib/ensure-video-plays";
 import {
   markHeroIntroSeen,
   markSkipHeroIntro,
@@ -80,11 +81,15 @@ export default function HeroScrollShrink() {
       force3D: true,
     });
 
+    const stopVideoAutoplay = ensureVideoPlays(video);
+
     const ctx = gsap.context(() => {
+      /* iOS refuses autoplay when opacity is exactly 0 — keep a trace visible to the engine.
+       * filter is applied to .hero-video-color wrapper, NOT the video element itself,
+       * because CSS filter directly on <video> can block iOS Safari autoplay. */
       gsap.set(video, {
-        opacity: prefersReducedMotion ? 1 : 0,
+        opacity: prefersReducedMotion ? 1 : 0.001,
         scale: prefersReducedMotion ? 1 : 1.035,
-        filter: "contrast(1.04) saturate(1.02) brightness(0.94)",
         force3D: true,
       });
 
@@ -173,19 +178,12 @@ export default function HeroScrollShrink() {
     }, section);
 
     return () => {
+      stopVideoAutoplay();
       skipIntroRef.current = null;
       document.documentElement.removeAttribute("data-hero-intro");
       ctx.revert();
     };
   }, [wordmarkInBody]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.muted = true;
-    video.play().catch(() => {});
-  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -317,19 +315,26 @@ export default function HeroScrollShrink() {
           </div>
 
           <div ref={videoShellRef} className="hero-video-shell">
-            <video
-              ref={videoRef}
-              playsInline
-              autoPlay
-              muted
-              loop
-              preload="auto"
-              controls={false}
-              className="hero-video pointer-events-none opacity-0"
-            >
-              <source src="/assets/hero-video.mp4" type="video/mp4" />
-              <source src="/assets/hero-video3.mp4" type="video/mp4" />
-            </video>
+            {/* Color-grade wrapper — filter here instead of on the <video> element.
+                Applying CSS filter directly to a video blocks iOS Safari autoplay. */}
+            <div className="hero-video-color">
+              <video
+                ref={videoRef}
+                playsInline
+                autoPlay
+                muted
+                loop
+                preload="auto"
+                poster="/assets/hero-poster.jpg"
+                controls={false}
+                disablePictureInPicture
+                disableRemotePlayback
+                className="hero-video pointer-events-none"
+              >
+                <source src="/assets/hero-video.mp4" type="video/mp4" />
+                <source src="/assets/hero-video3.mp4" type="video/mp4" />
+              </video>
+            </div>
 
             <div className="hero-video-overlay" aria-hidden />
           </div>

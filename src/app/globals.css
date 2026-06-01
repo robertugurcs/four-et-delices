@@ -1514,11 +1514,27 @@ html[data-header-theme="light"] .hero-scroll-editorial__line--4 {
   will-change: transform, border-radius;
 }
 
+/* Color-grade wrapper — filter applied here, NOT on the <video> element.
+ * Applying CSS filter directly to a video element blocks iOS Safari autoplay. */
+.hero-video-color {
+  position: absolute;
+  inset: 0;
+  filter: contrast(1.04) saturate(1.02) brightness(0.94);
+}
+
 .hero-scroll-section .hero-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center center;
+}
+
+.hero-scroll-section .hero-video::-webkit-media-controls {
+  display: none !important;
+}
+
+.hero-scroll-section .hero-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
 }
 
 .hero-video-overlay {
@@ -3229,7 +3245,9 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     padding-bottom: clamp(48px, 12vw, 88px);
   }
 
-  /* Scroll deck — lower cards stick and slide over the stack */
+  /* Scroll deck — lower cards stick and slide over the stack.
+   * contain:layout paint removed — it causes jitter with position:sticky on iOS Safari.
+   * Stacking context is provided by position:sticky + z-index on each slot. */
   .category-wish-fan__slot {
     position: sticky;
     left: auto;
@@ -3240,11 +3258,18 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     flex: none;
     margin-bottom: clamp(34vh, 44vw, 48vh);
     scroll-margin-top: clamp(72px, 14vw, 108px);
-    transform: none;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .category-wish-fan__slot:last-child {
-    margin-bottom: clamp(18vh, 26vw, 34vh);
+    margin-bottom: clamp(6vh, 10vw, 14vh);
+  }
+
+  .category-wish-card__lift {
+    will-change: auto;
   }
 
   .category-wish-fan__slot:nth-child(1) {
@@ -3267,7 +3292,8 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(2),
   .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(3),
   .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(4) {
-    transform: none;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 
   .category-wish-lamp-base {
@@ -3277,11 +3303,7 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   .category-wish-fan:not(.category-wish-fan--open) .category-wish-card__tilt,
   .category-wish-card__tilt {
     transform: rotate(calc(var(--cw-rot, 0deg) * 0.35));
-    transition:
-      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 0.45s ease,
-      filter 0.22s ease-out;
+    transition: box-shadow 0.35s ease, border-color 0.35s ease;
   }
 
   .category-wish-card:active .category-wish-card__tilt {
@@ -3322,7 +3344,7 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   .cw-cloud-bg {
     opacity: 1;
     transform: none;
-    pointer-events: auto;
+    pointer-events: none;
     inset: 6% -14% -38% -14%;
   }
 }
