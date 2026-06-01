@@ -269,6 +269,13 @@ export default function CategoryWishSection() {
                 .to(genieEl, { y: 0, autoAlpha: 0, scale: 0.55, filter: "blur(6px)", duration: 0.55, ease: "power2.in" });
             }, undefined, GENIE_AT);
           }
+        } else {
+          /* Sticky deck: inline transforms fight iOS compositing — drop after entrance */
+          tl.call(() => {
+            gsap.set(lifts, { clearProps: "transform" });
+            if (proseLines.length) gsap.set(proseLines, { clearProps: "transform" });
+            if (wishLine) gsap.set(wishLine, { clearProps: "transform" });
+          });
         }
       };
 
@@ -315,96 +322,6 @@ export default function CategoryWishSection() {
         window.removeEventListener("scroll", onScrollReveal);
       }
       ctx.revert();
-    };
-  }, []);
-
-  /* ── Mobile deck: blur lower card as the next slides over it ───────────── */
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 720px)");
-    let raf = 0;
-
-    const clamp = (n: number, min: number, max: number) =>
-      Math.min(max, Math.max(min, n));
-
-    const clearAllBlur = () => {
-      for (const btn of cardButtonRefs.current) {
-        const tilt = btn?.querySelector(
-          ".category-wish-card__tilt",
-        ) as HTMLElement | null;
-        if (tilt) tilt.style.removeProperty("filter");
-      }
-    };
-
-    const updateDeckBlur = () => {
-      if (!mq.matches) {
-        clearAllBlur();
-        return;
-      }
-
-      const maxBlurPx = 9;
-      const n = CATEGORIES.length;
-
-      for (let i = 0; i < n; i++) {
-        const btn0 = cardButtonRefs.current[i];
-        const tilt = btn0?.querySelector(
-          ".category-wish-card__tilt",
-        ) as HTMLElement | null;
-        if (!btn0 || !tilt) continue;
-
-        const btn1 = cardButtonRefs.current[i + 1];
-        if (!btn1) {
-          tilt.style.removeProperty("filter");
-          continue;
-        }
-
-        const r0 = btn0.getBoundingClientRect();
-        const r1 = btn1.getBoundingClientRect();
-        const obscured = clamp(r0.bottom - r1.top, 0, r0.height);
-        const frac = r0.height > 0 ? obscured / r0.height : 0;
-        const blurPx = frac * maxBlurPx;
-
-        if (blurPx < 0.4) {
-          tilt.style.removeProperty("filter");
-        } else {
-          tilt.style.filter = `blur(${blurPx.toFixed(2)}px)`;
-        }
-      }
-    };
-
-    const onScrollOrResize = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(updateDeckBlur);
-    };
-
-    const detachListeners = () => {
-      window.removeEventListener("scroll", onScrollOrResize);
-      window.removeEventListener("resize", onScrollOrResize);
-    };
-
-    const attachListeners = () => {
-      window.addEventListener("scroll", onScrollOrResize, { passive: true });
-      window.addEventListener("resize", onScrollOrResize);
-    };
-
-    const syncMode = () => {
-      cancelAnimationFrame(raf);
-      detachListeners();
-      if (mq.matches) {
-        attachListeners();
-        updateDeckBlur();
-      } else {
-        clearAllBlur();
-      }
-    };
-
-    syncMode();
-    mq.addEventListener("change", syncMode);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      detachListeners();
-      mq.removeEventListener("change", syncMode);
-      clearAllBlur();
     };
   }, []);
 
