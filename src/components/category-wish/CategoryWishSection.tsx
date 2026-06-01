@@ -111,6 +111,7 @@ export default function CategoryWishSection() {
   const t = useTranslations();
   const { path } = useLocale();
   const rootRef         = useRef<HTMLElement>(null);
+  const fanRef          = useRef<HTMLDivElement>(null);
   const lampWrapRef     = useRef<HTMLDivElement>(null);
   const proseRef        = useRef<HTMLDivElement>(null);
   const magicGenieRef   = useRef<HTMLImageElement>(null);
@@ -200,10 +201,15 @@ export default function CategoryWishSection() {
       /* initial hidden states */
       if (!narrowMobile) {
         gsap.set(lampWrap, { opacity: 0, scale: 0.4, y: -20 });
+        gsap.set(lifts, { opacity: 0, y: 44 });
+        if (proseLines.length) gsap.set(proseLines, { opacity: 0, y: 14 });
+        if (wishLine) gsap.set(wishLine, { opacity: 0, y: 18 });
+      } else {
+        /* Mobile sticky deck: avoid y-transform — causes iOS sticky jitter */
+        gsap.set(lifts, { opacity: 0 });
+        if (proseLines.length) gsap.set(proseLines, { opacity: 0, y: 14 });
+        if (wishLine) gsap.set(wishLine, { opacity: 0, y: 18 });
       }
-      gsap.set(lifts, { opacity: 0, y: 44 });
-      if (proseLines.length) gsap.set(proseLines, { opacity: 0, y: 14 });
-      if (wishLine) gsap.set(wishLine, { opacity: 0, y: 18 });
 
       const WISH_AT = 1.95;
       const GENIE_AT = 2.15;
@@ -226,17 +232,26 @@ export default function CategoryWishSection() {
         }
 
         /* 2 — Cards stagger in */
-        tl.to(
-          lifts,
-          {
+        if (narrowMobile) {
+          tl.to(lifts, {
             opacity: (_, el) => readOp(el),
-            y: 0,
-            duration: narrowMobile ? 0.65 : 1.05,
-            stagger: narrowMobile ? 0.08 : 0.14,
-            ease: "expo.out",
-          },
-          narrowMobile ? 0.35 : 0.72,
-        );
+            duration: 0.55,
+            stagger: 0.08,
+            ease: "power2.out",
+          }, 0.35);
+        } else {
+          tl.to(
+            lifts,
+            {
+              opacity: (_, el) => readOp(el),
+              y: 0,
+              duration: 1.05,
+              stagger: 0.14,
+              ease: "expo.out",
+            },
+            0.72,
+          );
+        }
 
         /* 3 — Wish CTA after cards */
         if (wishLine) {
@@ -269,13 +284,6 @@ export default function CategoryWishSection() {
                 .to(genieEl, { y: 0, autoAlpha: 0, scale: 0.55, filter: "blur(6px)", duration: 0.55, ease: "power2.in" });
             }, undefined, GENIE_AT);
           }
-        } else {
-          /* Sticky deck: inline transforms fight iOS compositing — drop after entrance */
-          tl.call(() => {
-            gsap.set(lifts, { clearProps: "transform" });
-            if (proseLines.length) gsap.set(proseLines, { clearProps: "transform" });
-            if (wishLine) gsap.set(wishLine, { clearProps: "transform" });
-          });
         }
       };
 
@@ -322,6 +330,136 @@ export default function CategoryWishSection() {
         window.removeEventListener("scroll", onScrollReveal);
       }
       ctx.revert();
+    };
+  }, []);
+
+  /* ── Mobile deck: fixed px scroll steps (vh margins jitter on iOS URL bar) ─ */
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 720px)");
+    const fan = fanRef.current;
+
+    const applyDeckMetrics = () => {
+      if (!fan || !mq.matches) {
+        fan?.style.removeProperty("--cw-deck-step");
+        fan?.style.removeProperty("--cw-stack-overlap");
+        fan?.style.removeProperty("--cw-card-h");
+        return;
+      }
+
+      const card = cardButtonRefs.current[0];
+      if (!card) return;
+
+      const height = card.getBoundingClientRect().height;
+      if (height < 1) return;
+
+      const step = Math.round(height * 0.84);
+      const overlap = Math.round(height * 0.16);
+      fan.style.setProperty("--cw-deck-step", `${step}px`);
+      fan.style.setProperty("--cw-stack-overlap", `${overlap}px`);
+      fan.style.setProperty("--cw-card-h", `${Math.round(height)}px`);
+    };
+
+    applyDeckMetrics();
+    window.addEventListener("resize", applyDeckMetrics);
+    const remeasure = window.setTimeout(applyDeckMetrics, 1600);
+
+    const card = cardButtonRefs.current[0];
+    const ro =
+      typeof ResizeObserver !== "undefined" && card
+        ? new ResizeObserver(() => applyDeckMetrics())
+        : null;
+    if (card && ro) ro.observe(card);
+
+    return () => {
+      window.removeEventListener("resize", applyDeckMetrics);
+      window.clearTimeout(remeasure);
+      ro?.disconnect();
+    };
+  }, []);
+
+  /* ── Mobile deck blur — throttled discrete levels (smooth scroll, blurred stack) ─ */
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 720px)");
+    let throttleTimer = 0;
+    let raf = 0;
+
+    const clamp = (n: number, min: number, max: number) =>
+      Math.min(max, Math.max(min, n));
+
+    const setCoverLevel = (tilt: HTMLElement | null, level: number) => {
+      if (!tilt) return;
+      const next = String(level);
+      if (tilt.dataset.cwCover !== next) tilt.dataset.cwCover = next;
+    };
+
+    const clearAllCover = () => {
+      for (const btn of cardButtonRefs.current) {
+        const tilt = btn?.querySelector(
+          ".category-wish-card__tilt",
+        ) as HTMLElement | null;
+        if (tilt) tilt.removeAttribute("data-cw-cover");
+      }
+    };
+
+    const updateDeckBlur = () => {
+      if (!mq.matches) {
+        clearAllCover();
+        return;
+      }
+
+      const n = CATEGORIES.length;
+      for (let i = 0; i < n; i++) {
+        const btn0 = cardButtonRefs.current[i];
+        const tilt = btn0?.querySelector(
+          ".category-wish-card__tilt",
+        ) as HTMLElement | null;
+        const btn1 = cardButtonRefs.current[i + 1];
+        if (!btn0 || !tilt) continue;
+
+        if (!btn1) {
+          setCoverLevel(tilt, 0);
+          continue;
+        }
+
+        const r0 = btn0.getBoundingClientRect();
+        const r1 = btn1.getBoundingClientRect();
+        const obscured = clamp(r0.bottom - r1.top, 0, r0.height);
+        const frac = r0.height > 0 ? obscured / r0.height : 0;
+        const level =
+          frac < 0.1 ? 0 : frac < 0.38 ? 1 : frac < 0.68 ? 2 : 3;
+        setCoverLevel(tilt, level);
+      }
+    };
+
+    const scheduleUpdate = () => {
+      if (throttleTimer) return;
+      throttleTimer = window.setTimeout(() => {
+        throttleTimer = 0;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(updateDeckBlur);
+      }, 100);
+    };
+
+    const syncMode = () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", scheduleUpdate);
+      if (mq.matches) {
+        window.addEventListener("scroll", scheduleUpdate, { passive: true });
+        updateDeckBlur();
+      } else {
+        clearAllCover();
+      }
+    };
+
+    syncMode();
+    mq.addEventListener("change", syncMode);
+
+    return () => {
+      window.removeEventListener("scroll", scheduleUpdate);
+      mq.removeEventListener("change", syncMode);
+      if (throttleTimer) window.clearTimeout(throttleTimer);
+      cancelAnimationFrame(raf);
+      clearAllCover();
     };
   }, []);
 
@@ -485,6 +623,7 @@ export default function CategoryWishSection() {
 
         {/* Cards — each floating on its own cloud */}
         <div
+          ref={fanRef}
           className={`category-wish-fan${fanOpen ? " category-wish-fan--open" : ""}`}
           role="list"
           onMouseEnter={() => setFanOpen(true)}
