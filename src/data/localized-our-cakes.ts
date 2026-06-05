@@ -60,9 +60,9 @@ export function getLocalizedCakeCatalog(dictionary: Dictionary) {
         description: item.description,
         tags: tagList,
         angles: {
-          angle1: `${dir}/angle-1.png`,
-          angle2: `${dir}/angle-2.png`,
-          angle3: `${dir}/angle-3.png`,
+          angle1: `${dir}/angle-1.webp`,
+          angle2: `${dir}/angle-2.webp`,
+          angle3: `${dir}/angle-3.webp`,
         },
       };
     });

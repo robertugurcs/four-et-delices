@@ -8,9 +8,9 @@ import { SiteHeaderOrderLink } from "@/components/site-header/SiteHeaderOrderLin
 import { SiteHeader } from "@/components/site-header/SiteHeader";
 import { useTranslations } from "@/i18n/LocaleProvider";
 
-const PORTRAIT_SRC = "/assets/meet-khoudia/mobile-black-khoudia.png";
-const STUDIO_SRC = "/assets/meet-khoudia/mobile-pink.png";
-const WEDDING_CAKE_SRC = "/assets/extract/W-2-1.png";
+const PORTRAIT_SRC = "/assets/meet-khoudia/mobile-black-khoudia.webp";
+const STUDIO_SRC = "/assets/meet-khoudia/mobile-pink.webp";
+const WEDDING_CAKE_SRC = "/assets/extract/W-2-1.webp";
 
 function PortraitFrame({
   src,

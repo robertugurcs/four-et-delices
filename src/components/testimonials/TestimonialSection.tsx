@@ -12,8 +12,8 @@ const jost = Jost({
 
 const TESTIMONIAL_NAMES = ["Mrs. Samb", "BB Binta"] as const;
 
-const LEFT_SRC = "/assets/testimonials/left.png";
-const RIGHT_SRC = "/assets/testimonials/right.png";
+const LEFT_SRC = "/assets/testimonials/left.webp";
+const RIGHT_SRC = "/assets/testimonials/right.webp";
 
 /* Pasted from testimonial-section.html — do not change */
 const START_OFFS = 116;

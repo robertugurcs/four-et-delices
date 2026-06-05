@@ -16,22 +16,22 @@ const CURSOR_TIP_OFFSET_X = 10;
 const CURSOR_TIP_OFFSET_Y = 14;
 
 const IMAGES = [
-  "/assets/reveal/B-1-1.png",
-  "/assets/reveal/B-2-1.png",
-  "/assets/reveal/B-3-1.png",
-  "/assets/reveal/B-4-1.png",
-  "/assets/reveal/C-1-1.png",
-  "/assets/reveal/C-2-1.png",
-  "/assets/reveal/C-3-1.png",
-  "/assets/reveal/C-4-1.png",
-  "/assets/reveal/K-1-1.png",
-  "/assets/reveal/K-2-1.png",
-  "/assets/reveal/K-3-1.png",
-  "/assets/reveal/K-4-1.png",
-  "/assets/reveal/W-1-1.png",
-  "/assets/reveal/W-2-1.png",
-  "/assets/reveal/W-3-1.png",
-  "/assets/reveal/W-4-1.png",
+  "/assets/reveal/B-1-1.webp",
+  "/assets/reveal/B-2-1.webp",
+  "/assets/reveal/B-3-1.webp",
+  "/assets/reveal/B-4-1.webp",
+  "/assets/reveal/C-1-1.webp",
+  "/assets/reveal/C-2-1.webp",
+  "/assets/reveal/C-3-1.webp",
+  "/assets/reveal/C-4-1.webp",
+  "/assets/reveal/K-1-1.webp",
+  "/assets/reveal/K-2-1.webp",
+  "/assets/reveal/K-3-1.webp",
+  "/assets/reveal/K-4-1.webp",
+  "/assets/reveal/W-1-1.webp",
+  "/assets/reveal/W-2-1.webp",
+  "/assets/reveal/W-3-1.webp",
+  "/assets/reveal/W-4-1.webp",
 ];
 
 type TrailImage = {

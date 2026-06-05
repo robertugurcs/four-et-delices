@@ -5,17 +5,17 @@ import Image from "next/image";
 import { KhoudiaStoryBlobButton } from "@/components/khoudia/KhoudiaStoryBlobButton";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 
-const DESKTOP_STORY_PNG_SRC = "/assets/khoudia/khoudia-desktop-english.png";
+const DESKTOP_STORY_PNG_SRC = "/assets/khoudia/khoudia-desktop-english.webp";
 /** Exported artboard size — keeps aspect ratio stable while scaling. */
 const DESKTOP_STORY_NATURAL_W = 1672;
 const DESKTOP_STORY_NATURAL_H = 941;
 
-const MOBILE_STORY_PNG_SRC = "/assets/khoudia/khoudia-mobil-english.png";
+const MOBILE_STORY_PNG_SRC = "/assets/khoudia/khoudia-mobil-english.webp";
 const MOBILE_STORY_NATURAL_W = 923;
 const MOBILE_STORY_NATURAL_H = 540;
 
-const DESKTOP_HERO_SRC = "/assets/khoudia/hd-version.png";
-const MOBILE_HERO_SRC = "/assets/khoudia/khoudia-mobile.png";
+const DESKTOP_HERO_SRC = "/assets/khoudia/hd-version.webp";
+const MOBILE_HERO_SRC = "/assets/khoudia/khoudia-mobile.webp";
 
 /**
  * Meet Khoudia band: desktop uses wide panorama (`hd-version.png`);

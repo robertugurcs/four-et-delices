@@ -16,12 +16,12 @@ import { playGenieArrivalPuff } from "@/lib/magic-sfx";
 type CategoryMood = "birthdays" | "weddings" | "kids" | "corporate";
 
 /** Chibi genie (PNG, transparent) — Aladdin-style lamp blue tones */
-const GENIE_CHIBI_SRC = "/assets/category-wish/genie-chibi.png";
+const GENIE_CHIBI_SRC = "/assets/category-wish/genie-chibi.webp";
 const CAKE_BURST_SRC  = "/icons/cake-layer.svg";
 const CANDLE_BURST_SRC = "/icons/candle.svg";
 
 const LAMP_SRC     = "/assets/category-wish/noun-genies-lamp-5353843.svg";
-const WORDMARK_SRC = "/assets/category-wish/four-et-delices-wordmark.png";
+const WORDMARK_SRC = "/assets/category-wish/four-et-delices-wordmark.webp";
 const GENIE_SIZE   = 96;
 
 /** Touch tablets (iPad / iPad Pro) — desktop-style open fan, mobile-style tap; not phones ≤720px */
@@ -36,10 +36,10 @@ type Category = {
 };
 
 const CATEGORIES: Category[] = [
-  { anchor: "kids",      title: "Kids",      image: "/assets/category-wish/K-1-1.png", mood: "kids",      fanRotDeg: -3.5 },
-  { anchor: "weddings",  title: "Wedding",   image: "/assets/category-wish/W-2-1.png", mood: "weddings",  fanRotDeg: -1.2 },
-  { anchor: "birthdays", title: "Birthday",  image: "/assets/category-wish/B-4-1.png", mood: "birthdays", fanRotDeg:  1.2 },
-  { anchor: "corporate", title: "Corporate", image: "/assets/category-wish/C-4-1.png", mood: "corporate", fanRotDeg:  3.5 },
+  { anchor: "kids",      title: "Kids",      image: "/assets/category-wish/K-1-1.webp", mood: "kids",      fanRotDeg: -3.5 },
+  { anchor: "weddings",  title: "Wedding",   image: "/assets/category-wish/W-2-1.webp", mood: "weddings",  fanRotDeg: -1.2 },
+  { anchor: "birthdays", title: "Birthday",  image: "/assets/category-wish/B-4-1.webp", mood: "birthdays", fanRotDeg:  1.2 },
+  { anchor: "corporate", title: "Corporate", image: "/assets/category-wish/C-4-1.webp", mood: "corporate", fanRotDeg:  3.5 },
 ];
 
 /** Cloud path from noun-cloud-8289424.svg — viewBox "-5 -10 110 135" */
@@ -200,8 +200,11 @@ export default function CategoryWishSection() {
       /* initial hidden states */
       if (!narrowMobile) {
         gsap.set(lampWrap, { opacity: 0, scale: 0.4, y: -20 });
+        gsap.set(lifts, { opacity: 0, y: 44 });
+      } else {
+        /* Mobile sticky deck: y-transform on cards fights iOS sticky — opacity only */
+        gsap.set(lifts, { opacity: 0, clearProps: "transform" });
       }
-      gsap.set(lifts, { opacity: 0, y: 44 });
       if (proseLines.length) gsap.set(proseLines, { opacity: 0, y: 14 });
       if (wishLine) gsap.set(wishLine, { opacity: 0, y: 18 });
 
@@ -226,17 +229,30 @@ export default function CategoryWishSection() {
         }
 
         /* 2 — Cards stagger in */
-        tl.to(
-          lifts,
-          {
-            opacity: (_, el) => readOp(el),
-            y: 0,
-            duration: narrowMobile ? 0.65 : 1.05,
-            stagger: narrowMobile ? 0.08 : 0.14,
-            ease: "expo.out",
-          },
-          narrowMobile ? 0.35 : 0.72,
-        );
+        if (narrowMobile) {
+          tl.to(
+            lifts,
+            {
+              opacity: (_, el) => readOp(el),
+              duration: 0.55,
+              stagger: 0.08,
+              ease: "power2.out",
+            },
+            0.35,
+          );
+        } else {
+          tl.to(
+            lifts,
+            {
+              opacity: (_, el) => readOp(el),
+              y: 0,
+              duration: 1.05,
+              stagger: 0.14,
+              ease: "expo.out",
+            },
+            0.72,
+          );
+        }
 
         /* 3 — Wish CTA after cards */
         if (wishLine) {
@@ -318,13 +334,9 @@ export default function CategoryWishSection() {
     };
   }, []);
 
-  /* ── Mobile deck: blur lower card as the next slides over it ───────────── */
+  /* ── Mobile deck: scroll blur disabled on phones (filter + sticky = iOS jitter) ─ */
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 720px)");
-    let raf = 0;
-
-    const clamp = (n: number, min: number, max: number) =>
-      Math.min(max, Math.max(min, n));
 
     const clearAllBlur = () => {
       for (const btn of cardButtonRefs.current) {
@@ -335,75 +347,11 @@ export default function CategoryWishSection() {
       }
     };
 
-    const updateDeckBlur = () => {
-      if (!mq.matches) {
-        clearAllBlur();
-        return;
-      }
-
-      const maxBlurPx = 9;
-      const n = CATEGORIES.length;
-
-      for (let i = 0; i < n; i++) {
-        const btn0 = cardButtonRefs.current[i];
-        const tilt = btn0?.querySelector(
-          ".category-wish-card__tilt",
-        ) as HTMLElement | null;
-        if (!btn0 || !tilt) continue;
-
-        const btn1 = cardButtonRefs.current[i + 1];
-        if (!btn1) {
-          tilt.style.removeProperty("filter");
-          continue;
-        }
-
-        const r0 = btn0.getBoundingClientRect();
-        const r1 = btn1.getBoundingClientRect();
-        const obscured = clamp(r0.bottom - r1.top, 0, r0.height);
-        const frac = r0.height > 0 ? obscured / r0.height : 0;
-        const blurPx = frac * maxBlurPx;
-
-        if (blurPx < 0.4) {
-          tilt.style.removeProperty("filter");
-        } else {
-          tilt.style.filter = `blur(${blurPx.toFixed(2)}px)`;
-        }
-      }
-    };
-
-    const onScrollOrResize = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(updateDeckBlur);
-    };
-
-    const detachListeners = () => {
-      window.removeEventListener("scroll", onScrollOrResize);
-      window.removeEventListener("resize", onScrollOrResize);
-    };
-
-    const attachListeners = () => {
-      window.addEventListener("scroll", onScrollOrResize, { passive: true });
-      window.addEventListener("resize", onScrollOrResize);
-    };
-
-    const syncMode = () => {
-      cancelAnimationFrame(raf);
-      detachListeners();
-      if (mq.matches) {
-        attachListeners();
-        updateDeckBlur();
-      } else {
-        clearAllBlur();
-      }
-    };
-
-    syncMode();
-    mq.addEventListener("change", syncMode);
+    clearAllBlur();
+    mq.addEventListener("change", clearAllBlur);
 
     return () => {
-      cancelAnimationFrame(raf);
-      detachListeners();
-      mq.removeEventListener("change", syncMode);
+      mq.removeEventListener("change", clearAllBlur);
       clearAllBlur();
     };
   }, []);

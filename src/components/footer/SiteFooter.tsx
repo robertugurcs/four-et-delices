@@ -12,7 +12,7 @@ const FOOTER_CONTACT_EMAIL = "dakar.four.et.delices@gmail.com";
 const FOOTER_PHONE_DISPLAY = "+221 77 728 96 02";
 const FOOTER_PHONE_TEL = "tel:+221777289602";
 const FOOTER_TIKTOK_HREF = "https://www.tiktok.com/@fouretdelices";
-const FOOTER_WORDMARK_SRC = "/assets/four-et-delices-wordmark.png";
+const FOOTER_WORDMARK_SRC = "/assets/four-et-delices-wordmark.webp";
 
 /**
  * Compact brand footer — wordmark raster, nav, contact, socials.

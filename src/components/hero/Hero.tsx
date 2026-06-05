@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
+import { ensureVideoPlays } from "@/lib/ensure-video-plays";
+
 type HeroProps = {
   /** Portrait footage: vertical framing via `globals.css` (.hero-video--portrait-crop, e.g. center 45%). */
   portraitCrop?: boolean;
@@ -13,8 +15,7 @@ export default function Hero({ portraitCrop }: HeroProps = {}) {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    video.muted = true;
-    video.play().catch(() => {});
+    return ensureVideoPlays(video);
   }, []);
 
   return (
@@ -34,7 +35,6 @@ export default function Hero({ portraitCrop }: HeroProps = {}) {
         className={`hero-video absolute inset-0 ${portraitCrop ? "hero-video--portrait-crop" : ""}`}
       >
         <source src="/assets/hero-video.mp4" type="video/mp4" />
-        <source src="/assets/hero-video3.mp4" type="video/mp4" />
       </video>
 
       <div

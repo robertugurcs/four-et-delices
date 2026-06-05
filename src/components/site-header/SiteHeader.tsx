@@ -21,7 +21,7 @@ import { SiteHeaderOrderLink } from "./SiteHeaderOrderLink";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 import { isHomePath, stripLocaleFromPathname } from "@/i18n/routing";
 
-const HEADER_WORDMARK_SRC = "/assets/four-et-delices-wordmark.png";
+const HEADER_WORDMARK_SRC = "/assets/four-et-delices-wordmark.webp";
 const noopSubscribe = () => () => {};
 
 /** SSR `false`, then client `true` — portal target must exist after hydration. */
@@ -49,9 +49,13 @@ export function SiteHeader() {
   const nestedScrollTops = useRef(new WeakMap<EventTarget, number>());
 
   useLayoutEffect(() => {
-    if (!isHomePath(pathname)) {
-      document.documentElement.dataset.headerTheme = "light";
-    }
+    // Deterministic theme per route so client navigation never leaves the
+    // header without a theme (which would flash default/unstyled colors).
+    // Interior pages: champagne "light". Home loads at the top over the hero
+    // video, so default to "hero"; HeroScrollShrink takes over on scroll.
+    document.documentElement.dataset.headerTheme = isHomePath(pathname)
+      ? "hero"
+      : "light";
   }, [pathname]);
 
   useEffect(() => {

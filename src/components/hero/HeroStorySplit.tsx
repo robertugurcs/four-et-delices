@@ -125,7 +125,7 @@ export function HeroStorySplit() {
           poster="/assets/hero-poster.jpg"
           className="story-split__video"
         >
-          <source src="/assets/hero-video3.mp4" type="video/mp4" />
+          <source src="/assets/hero-video.mp4" type="video/mp4" />
         </video>
       </div>
     </section>

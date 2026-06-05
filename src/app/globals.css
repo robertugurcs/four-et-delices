@@ -3005,6 +3005,10 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 .category-wish-card__lift {
   transform-origin: bottom center;
   will-change: transform, opacity, filter;
+  /* Promote to a stable compositor layer so GSAP entrance + image decode do
+     not cause sub-pixel jitter / repaints on the cards. */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .category-wish-card__tilt {
@@ -3101,8 +3105,16 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   position: relative;
   aspect-ratio: 4 / 5;
   width: 100%;
+  /* Isolate image painting on its own layer; keeps decode from jittering the
+     surrounding card during the entrance animation. */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
-.category-wish-card__img { object-fit: cover; }
+.category-wish-card__img {
+  object-fit: cover;
+  transform: translateZ(0);
+}
 
 .category-wish-card__scrim {
   position: absolute; inset: 0;

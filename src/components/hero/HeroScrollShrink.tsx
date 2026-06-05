@@ -195,9 +195,10 @@ export default function HeroScrollShrink() {
     ).matches;
     if (prefersReducedMotion) {
       document.documentElement.dataset.headerTheme = "hero";
-      return () => {
-        document.documentElement.removeAttribute("data-header-theme");
-      };
+      // Note: do not remove data-header-theme on unmount. SiteHeader owns the
+      // deterministic per-route value; clearing it here causes an unstyled
+      // header flash during client navigation away from home.
+      return;
     }
 
     let raf = 0;
@@ -259,7 +260,8 @@ export default function HeroScrollShrink() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       introObs.disconnect();
-      document.documentElement.removeAttribute("data-header-theme");
+      // Keep data-header-theme intact on unmount; SiteHeader sets the correct
+      // per-route value, avoiding an unstyled header flash on navigation.
     };
   }, []);
 
@@ -283,7 +285,7 @@ export default function HeroScrollShrink() {
     >
       <span className="sr-only">{t.nav.brandName}</span>
       <Image
-        src="/assets/four-et-delices-wordmark.png"
+        src="/assets/four-et-delices-wordmark.webp"
         alt=""
         width={3072}
         height={2046}
@@ -332,7 +334,6 @@ export default function HeroScrollShrink() {
                 className="hero-video pointer-events-none"
               >
                 <source src="/assets/hero-video.mp4" type="video/mp4" />
-                <source src="/assets/hero-video3.mp4" type="video/mp4" />
               </video>
             </div>
 
