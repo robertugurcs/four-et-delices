@@ -4579,6 +4579,11 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 /* --------------------------------------------------------------------------
  * Site footer — compact raspberry-rose bar (wordmark · nav · socials · meta)
  * -------------------------------------------------------------------------- */
+html[data-route-transition="true"] .locale-page-slot {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 html[data-route-transition="true"] .site-footer {
   visibility: hidden;
   pointer-events: none;
@@ -5235,13 +5240,25 @@ html[data-our-cakes-lightbox="open"] .lang-switcher {
     clamp(10px, 2.5vw, 14px);
 }
 
-.locale-route-loading {
+.locale-page-slot {
+  display: block;
+  width: 100%;
+}
+
+.locale-route-loading-screen {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  pointer-events: none;
+}
+
+.locale-route-loading-screen .locale-route-loading__bar {
   position: fixed;
   inset: 0 auto auto 0;
   z-index: 10200;
   width: 100%;
   height: 3px;
-  pointer-events: none;
 }
 
 .locale-route-loading__bar {

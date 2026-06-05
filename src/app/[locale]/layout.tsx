@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { SiteFooter } from "@/components/footer/SiteFooter";
 import { LanguageSwitcher } from "@/components/navigation/LanguageSwitcher";
+import { LocalePageSlot } from "@/components/navigation/LocalePageSlot";
 import { NavigationScrollGuard } from "@/components/navigation/NavigationScrollGuard";
 import { SetHtmlLang } from "@/components/navigation/SetHtmlLang";
 import { isValidLocale, locales, type Locale } from "@/i18n/config";
@@ -34,7 +35,7 @@ export default async function LocaleLayout({
     <LocaleProvider locale={locale} dictionary={dictionary}>
       <SetHtmlLang locale={locale} />
       <NavigationScrollGuard />
-      {children}
+      <LocalePageSlot>{children}</LocalePageSlot>
       <SiteFooter />
       <LanguageSwitcher placement="fixed" />
     </LocaleProvider>

@@ -118,12 +118,17 @@ export function CustomCursor() {
   }, [paintAtTarget]);
 
   const setPointer = useCallback(
-    (x: number, y: number) => {
+    (x: number, y: number, immediate = false) => {
       targetRef.current = { x, y };
       syncedRef.current = true;
+      if (immediate) {
+        cancelFrame();
+        paintAtTarget();
+        return;
+      }
       schedulePaint();
     },
-    [schedulePaint],
+    [cancelFrame, paintAtTarget, schedulePaint],
   );
 
   const resolveHover = useCallback((hit: Element | null) => {
@@ -154,10 +159,11 @@ export function CustomCursor() {
   }, [cursorUi]);
 
   useLayoutEffect(() => {
-    if (!active) return;
+    if (!active || iframeRelayRef.current) return;
     const schedule = () => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
+          if (iframeRelayRef.current) return;
           if (cursorUi.mode === "snap") measureSnapHotspot();
           else measureKnifeHotspot();
           paintAtTarget();
@@ -280,7 +286,7 @@ export function CustomCursor() {
         iframeRelayRef.current = true;
         const nx = typeof d.vx === "number" ? d.vx : targetRef.current.x;
         const ny = typeof d.vy === "number" ? d.vy : targetRef.current.y;
-        setPointer(nx, ny);
+        setPointer(nx, ny, true);
         /* Skip grow inside iframe — hover scale remeasures hotspot and jumps. */
         return;
       }
@@ -289,15 +295,17 @@ export function CustomCursor() {
         iframeRelayRef.current = false;
 
         if (typeof d.vx === "number" && typeof d.vy === "number") {
-          setPointer(d.vx, d.vy);
+          setPointer(d.vx, d.vy, true);
         }
 
-        refreshHoverAtPointer();
-        setCursorUi((p) => {
-          if (p.mode === "knife" && !p.grow) return p;
-          const next: CursorUi = { ...p, mode: "knife", grow: false };
-          cursorUiRef.current = next;
-          return next;
+        requestAnimationFrame(() => {
+          refreshHoverAtPointer();
+          setCursorUi((p) => {
+            if (p.mode === "knife" && !p.grow) return p;
+            const next: CursorUi = { ...p, mode: "knife", grow: false };
+            cursorUiRef.current = next;
+            return next;
+          });
         });
         return;
       }

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { markRouteTransition, pushWithRouteTransition } from "@/lib/route-transition";
+import { beginRouteTransition, pushWithRouteTransition } from "@/lib/route-transition";
 import {
   useCallback,
   useEffect,
@@ -350,7 +350,7 @@ export default function CategoryWishSection() {
 
   /* ── Card click: genie rises from bottom lamp to selected card ────────── */
   const handleActivate = (anchor: string, index: number) => {
-    markRouteTransition();
+    beginRouteTransition();
 
     const cat = CATEGORIES[index];
     if (!cat) return;

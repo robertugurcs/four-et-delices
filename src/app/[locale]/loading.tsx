@@ -1,7 +1,7 @@
 export default function LocaleLoading() {
   return (
     <div
-      className="locale-route-loading"
+      className="locale-route-loading-screen"
       role="status"
       aria-live="polite"
       aria-label="Loading"
