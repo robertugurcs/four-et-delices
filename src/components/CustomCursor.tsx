@@ -49,7 +49,6 @@ export function CustomCursor() {
   const frameRef      = useRef(0);
   const iframeRelayRef = useRef(false);
   const zoneRef       = useRef<"knife" | "snap">("knife");
-  const lastIframeGrowRef = useRef<boolean | null>(null);
   const cursorUiRef   = useRef<CursorUi>({
     mode: "knife",
     grow: false,
@@ -171,7 +170,6 @@ export function CustomCursor() {
   }, [
     active,
     cursorUi.mode,
-    cursorUi.grow,
     measureKnifeHotspot,
     measureSnapHotspot,
     paintAtTarget,
@@ -283,25 +281,12 @@ export function CustomCursor() {
         const nx = typeof d.vx === "number" ? d.vx : targetRef.current.x;
         const ny = typeof d.vy === "number" ? d.vy : targetRef.current.y;
         setPointer(nx, ny);
-
-        if (typeof d.grow === "boolean") {
-          const grow = d.grow;
-          if (grow !== lastIframeGrowRef.current) {
-            lastIframeGrowRef.current = grow;
-            setCursorUi((p) => {
-              if (p.mode === "knife" && p.grow === grow) return p;
-              const next: CursorUi = { ...p, mode: "knife", grow };
-              cursorUiRef.current = next;
-              return next;
-            });
-          }
-        }
+        /* Skip grow inside iframe — hover scale remeasures hotspot and jumps. */
         return;
       }
 
       if (d.type === "sweet-catch-pointer-leave") {
         iframeRelayRef.current = false;
-        lastIframeGrowRef.current = null;
 
         if (typeof d.vx === "number" && typeof d.vy === "number") {
           setPointer(d.vx, d.vy);

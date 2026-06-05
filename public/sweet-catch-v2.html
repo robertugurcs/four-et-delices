@@ -112,7 +112,7 @@ html[data-sweet-catch-tablet="true"] #sndBtn{display:flex!important;bottom:clamp
   <div id="oP" style="position:absolute;inset:0;z-index:10;background:rgba(253,248,243,0.96);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
     <div class="arcade" style="font-size:clamp(18px,4vw,28px);color:#1a1208;text-align:center;line-height:1.4;letter-spacing:0.08em;">PAUSE</div>
     <div style="width:60%;height:2px;background:#1a1208;opacity:0.1;"></div>
-    <button onclick="resumeGame()" class="arcade" style="background:#1a1208;color:#FDF8F3;border:none;border-radius:6px;padding:12px 28px;font-size:10px;cursor:pointer;margin-top:4px;">▶ DEVAM ET</button>
+    <button onclick="resumeGame()" class="arcade" style="background:#1a1208;color:#FDF8F3;border:none;border-radius:6px;padding:12px 28px;font-size:10px;cursor:pointer;margin-top:4px;">▶ CONTINUE</button>
     <button type="button" onclick="quitToTitle()" class="arcade" style="background:transparent;border:2px solid #bbbbbb;color:#888;border-radius:6px;padding:8px 20px;font-size:8px;cursor:pointer;margin-top:-4px;">QUIT</button>
   </div>
 
@@ -357,7 +357,7 @@ function loop(ts){
 function pauseGame(){
   if(!gameOn||paused)return;
   parentSuspended=false;paused=true;cancelAnimationFrame(raf);
-  pauseBtn.textContent='▶ DEVAM';
+  pauseBtn.textContent='▶ CONTINUE';
   oP.style.display='flex';
 }
 function resumeGame(){
@@ -464,12 +464,38 @@ try{
   if(typeof _tabMq.addEventListener==='function')_tabMq.addEventListener('change',_syncTab);
   else if(typeof _tabMq.addListener==='function')_tabMq.addListener(_syncTab);
 }catch(_e){}
-/* Cache iframe rect — getBoundingClientRect on every mousemove forces a reflow.
-   Mark dirty on resize/scroll; refresh lazily on the next mousemove only. */
+/* Cache iframe rect — refresh on enter/scroll/resize; keep iframe-local coords so
+   scroll while hovering does not teleport the parent knife cursor. */
 var _r=fe.getBoundingClientRect();
 var _rectDirty=false;
-function _markDirty(){_rectDirty=true;}
+var _hovering=false;
+var _lastLocal=null;
+var _pending=null;
+var _pmRaf=0;
 var _parentListeners=false;
+
+function _flushPointer(vx,vy){
+  _pending={type:'sweet-catch-pointer',vx:vx,vy:vy,grow:false};
+  if(!_pmRaf)_pmRaf=requestAnimationFrame(function(){
+    if(_pending)window.parent.postMessage(_pending,O);
+    _pending=null;_pmRaf=0;
+  });
+}
+
+function _syncFromLocal(){
+  if(!_hovering||!_lastLocal)return;
+  _r=fe.getBoundingClientRect();
+  _rectDirty=false;
+  var vx=_r.left+_lastLocal.x;
+  var vy=_r.top+_lastLocal.y;
+  _flushPointer(vx,vy);
+}
+
+function _markDirty(){
+  _rectDirty=true;
+  _syncFromLocal();
+}
+
 function _bindParentListeners(){
   if(_parentListeners)return;
   _parentListeners=true;
@@ -482,38 +508,34 @@ function _unbindParentListeners(){
   window.parent.removeEventListener('resize',_markDirty);
   window.parent.removeEventListener('scroll',_markDirty,{capture:true});
 }
-var _hovering=false;
-var _last=null;
-function _onEnter(){_hovering=true;_bindParentListeners();}
+
+function _onEnter(){
+  _hovering=true;
+  _r=fe.getBoundingClientRect();
+  _rectDirty=false;
+  _bindParentListeners();
+}
 function _onLeave(){
   _hovering=false;
   _unbindParentListeners();
   var msg={type:'sweet-catch-pointer-leave'};
-  if(_last){msg.vx=_last.vx;msg.vy=_last.vy;}
+  if(_lastLocal){
+    _r=fe.getBoundingClientRect();
+    msg.vx=_r.left+_lastLocal.x;
+    msg.vy=_r.top+_lastLocal.y;
+  }
   window.parent.postMessage(msg,O);
+  _lastLocal=null;
   _pending=null;
   if(_pmRaf){cancelAnimationFrame(_pmRaf);_pmRaf=0;}
 }
 document.addEventListener('mouseenter',_onEnter,{passive:true});
 document.addEventListener('mouseleave',_onLeave,{passive:true});
-/* Throttle postMessage to one per animation frame — high-DPI mice can fire
-   1000+ mousemove events/sec; sending that many messages bogs the main thread. */
-var _pending=null;var _pmRaf=0;
 document.addEventListener('mousemove',function(ev){
-if(!_hovering)return;
-if(_rectDirty){_r=fe.getBoundingClientRect();_rectDirty=false;}
-var vx=_r.left+ev.clientX;var vy=_r.top+ev.clientY;
-var hit=ev.target;
-while(hit&&hit.nodeType!==1)hit=hit.parentNode;
-var ok=hit&&typeof hit.closest==='function'?hit.closest('button,a[href],[role=\"button\"]'):null;
-var noGrow=hit&&typeof hit.closest==='function'?hit.closest('[data-no-cursor-grow]'):null;
-var grow=!!ok&&!noGrow;
-_last={vx:vx,vy:vy,grow:grow};
-_pending={type:'sweet-catch-pointer',vx:vx,vy:vy,grow:grow};
-if(!_pmRaf)_pmRaf=requestAnimationFrame(function(){
-  if(_pending)window.parent.postMessage(_pending,O);
-  _pending=null;_pmRaf=0;
-});
+  if(!_hovering)return;
+  if(_rectDirty){_r=fe.getBoundingClientRect();_rectDirty=false;}
+  _lastLocal={x:ev.clientX,y:ev.clientY};
+  _flushPointer(_r.left+ev.clientX,_r.top+ev.clientY);
 },{passive:true});
 document.addEventListener('mousedown',function(ev){if(ev.button===0&&_hovering)window.parent.postMessage({type:'sweet-catch-click'},O);},{passive:true});
 })();
