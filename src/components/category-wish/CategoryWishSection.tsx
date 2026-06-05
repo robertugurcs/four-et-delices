@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { beginRouteTransition, pushWithRouteTransition } from "@/lib/route-transition";
+import {
+  pushWithRouteTransition,
+  type RouteTransitionMood,
+} from "@/lib/route-transition";
 import {
   useCallback,
   useEffect,
@@ -144,9 +147,14 @@ export default function CategoryWishSection() {
   const navigateToGallery = useCallback(
     (anchor: string) => {
       const categoryId = WISH_ANCHOR_TO_CATEGORY[anchor];
-      if (categoryId) {
-        pushWithRouteTransition(router, path(`/cakes/${categoryId}`));
-      }
+      if (!categoryId) return;
+
+      const mood = anchor as RouteTransitionMood;
+
+      pushWithRouteTransition(router, path(`/cakes/${categoryId}`), {
+        mood,
+        scroll: false,
+      });
     },
     [path, router],
   );
@@ -350,8 +358,6 @@ export default function CategoryWishSection() {
 
   /* ── Card click: genie rises from bottom lamp to selected card ────────── */
   const handleActivate = (anchor: string, index: number) => {
-    beginRouteTransition();
-
     const cat = CATEGORIES[index];
     if (!cat) return;
 

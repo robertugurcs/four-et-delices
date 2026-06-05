@@ -4584,6 +4584,10 @@ html[data-route-transition="true"] .locale-page-slot {
   min-height: 100dvh;
 }
 
+html[data-route-transition="true"] .locale-route-loading-screen {
+  background: transparent;
+}
+
 html[data-route-transition="true"] .site-footer {
   visibility: hidden;
   pointer-events: none;
@@ -4596,6 +4600,22 @@ html[data-route-transition="true"] {
 html[data-route-transition="true"] body {
   min-height: 100vh;
   overflow: hidden;
+}
+
+html[data-route-transition="true"][data-route-mood="kids"] body {
+  background: #efe8f4;
+}
+
+html[data-route-transition="true"][data-route-mood="weddings"] body {
+  background: #e8ebe6;
+}
+
+html[data-route-transition="true"][data-route-mood="birthdays"] body {
+  background: #f8e4d4;
+}
+
+html[data-route-transition="true"][data-route-mood="corporate"] body {
+  background: #f3e3ef;
 }
 
 .site-footer {
@@ -5339,5 +5359,110 @@ html[data-our-cakes-lightbox="open"] .lang-switcher {
 
   .site-header .nav-right a.site-header__order-link.site-header__order-link--fr .site-header__order-cake-stack {
     transform: translateY(-1px) scale(0.64);
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Route transition veil — balloon / ball-pit fill between pages
+ * -------------------------------------------------------------------------- */
+.route-transition-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 10300;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.route-transition-veil__pool {
+  position: absolute;
+  inset: 0;
+  background: #fbf4eb;
+}
+
+.route-transition-veil[data-route-veil-mood="kids"] .route-transition-veil__pool {
+  background: #efe8f4;
+}
+
+.route-transition-veil[data-route-veil-mood="weddings"] .route-transition-veil__pool {
+  background: #e8ebe6;
+}
+
+.route-transition-veil[data-route-veil-mood="birthdays"] .route-transition-veil__pool {
+  background: #f8e4d4;
+}
+
+.route-transition-veil[data-route-veil-mood="corporate"] .route-transition-veil__pool {
+  background: #f3e3ef;
+}
+
+.route-transition-veil__orb {
+  position: absolute;
+  left: var(--orb-left);
+  top: var(--orb-top);
+  width: var(--orb-size);
+  height: var(--orb-size);
+  border-radius: 50%;
+  background: var(--orb-color);
+  box-shadow:
+    inset -12px -18px 36px rgba(0, 0, 0, 0.08),
+    inset 10px 12px 28px rgba(255, 255, 255, 0.42);
+  opacity: 0;
+  transform: scale(0.12);
+  animation: routeVeilOrbIn 0.72s cubic-bezier(0.22, 1, 0.36, 1) var(--orb-delay) forwards;
+}
+
+.route-transition-veil__orb--from-left {
+  transform: translateX(-28%) scale(0.12);
+}
+
+.route-transition-veil__orb--from-right {
+  transform: translateX(28%) scale(0.12);
+}
+
+.route-transition-veil__orb--from-bottom {
+  transform: translateY(32%) scale(0.12);
+}
+
+.route-transition-veil__orb--from-top {
+  transform: translateY(-28%) scale(0.12);
+}
+
+.route-transition-veil--exit {
+  animation: routeVeilFadeOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes routeVeilOrbIn {
+  0% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.96;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes routeVeilFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-transition-veil__orb {
+    animation-duration: 0.01ms;
+    opacity: 1;
+    transform: none;
+  }
+
+  .route-transition-veil--exit {
+    animation-duration: 0.12s;
   }
 }
