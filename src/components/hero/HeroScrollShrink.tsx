@@ -207,6 +207,19 @@ export default function HeroScrollShrink() {
      * The shrink transform is still motion-only.
      */
     const update = () => {
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+
+      // Bulletproof guard: the instant the hero section has scrolled past the top
+      // of the viewport, the header sits over cream content → force pink ("light")
+      // regardless of intro/shrink state. Without this, a hero intro that never
+      // reaches "done" (e.g. an interrupted timeline on prod) would leave white
+      // nav text stuck over the cream sections.
+      if (rect.bottom <= vh * 0.5) {
+        document.documentElement.dataset.headerTheme = "light";
+        return;
+      }
+
       if (document.documentElement.dataset.heroIntro !== "done") {
         if (!prefersReducedMotion) {
           shell.style.transform = "";
@@ -217,8 +230,6 @@ export default function HeroScrollShrink() {
         return;
       }
 
-      const rect = section.getBoundingClientRect();
-      const vh = window.innerHeight || document.documentElement.clientHeight;
       const scrollable = Math.max(1, rect.height - vh);
       const progress = clamp(-rect.top / scrollable, 0, 1);
 
@@ -235,12 +246,7 @@ export default function HeroScrollShrink() {
         shell.style.borderRadius = `${radius}px`;
       }
 
-      // Fallback: also treat the header as "light" the moment the hero section
-      // has essentially scrolled past the top of the viewport, independent of
-      // the shrink math (covers reduced-motion where there is no shrink).
-      const heroClearedTop = rect.bottom <= vh * 0.5;
-
-      if (scale <= 0.82 || heroClearedTop) {
+      if (scale <= 0.82) {
         document.documentElement.dataset.headerTheme = "light";
       } else {
         document.documentElement.dataset.headerTheme = "hero";
