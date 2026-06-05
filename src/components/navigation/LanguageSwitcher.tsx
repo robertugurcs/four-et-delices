@@ -8,6 +8,7 @@ import type { Locale } from "@/i18n/config";
 import { LOCALE_COOKIE } from "@/i18n/detect-locale";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { switchLocalePath } from "@/i18n/routing";
+import { beginLocaleSwitch } from "@/lib/locale-switch";
 
 function rememberLocale(locale: Locale) {
   document.cookie = `${LOCALE_COOKIE}=${locale};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
@@ -85,14 +86,17 @@ export function LanguageSwitcher({
   const frHref = switchLocalePath(pathname, "fr");
 
   const switchLocale = (next: Locale) => {
-    if (next === locale || pending) return;
+    if (pending) return;
+    if (next === locale && next === activeLocale) return;
 
     const href = switchLocalePath(pathname, next);
     rememberLocale(next);
     setActiveLocale(next);
+    beginLocaleSwitch();
 
     startTransition(() => {
-      router.push(href, { scroll: false });
+      router.push(href);
+      router.refresh();
     });
 
     if (onNavigate) {

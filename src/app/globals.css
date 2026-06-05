@@ -5265,6 +5265,20 @@ html[data-our-cakes-lightbox="open"] .lang-switcher {
   width: 100%;
 }
 
+html[data-locale-switch="out"] .locale-page-slot,
+html[data-locale-switch="out"] .site-footer,
+html[data-locale-switch="out"] .site-header {
+  opacity: 0.62;
+  transition: opacity 0.22s ease;
+}
+
+html[data-locale-switch="in"] .locale-page-slot,
+html[data-locale-switch="in"] .site-footer,
+html[data-locale-switch="in"] .site-header {
+  opacity: 1;
+  transition: opacity 0.36s ease;
+}
+
 .locale-route-loading-screen {
   position: relative;
   min-height: 100vh;
