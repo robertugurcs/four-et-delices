@@ -3282,6 +3282,21 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 
   .category-wish-card__lift {
     will-change: auto;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+  }
+
+  /* iOS Safari sticky jitter fix: the sticky SLOT is the single promoted layer.
+   * Nested translateZ/backface layers (added for the desktop entrance) create
+   * competing compositor layers inside each sticky card, which sub-pixel jitter
+   * during the scroll-deck slide. Flatten them on mobile so only the slot is
+   * promoted. */
+  .category-wish-card__media,
+  .category-wish-card__img {
+    transform: none;
+    -webkit-transform: none;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
   }
 
   .category-wish-fan__slot:nth-child(1) {

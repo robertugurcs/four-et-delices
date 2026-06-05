@@ -193,24 +193,26 @@ export default function HeroScrollShrink() {
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    if (prefersReducedMotion) {
-      document.documentElement.dataset.headerTheme = "hero";
-      // Note: do not remove data-header-theme on unmount. SiteHeader owns the
-      // deterministic per-route value; clearing it here causes an unstyled
-      // header flash during client navigation away from home.
-      return;
-    }
 
     let raf = 0;
 
     const clamp = (v: number, min: number, max: number) =>
       Math.min(Math.max(v, min), max);
 
+    /**
+     * Theme is self-correcting on every scroll/resize in BOTH motion modes.
+     * White ("hero") nav is only used while the header sits over the dark hero
+     * video; once the hero scrolls/shrinks away it switches to pink ("light").
+     * Running this in reduced-motion too prevents the white-on-cream stuck state.
+     * The shrink transform is still motion-only.
+     */
     const update = () => {
       if (document.documentElement.dataset.heroIntro !== "done") {
-        shell.style.transform = "";
-        shell.style.borderRadius = "";
-        section.style.setProperty("--hero-shrink-progress", "0");
+        if (!prefersReducedMotion) {
+          shell.style.transform = "";
+          shell.style.borderRadius = "";
+          section.style.setProperty("--hero-shrink-progress", "0");
+        }
         document.documentElement.dataset.headerTheme = "hero";
         return;
       }
@@ -221,17 +223,24 @@ export default function HeroScrollShrink() {
       const progress = clamp(-rect.top / scrollable, 0, 1);
 
       const eased = 1 - (1 - progress) ** 3;
-      section.style.setProperty("--hero-shrink-progress", String(eased));
       const scaleTop = 1;
       const scaleBottom = 0.28;
       const scale = scaleTop - eased * (scaleTop - scaleBottom);
-      const radius = eased * 30;
-      const y = eased * 38;
 
-      shell.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
-      shell.style.borderRadius = `${radius}px`;
+      if (!prefersReducedMotion) {
+        section.style.setProperty("--hero-shrink-progress", String(eased));
+        const radius = eased * 30;
+        const y = eased * 38;
+        shell.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
+        shell.style.borderRadius = `${radius}px`;
+      }
 
-      if (scale <= 0.82) {
+      // Fallback: also treat the header as "light" the moment the hero section
+      // has essentially scrolled past the top of the viewport, independent of
+      // the shrink math (covers reduced-motion where there is no shrink).
+      const heroClearedTop = rect.bottom <= vh * 0.5;
+
+      if (scale <= 0.82 || heroClearedTop) {
         document.documentElement.dataset.headerTheme = "light";
       } else {
         document.documentElement.dataset.headerTheme = "hero";
