@@ -5085,7 +5085,6 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 
 .lang-switcher--pending {
   opacity: 0.78;
-  pointer-events: none;
 }
 
 .lang-switcher--pending .lang-switcher__indicator {
@@ -5137,6 +5136,7 @@ html[data-our-cakes-lightbox="open"] .lang-switcher {
   left: 4px;
   width: calc(50% - 5.5px);
   border-radius: 999px;
+  pointer-events: none;
   background: linear-gradient(
     180deg,
     rgb(251 217 229 / 0.95) 0%,

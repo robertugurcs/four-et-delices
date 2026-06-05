@@ -2,13 +2,16 @@ import { defaultLocale, type Locale } from "@/i18n/config";
 
 export function getLocaleFromPathname(pathname: string): Locale {
   if (pathname === "/fr" || pathname.startsWith("/fr/")) return "fr";
+  if (pathname === "/en" || pathname.startsWith("/en/")) return "en";
   return defaultLocale;
 }
 
-/** Strip `/fr` prefix for route matching and link building. */
+/** Strip `/fr` or `/en` prefix for route matching and link building. */
 export function stripLocaleFromPathname(pathname: string): string {
   if (pathname === "/fr") return "/";
   if (pathname.startsWith("/fr/")) return pathname.slice(3) || "/";
+  if (pathname === "/en") return "/";
+  if (pathname.startsWith("/en/")) return pathname.slice(3) || "/";
   return pathname;
 }
 

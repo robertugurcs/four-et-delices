@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useId, useTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useId, useState, useTransition } from "react";
 
 import type { Locale } from "@/i18n/config";
 import { LOCALE_COOKIE } from "@/i18n/detect-locale";
@@ -71,18 +71,34 @@ export function LanguageSwitcher({
   onNavigate,
 }: LanguageSwitcherProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { locale, dictionary: t } = useLocale();
   const [pending, startTransition] = useTransition();
+  const [activeLocale, setActiveLocale] = useState(locale);
   const clipSuffix = useId().replace(/:/g, "");
+
+  useEffect(() => {
+    setActiveLocale(locale);
+  }, [locale]);
 
   const enHref = switchLocalePath(pathname, "en");
   const frHref = switchLocalePath(pathname, "fr");
 
-  const handleClick = (next: Locale) => {
-    if (next === locale) return;
+  const switchLocale = (next: Locale) => {
+    if (next === locale || pending) return;
+
+    const href = switchLocalePath(pathname, next);
     rememberLocale(next);
-    onNavigate?.();
-    startTransition(() => {});
+    setActiveLocale(next);
+
+    startTransition(() => {
+      router.push(href);
+      router.refresh();
+    });
+
+    if (onNavigate) {
+      window.setTimeout(onNavigate, 0);
+    }
   };
 
   return (
@@ -91,7 +107,7 @@ export function LanguageSwitcher({
       role="group"
       aria-label={t.lang.label}
       aria-busy={pending || undefined}
-      data-locale={locale}
+      data-locale={activeLocale}
       data-no-cursor-grow
       onTouchStart={() => {}}
     >
@@ -101,10 +117,14 @@ export function LanguageSwitcher({
           href={enHref}
           prefetch
           scroll={false}
-          className={`lang-switcher__btn${locale === "en" ? " lang-switcher__btn--active" : ""}`}
-          aria-current={locale === "en" ? "true" : undefined}
+          className={`lang-switcher__btn${activeLocale === "en" ? " lang-switcher__btn--active" : ""}`}
+          aria-current={activeLocale === "en" ? "true" : undefined}
           aria-label={t.lang.switchToEn}
-          onClick={() => handleClick("en")}
+          aria-disabled={pending || undefined}
+          onClick={(event) => {
+            event.preventDefault();
+            switchLocale("en");
+          }}
         >
           <FlagEn clipSuffix={clipSuffix} />
           <span className="lang-switcher__code">{t.lang.en}</span>
@@ -113,10 +133,14 @@ export function LanguageSwitcher({
           href={frHref}
           prefetch
           scroll={false}
-          className={`lang-switcher__btn${locale === "fr" ? " lang-switcher__btn--active" : ""}`}
-          aria-current={locale === "fr" ? "true" : undefined}
+          className={`lang-switcher__btn${activeLocale === "fr" ? " lang-switcher__btn--active" : ""}`}
+          aria-current={activeLocale === "fr" ? "true" : undefined}
           aria-label={t.lang.switchToFr}
-          onClick={() => handleClick("fr")}
+          aria-disabled={pending || undefined}
+          onClick={(event) => {
+            event.preventDefault();
+            switchLocale("fr");
+          }}
         >
           <FlagFr />
           <span className="lang-switcher__code">{t.lang.fr}</span>
