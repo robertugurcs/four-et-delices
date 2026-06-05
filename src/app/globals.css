@@ -4579,6 +4579,11 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 /* --------------------------------------------------------------------------
  * Site footer — compact raspberry-rose bar (wordmark · nav · socials · meta)
  * -------------------------------------------------------------------------- */
+html[data-route-transition="true"] .site-footer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .site-footer {
   --footer-pink: #c43670;
   --footer-pink-deep: #9a2858;
