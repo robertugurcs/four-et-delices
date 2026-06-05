@@ -26,6 +26,8 @@ const GENIE_SIZE   = 96;
 
 /** Touch tablets (iPad / iPad Pro) — desktop-style open fan, mobile-style tap; not phones ≤720px */
 const IPAD_FAN_MQ = "(min-width: 721px) and (pointer: coarse)";
+/** Phone-only scroll deck — fixed stage + crossfade (no CSS sticky; Safari-safe) */
+const MOBILE_DECK_MQ = "(max-width: 720px)";
 
 type Category = {
   anchor:    string;
@@ -111,6 +113,8 @@ export default function CategoryWishSection() {
   const t = useTranslations();
   const { path } = useLocale();
   const rootRef         = useRef<HTMLElement>(null);
+  const mobileScrollRef = useRef<HTMLDivElement>(null);
+  const fanRef          = useRef<HTMLDivElement>(null);
   const lampWrapRef     = useRef<HTMLDivElement>(null);
   const proseRef        = useRef<HTMLDivElement>(null);
   const magicGenieRef   = useRef<HTMLImageElement>(null);
@@ -119,6 +123,8 @@ export default function CategoryWishSection() {
   const [selected, setSelected]       = useState<string | null>(null);
   const [hoveredMood, setHoveredMood] = useState<CategoryMood | null>(null);
   const [fanOpen, setFanOpen]         = useState(false);
+  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
+  const mobileActiveIndexRef = useRef(0);
   const ipadFanRef  = useRef(false);
   const revealedRef = useRef(false);
   const router = useRouter();
@@ -147,6 +153,136 @@ export default function CategoryWishSection() {
     },
     [path, router],
   );
+
+  /**
+   * Mobile scroll deck (phones ≤720px only).
+   * Replaces CSS sticky slots — iOS Safari jitters with sticky + overflow-x-clip
+   * ancestors. One fixed stage + scroll-driven active card index instead.
+   * Desktop / iPad fan is untouched.
+   */
+  useEffect(() => {
+    const wrap = mobileScrollRef.current;
+    const stage = fanRef.current;
+    if (!wrap || !stage) return;
+
+    const mq = window.matchMedia(MOBILE_DECK_MQ);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let raf = 0;
+    let deckEnabled = false;
+
+    const resetStageStyles = () => {
+      stage.style.position = "";
+      stage.style.top = "";
+      stage.style.left = "";
+      stage.style.width = "";
+      stage.style.transform = "";
+      stage.style.zIndex = "";
+      stage.classList.remove("category-wish-fan--mobile-deck");
+      wrap.classList.remove("category-wish-fan-wrap--mobile-deck");
+      deckEnabled = false;
+    };
+
+    const deckTopPx = () =>
+      Math.min(108, Math.max(72, window.innerWidth * 0.14));
+
+    const setActiveIndex = (idx: number) => {
+      if (mobileActiveIndexRef.current === idx) return;
+      mobileActiveIndexRef.current = idx;
+      setMobileActiveIndex(idx);
+    };
+
+    const update = () => {
+      if (!mq.matches || reduced) {
+        if (deckEnabled) {
+          resetStageStyles();
+          setActiveIndex(0);
+        }
+        return;
+      }
+
+      if (!deckEnabled) {
+        stage.classList.add("category-wish-fan--mobile-deck");
+        wrap.classList.add("category-wish-fan-wrap--mobile-deck");
+        deckEnabled = true;
+      }
+
+      const topOffset = deckTopPx();
+      const scrollY = window.scrollY;
+      const wrapRect = wrap.getBoundingClientRect();
+      const wrapTop = scrollY + wrapRect.top;
+      const stageHeight = stage.offsetHeight;
+      const scrollSpan = Math.max(1, wrap.offsetHeight - window.innerHeight);
+      const start = wrapTop - topOffset;
+      const end = start + scrollSpan;
+
+      if (scrollY < start) {
+        stage.style.position = "relative";
+        stage.style.top = "0";
+        stage.style.left = "";
+        stage.style.width = "";
+        stage.style.transform = "";
+        stage.style.zIndex = "";
+        setActiveIndex(0);
+        return;
+      }
+
+      if (scrollY >= end) {
+        stage.style.position = "absolute";
+        stage.style.top = `${wrap.offsetHeight - stageHeight}px`;
+        stage.style.left = "50%";
+        stage.style.width = "100%";
+        stage.style.transform = "translateX(-50%)";
+        stage.style.zIndex = "2";
+        setActiveIndex(CATEGORIES.length - 1);
+        return;
+      }
+
+      stage.style.position = "fixed";
+      stage.style.top = `${topOffset}px`;
+      stage.style.left = "50%";
+      stage.style.width = "100%";
+      stage.style.transform = "translateX(-50%)";
+      stage.style.zIndex = "2";
+
+      const progress = (scrollY - start) / scrollSpan;
+      const idx = Math.min(
+        CATEGORIES.length - 1,
+        Math.floor(progress * CATEGORIES.length),
+      );
+      setActiveIndex(idx);
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    };
+
+    const onMqChange = () => {
+      resetStageStyles();
+      setActiveIndex(0);
+      onScroll();
+    };
+
+    mq.addEventListener("change", onMqChange);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    update();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      mq.removeEventListener("change", onMqChange);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      resetStageStyles();
+    };
+  }, []);
+
+  /* Sync section mood tint to the active mobile card */
+  useEffect(() => {
+    if (!window.matchMedia(MOBILE_DECK_MQ).matches) return;
+    const cat = CATEGORIES[mobileActiveIndex];
+    if (cat) setHoveredMood(cat.mood);
+  }, [mobileActiveIndex]);
 
   /* ── iPad: fan always open (desktop spread, no hover needed) ─────────── */
   useEffect(() => {
@@ -202,8 +338,8 @@ export default function CategoryWishSection() {
         gsap.set(lampWrap, { opacity: 0, scale: 0.4, y: -20 });
         gsap.set(lifts, { opacity: 0, y: 44 });
       } else {
-        /* Mobile sticky deck: y-transform on cards fights iOS sticky — opacity only */
-        gsap.set(lifts, { opacity: 0, clearProps: "transform" });
+        /* Mobile scroll deck: cards visible immediately — active index drives crossfade */
+        gsap.set(lifts, { opacity: 1, clearProps: "transform" });
       }
       if (proseLines.length) gsap.set(proseLines, { opacity: 0, y: 14 });
       if (wishLine) gsap.set(wishLine, { opacity: 0, y: 18 });
@@ -228,19 +364,8 @@ export default function CategoryWishSection() {
           }, 0.08);
         }
 
-        /* 2 — Cards stagger in */
-        if (narrowMobile) {
-          tl.to(
-            lifts,
-            {
-              opacity: (_, el) => readOp(el),
-              duration: 0.55,
-              stagger: 0.08,
-              ease: "power2.out",
-            },
-            0.35,
-          );
-        } else {
+        /* 2 — Cards stagger in (desktop/tablet only; mobile deck uses scroll crossfade) */
+        if (!narrowMobile) {
           tl.to(
             lifts,
             {
@@ -514,33 +639,37 @@ export default function CategoryWishSection() {
           </div>
         </header>
 
-        {/* Cards — each floating on its own cloud */}
-        <div
-          className={`category-wish-fan${fanOpen ? " category-wish-fan--open" : ""}`}
-          role="list"
-          onMouseEnter={() => setFanOpen(true)}
-          onMouseLeave={() => {
-            if (ipadFanRef.current) return;
-            setFanOpen(false);
-            setHoveredMood(null);
-          }}
-          onFocus={() => setFanOpen(true)}
-          onBlur={(e) => {
-            if (ipadFanRef.current) return;
-            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+        {/* Cards — desktop fan / mobile scroll deck (phones ≤720px) */}
+        <div className="category-wish-fan-wrap" ref={mobileScrollRef}>
+          <div
+            ref={fanRef}
+            className={`category-wish-fan${fanOpen ? " category-wish-fan--open" : ""}`}
+            role="list"
+            onMouseEnter={() => setFanOpen(true)}
+            onMouseLeave={() => {
+              if (ipadFanRef.current) return;
               setFanOpen(false);
               setHoveredMood(null);
-            }
-          }}
-          onTouchStart={() => {
-            if (!ipadFanRef.current) setFanOpen(true);
-          }}
-        >
+            }}
+            onFocus={() => setFanOpen(true)}
+            onBlur={(e) => {
+              if (ipadFanRef.current) return;
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                setFanOpen(false);
+                setHoveredMood(null);
+              }
+            }}
+            onTouchStart={() => {
+              if (!ipadFanRef.current) setFanOpen(true);
+            }}
+          >
           {CATEGORIES.map((cat, index) => (
             <div
               key={cat.anchor}
               className="category-wish-fan__slot"
               role="listitem"
+              data-cw-active={mobileActiveIndex === index ? "true" : "false"}
+              aria-hidden={mobileActiveIndex !== index ? true : undefined}
             >
               <CloudBg idx={index} />
 
@@ -580,6 +709,7 @@ export default function CategoryWishSection() {
               </button>
             </div>
           ))}
+          </div>
         </div>
 
         {/* Lamp lives at the bottom — magic source that fuels the cards above */}

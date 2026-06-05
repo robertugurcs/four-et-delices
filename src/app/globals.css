@@ -2835,6 +2835,13 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 /* --------------------------------------------------------------------------
  * Card fan — stacked deck (closed) / horizontal spread (hover open)
  * -------------------------------------------------------------------------- */
+.category-wish-fan-wrap {
+  width: 100%;
+  max-width: min(100%, 1540px);
+  margin: 0 auto;
+  position: relative;
+}
+
 .category-wish-fan {
   --cw-card-w: clamp(204px, 17vw, 272px);
   --cw-fan-gap: clamp(12px, 1.4vw, 20px);
@@ -3226,6 +3233,10 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 }
 
 @media (max-width: 720px) {
+  .category-wish-section {
+    overflow-x: visible;
+  }
+
   .category-wish-section__prose {
     max-width: 100%;
     font-size: clamp(1.02rem, 4.5vw + 0.55rem, 1.28rem);
@@ -3246,38 +3257,78 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     margin-top: clamp(1.5rem, 6vw, 2.5rem);
     padding-top: clamp(0.75rem, 3vw, 1.15rem);
   }
+
   .category-wish-fan {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
+    display: block;
     height: auto;
     min-height: 0;
     padding-top: clamp(8px, 2vw, 16px);
     padding-bottom: clamp(48px, 12vw, 88px);
   }
 
-  /* Scroll deck — lower cards stick and slide over the stack.
-   * contain:layout paint removed — it causes jitter with position:sticky on iOS Safari.
-   * Stacking context is provided by position:sticky + z-index on each slot. */
-  .category-wish-fan__slot {
-    position: sticky;
-    left: auto;
+  /*
+   * Mobile scroll deck — tall track + one fixed stage + crossfading cards.
+   * No position:sticky (breaks/jitters on iOS Safari with overflow-x-clip ancestors).
+   * JS in CategoryWishSection pins the stage with position:fixed while scrolling.
+   */
+  .category-wish-fan-wrap--mobile-deck {
+    --cw-mobile-steps: 4;
+    --cw-mobile-deck-top: clamp(72px, 14vw, 108px);
+    height: calc(var(--cw-mobile-steps) * 85svh);
+    height: calc(var(--cw-mobile-steps) * 85vh);
+  }
+
+  .category-wish-fan--mobile-deck {
+    display: block;
+    height: calc(100svh - var(--cw-mobile-deck-top) - 24px);
+    height: calc(100vh - var(--cw-mobile-deck-top) - 24px);
+    min-height: 420px;
+    max-height: min(640px, calc(100svh - var(--cw-mobile-deck-top) - 24px));
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: 0 auto;
+  }
+
+  .category-wish-fan--mobile-deck .category-wish-fan__slot {
+    position: absolute;
+    top: 0;
+    left: 50%;
     bottom: auto;
-    top: clamp(72px, 14vw, 108px);
+    margin: 0;
     width: min(88vw, 400px);
     max-width: none;
     flex: none;
-    margin-bottom: clamp(34vh, 44vw, 48vh);
-    scroll-margin-top: clamp(72px, 14vw, 108px);
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    scroll-margin-top: 0;
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+    transition:
+      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .category-wish-fan__slot:last-child {
-    margin-bottom: clamp(6vh, 10vw, 14vh);
+  .category-wish-fan--mobile-deck .category-wish-fan__slot[data-cw-active="true"] {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0) scale(1);
+    z-index: 20 !important;
+  }
+
+  .category-wish-fan--mobile-deck .category-wish-fan__slot[data-cw-active="false"] {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(14px) scale(0.97);
+    z-index: 10 !important;
+  }
+
+  /* Neutralize desktop closed-fan slot transforms on the mobile deck */
+  .category-wish-fan--mobile-deck.category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(1),
+  .category-wish-fan--mobile-deck.category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(2),
+  .category-wish-fan--mobile-deck.category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(3),
+  .category-wish-fan--mobile-deck.category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(4) {
+    left: 50%;
+    bottom: auto;
   }
 
   .category-wish-card__lift {
@@ -3286,11 +3337,6 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     -webkit-backface-visibility: visible;
   }
 
-  /* iOS Safari sticky jitter fix: the sticky SLOT is the single promoted layer.
-   * Nested translateZ/backface layers (added for the desktop entrance) create
-   * competing compositor layers inside each sticky card, which sub-pixel jitter
-   * during the scroll-deck slide. Flatten them on mobile so only the slot is
-   * promoted. */
   .category-wish-card__media,
   .category-wish-card__img {
     transform: none;
@@ -3299,34 +3345,11 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     -webkit-backface-visibility: visible;
   }
 
-  .category-wish-fan__slot:nth-child(1) {
-    z-index: 11 !important;
-  }
-
-  .category-wish-fan__slot:nth-child(2) {
-    z-index: 12 !important;
-  }
-
-  .category-wish-fan__slot:nth-child(3) {
-    z-index: 13 !important;
-  }
-
-  .category-wish-fan__slot:nth-child(4) {
-    z-index: 14 !important;
-  }
-
-  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(1),
-  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(2),
-  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(3),
-  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(4) {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-  }
-
   .category-wish-lamp-base {
     display: none !important;
   }
 
+  .category-wish-fan--mobile-deck .category-wish-card__tilt,
   .category-wish-fan:not(.category-wish-fan--open) .category-wish-card__tilt,
   .category-wish-card__tilt {
     transform: rotate(calc(var(--cw-rot, 0deg) * 0.35));
@@ -3366,13 +3389,47 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
       inset 0 1px 0 rgba(255, 255, 255, 0.55);
   }
 
-  .category-wish-magic-genie    { display: none; }
+  .category-wish-magic-genie { display: none; }
 
+  .category-wish-fan--mobile-deck .cw-cloud-bg,
   .cw-cloud-bg {
     opacity: 1;
     transform: none;
     pointer-events: none;
     inset: 6% -14% -38% -14%;
+  }
+}
+
+@media (max-width: 720px) and (prefers-reduced-motion: reduce) {
+  .category-wish-fan-wrap--mobile-deck {
+    height: auto;
+  }
+
+  .category-wish-fan--mobile-deck {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: auto !important;
+    transform: none !important;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    padding-bottom: clamp(48px, 12vw, 88px);
+  }
+
+  .category-wish-fan--mobile-deck .category-wish-fan__slot {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: min(88vw, 400px);
+    margin: 0 auto clamp(2rem, 8vw, 3rem);
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+  }
+
+  .category-wish-fan--mobile-deck .category-wish-fan__slot:last-child {
+    margin-bottom: 0;
   }
 }
 
