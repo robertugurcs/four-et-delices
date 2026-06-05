@@ -34,3 +34,13 @@ export function switchLocalePath(pathname: string, locale: Locale): string {
   const bare = stripLocaleFromPathname(pathname);
   return localizedPath(bare, locale);
 }
+
+/** True when href is the same route with only the /en ↔ /fr prefix changed. */
+export function isLocaleOnlyPathSwitch(pathname: string, href: string): boolean {
+  try {
+    const url = new URL(href, "http://local");
+    return stripLocaleFromPathname(url.pathname) === stripLocaleFromPathname(pathname);
+  } catch {
+    return false;
+  }
+}

@@ -7,7 +7,6 @@ import { useEffect, useId, useState, useTransition } from "react";
 import type { Locale } from "@/i18n/config";
 import { LOCALE_COOKIE } from "@/i18n/detect-locale";
 import { useLocale } from "@/i18n/LocaleProvider";
-import { pushWithRouteTransition } from "@/lib/route-transition";
 import { switchLocalePath } from "@/i18n/routing";
 
 function rememberLocale(locale: Locale) {
@@ -93,8 +92,7 @@ export function LanguageSwitcher({
     setActiveLocale(next);
 
     startTransition(() => {
-      pushWithRouteTransition(router, href);
-      router.refresh();
+      router.push(href, { scroll: false });
     });
 
     if (onNavigate) {
@@ -110,6 +108,7 @@ export function LanguageSwitcher({
       aria-busy={pending || undefined}
       data-locale={activeLocale}
       data-no-cursor-grow
+      data-no-route-transition
       onTouchStart={() => {}}
     >
       <div className="lang-switcher__track">

@@ -4,7 +4,6 @@ import { SiteFooter } from "@/components/footer/SiteFooter";
 import { LanguageSwitcher } from "@/components/navigation/LanguageSwitcher";
 import { LocalePageSlot } from "@/components/navigation/LocalePageSlot";
 import { NavigationScrollGuard } from "@/components/navigation/NavigationScrollGuard";
-import { RouteTransitionVeil } from "@/components/navigation/RouteTransitionVeil";
 import { SetHtmlLang } from "@/components/navigation/SetHtmlLang";
 import { isValidLocale, locales, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -36,7 +35,6 @@ export default async function LocaleLayout({
     <LocaleProvider locale={locale} dictionary={dictionary}>
       <SetHtmlLang locale={locale} />
       <NavigationScrollGuard />
-      <RouteTransitionVeil />
       <LocalePageSlot>{children}</LocalePageSlot>
       <SiteFooter />
       <LanguageSwitcher placement="fixed" />

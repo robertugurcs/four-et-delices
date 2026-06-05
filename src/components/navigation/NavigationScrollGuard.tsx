@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
+import { isLocaleOnlyPathSwitch } from "@/i18n/routing";
 import {
   beginRouteTransition,
   isRouteTransitionActive,
@@ -19,10 +20,15 @@ function isInternalNavLink(anchor: HTMLAnchorElement, pathname: string) {
     return false;
   }
 
+  if (anchor.closest("[data-no-route-transition]")) {
+    return false;
+  }
+
   try {
     const url = new URL(href, window.location.href);
     if (url.origin !== window.location.origin) return false;
     if (url.pathname === pathname && !url.hash) return false;
+    if (isLocaleOnlyPathSwitch(pathname, href)) return false;
     return true;
   } catch {
     return false;

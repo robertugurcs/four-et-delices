@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Nunito_Sans, Playfair_Display } from "next/font/google";
 import { CustomCursor } from "@/components/CustomCursor";
 import { IntroReadyGate } from "@/components/IntroReadyGate";
+import { RouteTransitionVeil } from "@/components/navigation/RouteTransitionVeil";
 import "./globals.css";
 
 /**
@@ -42,6 +43,7 @@ export default function RootLayout({
       <body className="m-0 min-h-screen p-0 font-sans">
         <IntroReadyGate />
         <CustomCursor />
+        <RouteTransitionVeil />
         {children}
       </body>
     </html>
