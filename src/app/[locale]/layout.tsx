@@ -34,7 +34,7 @@ export default async function LocaleLayout({
       <SetHtmlLang locale={locale} />
       {children}
       <SiteFooter />
-      <LanguageSwitcher />
+      <LanguageSwitcher placement="fixed" />
     </LocaleProvider>
   );
 }

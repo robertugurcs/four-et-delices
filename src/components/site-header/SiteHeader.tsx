@@ -16,6 +16,7 @@ import {
 import { CakeLogo } from "./CakeLogo";
 
 import { HomeBrandLink } from "@/components/navigation/HomeBrandLink";
+import { LanguageSwitcher } from "@/components/navigation/LanguageSwitcher";
 import { OurCakesLink } from "@/components/navigation/OurCakesLink";
 import { SiteHeaderOrderLink } from "./SiteHeaderOrderLink";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
@@ -390,6 +391,12 @@ export function SiteHeader() {
                 {t.nav.meetKhoudia}
               </Link>
             </nav>
+            <div className="site-header__mobile-lang">
+              <LanguageSwitcher
+                placement="inline"
+                onNavigate={() => setMobileOpen(false)}
+              />
+            </div>
           </div>
         </>
       ) : null}

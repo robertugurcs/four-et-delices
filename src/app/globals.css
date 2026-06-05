@@ -5073,39 +5073,129 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   right: clamp(0.85rem, 2.5vw, 1.35rem);
   bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(0.85rem, 2.5vh, 1.35rem));
   z-index: 10100;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lang-switcher--inline {
+  position: static;
+  width: 100%;
+}
+
+.lang-switcher--pending {
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+.lang-switcher--pending .lang-switcher__indicator {
+  opacity: 0.85;
+}
+
+@media (max-width: 900px) {
+  .lang-switcher--fixed {
+    display: none;
+  }
+}
+
+html[data-our-cakes-lightbox="open"] .lang-switcher {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.lang-switcher__track {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  width: min(100%, 9.5rem);
+  padding: 4px;
+  border: 1px solid rgb(47 41 36 / 0.1);
+  border-radius: 999px;
+  background: rgb(255 253 249 / 0.94);
+  box-shadow:
+    0 12px 32px rgb(47 41 36 / 0.1),
+    0 2px 8px rgb(47 41 36 / 0.05),
+    inset 0 1px 0 rgb(255 255 255 / 0.65);
+  backdrop-filter: blur(14px);
+}
+
+.lang-switcher--inline .lang-switcher__track {
+  width: 100%;
+  max-width: 16rem;
+  margin-inline: auto;
+  padding: 5px;
+  box-shadow: none;
+  border-color: rgb(47 41 36 / 0.08);
+  background: rgb(255 252 248 / 0.98);
+}
+
+.lang-switcher__indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 5.5px);
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgb(251 217 229 / 0.95) 0%,
+    rgb(196 54 112 / 0.14) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    0 1px 3px rgb(196 54 112 / 0.12);
+  transform: translateX(0);
+  transition:
+    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease;
+  will-change: transform;
+}
+
+.lang-switcher--inline .lang-switcher__indicator {
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc(50% - 6.5px);
+}
+
+.lang-switcher[data-locale="fr"] .lang-switcher__indicator {
+  transform: translateX(calc(100% + 3px));
+}
+
+.lang-switcher__btn {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 44px;
   padding: 0.45rem 0.65rem;
-  border: 1px solid rgb(47 41 36 / 0.12);
   border-radius: 999px;
-  background: rgb(255 253 249 / 0.92);
-  box-shadow:
-    0 10px 28px rgb(47 41 36 / 0.12),
-    0 2px 8px rgb(47 41 36 / 0.06);
-  backdrop-filter: blur(10px);
+  color: rgb(47 41 36 / 0.48);
   font-family: var(--font-cake-sans), sans-serif;
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.1em;
-  text-transform: uppercase;
-  pointer-events: auto;
-}
-
-.lang-switcher__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: rgb(47 41 36 / 0.5);
+  line-height: 1;
   text-decoration: none;
+  text-transform: uppercase;
   transition:
-    color 0.2s ease,
-    opacity 0.2s ease;
+    color 0.28s ease,
+    transform 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .lang-switcher__btn:hover,
 .lang-switcher__btn:focus-visible {
   color: #2f2924;
+  outline: none;
+}
+
+.lang-switcher__btn:active {
+  transform: scale(0.97);
 }
 
 .lang-switcher__btn--active {
@@ -5123,9 +5213,46 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   line-height: 1;
 }
 
-.lang-switcher__sep {
-  color: rgb(47 41 36 / 0.22);
-  user-select: none;
+.site-header__mobile-lang {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: clamp(0.75rem, 3vw, 1.1rem) clamp(12px, 4vw, 20px)
+    clamp(10px, 2.5vw, 14px);
+}
+
+.locale-route-loading {
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 10200;
+  width: 100%;
+  height: 3px;
+  pointer-events: none;
+}
+
+.locale-route-loading__bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #c43670 35%,
+    #fbd9e5 50%,
+    #c43670 65%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: localeRouteLoading 0.9s ease-in-out infinite;
+}
+
+@keyframes localeRouteLoading {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 /* Header order CTA — FR copy only; keeps pill clear of center wordmark */
