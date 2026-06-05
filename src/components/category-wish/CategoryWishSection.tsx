@@ -26,8 +26,8 @@ const GENIE_SIZE   = 96;
 
 /** Touch tablets (iPad / iPad Pro) — desktop-style open fan, mobile-style tap; not phones ≤720px */
 const IPAD_FAN_MQ = "(min-width: 721px) and (pointer: coarse)";
-/** Phone-only horizontal snap carousel */
-const MOBILE_DECK_MQ = "(max-width: 720px)";
+/** Phone-only — static 2×2 grid, no carousel */
+const MOBILE_GRID_MQ = "(max-width: 720px)";
 
 type Category = {
   anchor:    string;
@@ -113,7 +113,6 @@ export default function CategoryWishSection() {
   const t = useTranslations();
   const { path } = useLocale();
   const rootRef        = useRef<HTMLElement>(null);
-  const fanRef         = useRef<HTMLDivElement>(null);
   const lampWrapRef    = useRef<HTMLDivElement>(null);
   const proseRef       = useRef<HTMLDivElement>(null);
   const magicGenieRef  = useRef<HTMLImageElement>(null);
@@ -122,7 +121,6 @@ export default function CategoryWishSection() {
   const [selected, setSelected]       = useState<string | null>(null);
   const [hoveredMood, setHoveredMood] = useState<CategoryMood | null>(null);
   const [fanOpen, setFanOpen]         = useState(false);
-  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
   const ipadFanRef  = useRef(false);
   const revealedRef = useRef(false);
   const router = useRouter();
@@ -151,56 +149,6 @@ export default function CategoryWishSection() {
     },
     [path, router],
   );
-
-  const scrollToMobileCard = useCallback((index: number) => {
-    const fan = fanRef.current;
-    if (!fan) return;
-    const slot = fan.querySelectorAll<HTMLElement>(".category-wish-fan__slot")[index];
-    if (!slot) return;
-    slot.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
-  }, []);
-
-  /* ── Mobile carousel: active index, mood tint, dot sync ── */
-  useEffect(() => {
-    const fan = fanRef.current;
-    if (!fan) return;
-    const mq = window.matchMedia(MOBILE_DECK_MQ);
-    if (!mq.matches) return;
-
-    let raf = 0;
-
-    const syncCarousel = () => {
-      const slots = fan.querySelectorAll<HTMLElement>(".category-wish-fan__slot");
-      if (!slots.length) return;
-
-      const style = window.getComputedStyle(fan);
-      const gap = parseFloat(style.columnGap || style.gap || "12") || 12;
-      const cardStep = slots[0].offsetWidth + gap;
-      const idx = Math.min(
-        CATEGORIES.length - 1,
-        Math.max(0, Math.round(fan.scrollLeft / Math.max(1, cardStep))),
-      );
-
-      setMobileActiveIndex((prev) => (prev === idx ? prev : idx));
-      const cat = CATEGORIES[idx];
-      if (cat) setHoveredMood(cat.mood);
-    };
-
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(syncCarousel);
-    };
-
-    fan.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    syncCarousel();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      fan.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
 
   /* ── iPad: fan always open (desktop spread, no hover needed) ─────────── */
   useEffect(() => {
@@ -256,7 +204,7 @@ export default function CategoryWishSection() {
         gsap.set(lampWrap, { opacity: 0, scale: 0.4, y: -20 });
         gsap.set(lifts, { opacity: 0, y: 44 });
       } else {
-        /* Mobile carousel: cards always visible, no GSAP entrance */
+        /* Mobile grid: cards always visible — no GSAP entrance */
         gsap.set(lifts, { opacity: 1, clearProps: "all" });
       }
       if (proseLines.length) gsap.set(proseLines, { opacity: 0, y: 14 });
@@ -282,7 +230,7 @@ export default function CategoryWishSection() {
           }, 0.08);
         }
 
-        /* 2 — Cards stagger in (desktop/tablet only; mobile deck uses scroll crossfade) */
+        /* 2 — Cards stagger in (desktop/tablet only; mobile uses static grid) */
         if (!narrowMobile) {
           tl.to(
             lifts,
@@ -409,7 +357,7 @@ export default function CategoryWishSection() {
 
     const narrowMobile =
       typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 720px)").matches;
+      window.matchMedia(MOBILE_GRID_MQ).matches;
 
     /* Phones: pick category only — no genie, lamp pulse, burst, or puff audio */
     if (narrowMobile) {
@@ -557,37 +505,34 @@ export default function CategoryWishSection() {
           </div>
         </header>
 
-        {/* Cards — desktop fan / mobile horizontal snap carousel (phones ≤720px) */}
-        <div className="category-wish-mobile-shell">
-          <div
-            ref={fanRef}
-            className={`category-wish-fan${fanOpen ? " category-wish-fan--open" : ""}`}
-            role="list"
-            aria-label={t.home.categoryWishSwipeHint}
-            onMouseEnter={() => setFanOpen(true)}
-            onMouseLeave={() => {
-              if (ipadFanRef.current) return;
+        {/* Cards — desktop fan / mobile static 2×2 grid (phones ≤720px) */}
+        <div
+          className={`category-wish-fan${fanOpen ? " category-wish-fan--open" : ""}`}
+          role="list"
+          onMouseEnter={() => setFanOpen(true)}
+          onMouseLeave={() => {
+            if (ipadFanRef.current) return;
+            setFanOpen(false);
+            setHoveredMood(null);
+          }}
+          onFocus={() => setFanOpen(true)}
+          onBlur={(e) => {
+            if (ipadFanRef.current) return;
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
               setFanOpen(false);
               setHoveredMood(null);
-            }}
-            onFocus={() => setFanOpen(true)}
-            onBlur={(e) => {
-              if (ipadFanRef.current) return;
-              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-                setFanOpen(false);
-                setHoveredMood(null);
-              }
-            }}
-            onTouchStart={() => {
-              if (!ipadFanRef.current) setFanOpen(true);
-            }}
-          >
-            {CATEGORIES.map((cat, index) => (
-              <div
-                key={cat.anchor}
-                className="category-wish-fan__slot"
-                role="listitem"
-              >
+            }
+          }}
+          onTouchStart={() => {
+            if (!ipadFanRef.current) setFanOpen(true);
+          }}
+        >
+          {CATEGORIES.map((cat, index) => (
+            <div
+              key={cat.anchor}
+              className="category-wish-fan__slot"
+              role="listitem"
+            >
               <CloudBg idx={index} />
 
               <button
@@ -608,8 +553,8 @@ export default function CategoryWishSection() {
                     <div className="category-wish-card__media">
                       <Image
                         src={cat.image} alt="" fill
-                        sizes="(max-width: 767px) 94vw, (max-width: 1023px) 52vw, 32vw"
-                        quality={92} className="category-wish-card__img" priority={index < 2}
+                        sizes="(max-width: 720px) 44vw, (max-width: 1023px) 52vw, 32vw"
+                        quality={88} className="category-wish-card__img" priority={index < 2}
                       />
                       <div className="category-wish-card__scrim" aria-hidden />
                       <div className="category-wish-card__overlay">
@@ -626,31 +571,6 @@ export default function CategoryWishSection() {
               </button>
             </div>
           ))}
-          </div>
-
-          <div className="category-wish-mobile-ui">
-            <div
-              className="category-wish-mobile-dots"
-              role="tablist"
-              aria-label={t.home.categoryWishSwipeHint}
-            >
-              {CATEGORIES.map((cat, index) => (
-                <button
-                  key={cat.anchor}
-                  type="button"
-                  role="tab"
-                  className={`category-wish-mobile-dot${mobileActiveIndex === index ? " is-active" : ""}`}
-                  aria-selected={mobileActiveIndex === index}
-                  aria-label={categoryTitle(cat.anchor)}
-                  onClick={() => scrollToMobileCard(index)}
-                />
-              ))}
-            </div>
-            <p className="category-wish-mobile-hint" aria-hidden="true">
-              <span className="category-wish-mobile-hint__chevron">›</span>
-              {t.home.categoryWishSwipeHint}
-            </p>
-          </div>
         </div>
 
         {/* Lamp lives at the bottom — magic source that fuels the cards above */}

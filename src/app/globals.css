@@ -3232,29 +3232,14 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   }
 }
 
-/* Mobile carousel shell — inert on desktop */
-.category-wish-mobile-shell {
-  display: contents;
-}
-
-.category-wish-mobile-ui {
-  display: none;
-}
-
 /* --------------------------------------------------------------------------
- * Mobile: horizontal snap-scroll carousel (phones ≤720px only)
- * Desktop fan, iPad fan — completely untouched.
+ * Mobile: static 2×2 image grid (phones ≤720px only)
+ * No scroll, no swipe — desktop fan untouched.
  * -------------------------------------------------------------------------- */
 @media (max-width: 720px) {
   .category-wish-section {
-    overflow-x: clip;
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .category-wish-section__inner {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: clamp(16px, 5vw, 24px);
+    padding-right: clamp(16px, 5vw, 24px);
   }
 
   .category-wish-section__prose {
@@ -3262,8 +3247,8 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     font-size: clamp(1.02rem, 4.5vw + 0.55rem, 1.28rem);
     line-height: 1.42;
     letter-spacing: 0.01em;
-    padding-left: clamp(20px, 6vw, 32px);
-    padding-right: clamp(20px, 6vw, 32px);
+    padding-left: 0;
+    padding-right: 0;
     padding-bottom: clamp(1.75rem, 6vw, 3.5rem);
   }
 
@@ -3278,184 +3263,91 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     padding-top: clamp(0.75rem, 3vw, 1.15rem);
   }
 
-  /* Full-bleed shell — clips stray overflow, contains horizontal scroll */
-  .category-wish-mobile-shell {
-    display: block;
-    width: 100vw;
-    max-width: 100vw;
-    margin-left: calc(50% - 50vw);
-    overflow: hidden;
-  }
-
-  /*
-   * Carousel track — one card fully visible + clear peek of the next.
-   * Uses container % (not vw padding) so cards are never cut in half.
-   */
-  .category-wish-mobile-shell .category-wish-fan {
-    --cw-mobile-card-w: calc(100% - 72px);
-    --cw-mobile-gap: 12px;
-    --cw-mobile-pad: 16px;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: stretch;
+  .category-wish-fan {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(10px, 3vw, 14px);
     width: 100%;
     max-width: 100%;
     height: auto;
     min-height: 0;
-    margin: 0;
-    padding: clamp(8px, 2vw, 16px) var(--cw-mobile-pad) clamp(12px, 3vw, 20px);
-    gap: var(--cw-mobile-gap);
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: var(--cw-mobile-pad);
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pinch-zoom;
-    overscroll-behavior-x: contain;
-    overscroll-behavior-y: none;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .category-wish-mobile-shell .category-wish-fan::-webkit-scrollbar {
-    display: none;
+    margin: 0 auto;
+    padding: clamp(4px, 1vw, 8px) 0 clamp(28px, 7vw, 40px);
+    overflow: visible;
   }
 
-  .category-wish-mobile-shell .category-wish-fan__slot {
-    flex: 0 0 var(--cw-mobile-card-w);
-    width: var(--cw-mobile-card-w);
-    min-width: var(--cw-mobile-card-w);
-    max-width: var(--cw-mobile-card-w);
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
+  .category-wish-fan__slot {
     position: relative !important;
     left: auto !important;
     bottom: auto !important;
     top: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
     margin: 0 !important;
     transform: none !important;
     -webkit-transform: none !important;
-    backface-visibility: visible;
-    -webkit-backface-visibility: visible;
     z-index: auto !important;
-    overflow: visible;
   }
 
-  /* Kill desktop closed-fan slot transforms on mobile */
-  .category-wish-mobile-shell .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(1),
-  .category-wish-mobile-shell .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(2),
-  .category-wish-mobile-shell .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(3),
-  .category-wish-mobile-shell .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(4) {
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(1),
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(2),
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(3),
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(4) {
     transform: none !important;
     left: auto !important;
     bottom: auto !important;
   }
 
-  .category-wish-mobile-shell .category-wish-card {
+  .category-wish-card {
     width: 100%;
-    border-radius: clamp(24px, 6vw, 36px);
+    border-radius: clamp(18px, 4.5vw, 26px);
   }
 
-  .category-wish-mobile-shell .category-wish-fan:not(.category-wish-fan--open) .category-wish-card__tilt,
-  .category-wish-mobile-shell .category-wish-card__tilt {
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-card__tilt,
+  .category-wish-card__tilt {
     transform: none;
-    border-radius: clamp(24px, 6vw, 36px);
-    transition: box-shadow 0.35s ease, border-color 0.35s ease;
+    border-radius: clamp(18px, 4.5vw, 26px);
+    box-shadow:
+      0 14px 28px rgba(26, 18, 8, 0.08),
+      0 6px 14px rgba(26, 18, 8, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
-  .category-wish-mobile-shell .category-wish-card__lift {
+  .category-wish-card__lift {
     will-change: auto;
     backface-visibility: visible;
     -webkit-backface-visibility: visible;
   }
 
-  .category-wish-mobile-shell .category-wish-card__media,
-  .category-wish-mobile-shell .category-wish-card__img {
+  .category-wish-card__media,
+  .category-wish-card__img {
     transform: none;
     -webkit-transform: none;
-    backface-visibility: visible;
-    -webkit-backface-visibility: visible;
   }
 
-  .category-wish-mobile-shell .category-wish-card:active .category-wish-card__tilt {
-    transform: translateY(4px);
-    transition-duration: 0.12s;
+  .category-wish-card:active .category-wish-card__tilt {
+    transform: scale(0.98);
+    transition-duration: 0.1s;
   }
 
-  .category-wish-mobile-shell .category-wish-lamp-base {
+  .category-wish-card__overlay-title {
+    font-size: clamp(1.15rem, 4.5vw, 1.45rem);
+  }
+
+  /* Mobile: image + title only */
+  .category-wish-card__brand,
+  .cw-cloud-bg {
     display: none !important;
   }
 
-  .category-wish-mobile-shell .category-wish-magic-genie {
+  .category-wish-lamp-base {
+    display: none !important;
+  }
+
+  .category-wish-magic-genie {
     display: none;
-  }
-
-  .category-wish-mobile-shell .cw-cloud-bg {
-    opacity: 1;
-    transform: none;
-    pointer-events: none;
-    inset: 6% -10% -38% -10%;
-  }
-
-  /* Swipe hint + dot indicators */
-  .category-wish-mobile-ui {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 0 16px clamp(28px, 7vw, 40px);
-  }
-
-  .category-wish-mobile-dots {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .category-wish-mobile-dot {
-    width: 8px;
-    height: 8px;
-    padding: 0;
-    border: none;
-    border-radius: 999px;
-    background: rgba(179, 61, 77, 0.28);
-    cursor: pointer;
-    transition:
-      width 0.3s ease,
-      background 0.3s ease,
-      opacity 0.3s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .category-wish-mobile-dot.is-active {
-    width: 22px;
-    background: rgba(179, 61, 77, 0.88);
-  }
-
-  .category-wish-mobile-hint {
-    margin: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--font-serif);
-    font-size: clamp(0.82rem, 3.2vw, 0.92rem);
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: rgba(179, 61, 77, 0.72);
-  }
-
-  .category-wish-mobile-hint__chevron {
-    display: inline-block;
-    font-size: 1.15em;
-    line-height: 1;
-    animation: cw-mobile-hint-nudge 1.6s ease-in-out infinite;
-  }
-
-  @keyframes cw-mobile-hint-nudge {
-    0%, 100% { transform: translateX(0); opacity: 0.55; }
-    50%      { transform: translateX(5px); opacity: 1; }
   }
 }
 
