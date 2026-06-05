@@ -3,11 +3,11 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
-function resetScrollPosition() {
-  window.scrollTo(0, 0);
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
-}
+import {
+  beginRouteTransition,
+  clearRouteTransition,
+  resetScrollPosition,
+} from "@/lib/route-transition";
 
 function isInternalNavLink(anchor: HTMLAnchorElement, pathname: string) {
   const href = anchor.getAttribute("href");
@@ -49,7 +49,7 @@ export function NavigationScrollGuard() {
       resetScrollPosition();
     }
 
-    document.documentElement.removeAttribute("data-route-transition");
+    clearRouteTransition();
   }, [pathname]);
 
   useEffect(() => {
@@ -61,8 +61,7 @@ export function NavigationScrollGuard() {
       if (!(anchor instanceof HTMLAnchorElement)) return;
       if (!isInternalNavLink(anchor, pathname)) return;
 
-      document.documentElement.dataset.routeTransition = "true";
-      resetScrollPosition();
+      beginRouteTransition();
     };
 
     document.addEventListener("click", onDocumentClick, true);

@@ -4584,6 +4584,15 @@ html[data-route-transition="true"] .site-footer {
   pointer-events: none;
 }
 
+html[data-route-transition="true"] {
+  overflow: hidden;
+}
+
+html[data-route-transition="true"] body {
+  min-height: 100vh;
+  overflow: hidden;
+}
+
 .site-footer {
   --footer-pink: #c43670;
   --footer-pink-deep: #9a2858;
