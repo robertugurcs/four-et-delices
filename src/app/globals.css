@@ -3232,9 +3232,22 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   }
 }
 
+/* --------------------------------------------------------------------------
+ * Mobile: horizontal snap-scroll carousel (phones ≤720px only)
+ * Desktop fan, iPad fan — completely untouched.
+ * -------------------------------------------------------------------------- */
 @media (max-width: 720px) {
+  /* Let the fan bleed to full viewport width so cards fill edge-to-edge */
   .category-wish-section {
     overflow-x: visible;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Prose gets its own horizontal padding so text still breathes */
+  .category-wish-section__inner {
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .category-wish-section__prose {
@@ -3242,8 +3255,8 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     font-size: clamp(1.02rem, 4.5vw + 0.55rem, 1.28rem);
     line-height: 1.42;
     letter-spacing: 0.01em;
-    padding-left: clamp(16px, 5vw, 24px);
-    padding-right: clamp(16px, 5vw, 24px);
+    padding-left: clamp(20px, 6vw, 32px);
+    padding-right: clamp(20px, 6vw, 32px);
     padding-bottom: clamp(1.75rem, 6vw, 3.5rem);
   }
 
@@ -3258,77 +3271,54 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     padding-top: clamp(0.75rem, 3vw, 1.15rem);
   }
 
+  /*
+   * Horizontal snap carousel — the fan itself is the scroll container.
+   * scroll-snap-type: x mandatory = each swipe locks onto the next card.
+   * No sticky, no fixed, no JS scroll — pure CSS, Safari-native.
+   */
   .category-wish-fan {
-    display: block;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: clamp(12px, 4vw, 20px);
     height: auto;
     min-height: 0;
     padding-top: clamp(8px, 2vw, 16px);
-    padding-bottom: clamp(48px, 12vw, 88px);
+    padding-bottom: clamp(40px, 10vw, 64px);
+    /* Center first/last card (half viewport - half card width) */
+    padding-left: calc(50vw - min(40vw, 170px));
+    padding-right: calc(50vw - min(40vw, 170px));
+    overflow-x: scroll;
+    overflow-y: visible;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  .category-wish-fan::-webkit-scrollbar { display: none; }
 
-  /*
-   * Mobile scroll deck — tall track + one fixed stage + crossfading cards.
-   * No position:sticky (breaks/jitters on iOS Safari with overflow-x-clip ancestors).
-   * JS in CategoryWishSection pins the stage with position:fixed while scrolling.
-   */
-  .category-wish-fan-wrap--mobile-deck {
-    --cw-mobile-steps: 4;
-    --cw-mobile-deck-top: clamp(72px, 14vw, 108px);
-    height: calc(var(--cw-mobile-steps) * 85svh);
-    height: calc(var(--cw-mobile-steps) * 85vh);
-  }
-
-  .category-wish-fan--mobile-deck {
-    display: block;
-    height: calc(100svh - var(--cw-mobile-deck-top) - 24px);
-    height: calc(100vh - var(--cw-mobile-deck-top) - 24px);
-    min-height: 420px;
-    max-height: min(640px, calc(100svh - var(--cw-mobile-deck-top) - 24px));
-    padding-top: 0;
-    padding-bottom: 0;
-    margin: 0 auto;
-  }
-
-  .category-wish-fan--mobile-deck .category-wish-fan__slot {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    bottom: auto;
-    margin: 0;
-    width: min(88vw, 400px);
-    max-width: none;
-    flex: none;
-    scroll-margin-top: 0;
-    transform: translateX(-50%);
-    -webkit-transform: translateX(-50%);
+  /* Each card slot: fixed-width snap item */
+  .category-wish-fan__slot {
+    flex: 0 0 min(80vw, 340px);
+    scroll-snap-align: center;
+    /* Reset all desktop absolute / sticky positioning */
+    position: relative !important;
+    left: auto !important;
+    bottom: auto !important;
+    top: auto !important;
+    margin-bottom: 0 !important;
+    transform: none !important;
+    -webkit-transform: none !important;
     backface-visibility: visible;
     -webkit-backface-visibility: visible;
-    transition:
-      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: auto !important;
   }
 
-  .category-wish-fan--mobile-deck .category-wish-fan__slot[data-cw-active="true"] {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0) scale(1);
-    z-index: 20 !important;
-  }
-
-  .category-wish-fan--mobile-deck .category-wish-fan__slot[data-cw-active="false"] {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(-50%) translateY(14px) scale(0.97);
-    z-index: 10 !important;
-  }
-
-  /* Neutralize desktop closed-fan slot transforms on the mobile deck */
-  .category-wish-fan--mobile-deck.category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(1),
-  .category-wish-fan--mobile-deck.category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(2),
-  .category-wish-fan--mobile-deck.category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(3),
-  .category-wish-fan--mobile-deck.category-wish-fan:not(.category-wish-fan--open) .category-wish-fan__slot:nth-child(4) {
-    left: 50%;
-    bottom: auto;
+  /* Remove any desktop rotate / translate from the card tilt on mobile */
+  .category-wish-fan:not(.category-wish-fan--open) .category-wish-card__tilt,
+  .category-wish-card__tilt {
+    transform: none;
+    transition: box-shadow 0.35s ease, border-color 0.35s ease;
   }
 
   .category-wish-card__lift {
@@ -3345,19 +3335,9 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
     -webkit-backface-visibility: visible;
   }
 
-  .category-wish-lamp-base {
-    display: none !important;
-  }
-
-  .category-wish-fan--mobile-deck .category-wish-card__tilt,
-  .category-wish-fan:not(.category-wish-fan--open) .category-wish-card__tilt,
-  .category-wish-card__tilt {
-    transform: rotate(calc(var(--cw-rot, 0deg) * 0.35));
-    transition: box-shadow 0.35s ease, border-color 0.35s ease;
-  }
-
+  /* Tap feedback */
   .category-wish-card:active .category-wish-card__tilt {
-    transform: rotate(calc(var(--cw-rot, 0deg) * 0.35)) translateY(5px);
+    transform: translateY(4px);
     box-shadow:
       0 12px 22px rgba(26, 18, 8, 0.07),
       0 5px 12px rgba(26, 18, 8, 0.055),
@@ -3378,58 +3358,14 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
       inset 0 1px 0 rgba(255, 255, 255, 0.62);
   }
 
-  .category-wish-card--selected:hover:active .category-wish-card__tilt,
-  .category-wish-card--selected:focus-visible:active .category-wish-card__tilt {
-    border-color: rgba(196, 54, 112, 0.42);
-    box-shadow:
-      0 18px 34px rgba(196, 54, 112, 0.12),
-      0 8px 18px rgba(26, 18, 8, 0.075),
-      0 0 0 1px rgba(251, 217, 229, 0.74),
-      inset 0 3px 9px rgba(196, 54, 112, 0.085),
-      inset 0 1px 0 rgba(255, 255, 255, 0.55);
-  }
-
+  .category-wish-lamp-base  { display: none !important; }
   .category-wish-magic-genie { display: none; }
 
-  .category-wish-fan--mobile-deck .cw-cloud-bg,
   .cw-cloud-bg {
     opacity: 1;
     transform: none;
     pointer-events: none;
     inset: 6% -14% -38% -14%;
-  }
-}
-
-@media (max-width: 720px) and (prefers-reduced-motion: reduce) {
-  .category-wish-fan-wrap--mobile-deck {
-    height: auto;
-  }
-
-  .category-wish-fan--mobile-deck {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    width: auto !important;
-    transform: none !important;
-    height: auto;
-    min-height: 0;
-    max-height: none;
-    padding-bottom: clamp(48px, 12vw, 88px);
-  }
-
-  .category-wish-fan--mobile-deck .category-wish-fan__slot {
-    position: relative;
-    left: auto;
-    top: auto;
-    width: min(88vw, 400px);
-    margin: 0 auto clamp(2rem, 8vw, 3rem);
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    transform: none !important;
-  }
-
-  .category-wish-fan--mobile-deck .category-wish-fan__slot:last-child {
-    margin-bottom: 0;
   }
 }
 
