@@ -5380,6 +5380,15 @@ html[data-our-cakes-lightbox="open"] .lang-switcher {
   background: #fbf4eb;
 }
 
+.route-transition-veil__wash {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  background: inherit;
+  animation: routeVeilWashIn 1.65s cubic-bezier(0.33, 1, 0.45, 1) forwards;
+}
+
 .route-transition-veil[data-route-veil-mood="kids"] .route-transition-veil__pool {
   background: #efe8f4;
 }
@@ -5398,6 +5407,7 @@ html[data-our-cakes-lightbox="open"] .lang-switcher {
 
 .route-transition-veil__orb {
   position: absolute;
+  z-index: 1;
   left: var(--orb-left);
   top: var(--orb-top);
   width: var(--orb-size);
@@ -5405,43 +5415,57 @@ html[data-our-cakes-lightbox="open"] .lang-switcher {
   border-radius: 50%;
   background: var(--orb-color);
   box-shadow:
-    inset -12px -18px 36px rgba(0, 0, 0, 0.08),
-    inset 10px 12px 28px rgba(255, 255, 255, 0.42);
+    inset -14px -20px 40px rgba(0, 0, 0, 0.09),
+    inset 12px 14px 32px rgba(255, 255, 255, 0.44);
   opacity: 0;
-  transform: scale(0.12);
-  animation: routeVeilOrbIn 0.72s cubic-bezier(0.22, 1, 0.36, 1) var(--orb-delay) forwards;
+  will-change: transform, opacity;
+  animation: routeVeilOrbIn 1.28s cubic-bezier(0.28, 0.82, 0.32, 1) var(--orb-delay) forwards;
 }
 
 .route-transition-veil__orb--from-left {
-  transform: translateX(-28%) scale(0.12);
+  transform: translateX(-36%) scale(0.03);
 }
 
 .route-transition-veil__orb--from-right {
-  transform: translateX(28%) scale(0.12);
+  transform: translateX(36%) scale(0.03);
 }
 
 .route-transition-veil__orb--from-bottom {
-  transform: translateY(32%) scale(0.12);
+  transform: translateY(38%) scale(0.03);
 }
 
 .route-transition-veil__orb--from-top {
-  transform: translateY(-28%) scale(0.12);
+  transform: translateY(-36%) scale(0.03);
 }
 
 .route-transition-veil--exit {
-  animation: routeVeilFadeOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: routeVeilFadeOut 0.68s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes routeVeilWashIn {
+  0% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  35% {
+    opacity: 0.42;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes routeVeilOrbIn {
   0% {
     opacity: 0;
   }
-  18% {
-    opacity: 0.96;
+  10% {
+    opacity: 0.7;
   }
   100% {
     opacity: 1;
-    transform: translate(0, 0) scale(1);
+    transform: translate(0, 0) scale(1.16);
   }
 }
 

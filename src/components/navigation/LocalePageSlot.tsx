@@ -1,37 +1,31 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import {
-  clearRouteTransition,
+  isRouteTransitionActive,
+  releaseRouteTransition,
   resetScrollPosition,
 } from "@/lib/route-transition";
 
 const MIN_CONTENT_HEIGHT_RATIO = 0.28;
-const RELEASE_FALLBACK_MS = 1200;
-
-function releaseRouteTransition() {
-  resetScrollPosition();
-  clearRouteTransition();
-}
+const RELEASE_FALLBACK_MS = 2400;
 
 /**
  * Wraps locale page segments so the persistent layout footer does not flash at
  * the top while Suspense/loading swaps leave the children slot nearly empty.
+ *
+ * ResizeObserver only runs during an active route transition — otherwise fast
+ * scroll (iframe/images loading) would reset scrollY to 0 on mobile.
  */
 export function LocalePageSlot({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const slotRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
-    resetScrollPosition();
-  }, [pathname]);
-
   useEffect(() => {
     const slot = slotRef.current;
-    if (!slot) {
-      releaseRouteTransition();
+    if (!slot || !isRouteTransitionActive()) {
       return;
     }
 
@@ -53,6 +47,7 @@ export function LocalePageSlot({ children }: { children: React.ReactNode }) {
       slot.offsetHeight > window.innerHeight * MIN_CONTENT_HEIGHT_RATIO;
 
     const tryRelease = () => {
+      if (!isRouteTransitionActive()) return;
       resetScrollPosition();
       if (hasMeaningfulHeight()) {
         releaseOnce();
@@ -64,7 +59,6 @@ export function LocalePageSlot({ children }: { children: React.ReactNode }) {
     });
 
     observer.observe(slot);
-    resetScrollPosition();
 
     frameA = window.requestAnimationFrame(() => {
       frameB = window.requestAnimationFrame(() => {

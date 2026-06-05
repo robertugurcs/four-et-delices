@@ -3,7 +3,11 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
-import { beginRouteTransition, resetScrollPosition } from "@/lib/route-transition";
+import {
+  beginRouteTransition,
+  isRouteTransitionActive,
+  resetScrollPosition,
+} from "@/lib/route-transition";
 
 function isInternalNavLink(anchor: HTMLAnchorElement, pathname: string) {
   const href = anchor.getAttribute("href");
@@ -42,7 +46,9 @@ export function NavigationScrollGuard() {
   useLayoutEffect(() => {
     if (pathnameRef.current !== pathname) {
       pathnameRef.current = pathname;
-      resetScrollPosition();
+      if (isRouteTransitionActive()) {
+        resetScrollPosition();
+      }
     }
   }, [pathname]);
 

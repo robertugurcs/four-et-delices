@@ -25,9 +25,20 @@ export function markRouteTransition() {
   document.documentElement.dataset.routeTransition = "true";
 }
 
+export function isRouteTransitionActive() {
+  return document.documentElement.dataset.routeTransition === "true";
+}
+
 export function clearRouteTransition() {
   document.documentElement.removeAttribute("data-route-transition");
   document.documentElement.removeAttribute("data-route-mood");
+}
+
+/** End a client navigation veil — no-op when transition is not active. */
+export function releaseRouteTransition() {
+  if (!isRouteTransitionActive()) return;
+  resetScrollPosition();
+  clearRouteTransition();
 }
 
 export function beginRouteTransition(options?: RouteTransitionOptions) {
