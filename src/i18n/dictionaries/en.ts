@@ -69,6 +69,7 @@ export const enDictionary = {
     categoryWishP3:
       "Tell us what you're celebrating.\nWe'll bring your vision to life.",
     categoryWishCta: "Please make your wish",
+    categoryWishSwipeHint: "Swipe to explore our cakes",
     categoryExplore: "{title} — explore",
     categoryKids: "Kids",
     categoryWedding: "Wedding",

@@ -70,6 +70,7 @@ export const frDictionary = {
     categoryWishP3:
       "Dites-nous ce que vous célébrez.\nNous donnerons vie à votre vision.",
     categoryWishCta: "Formulez votre souhait",
+    categoryWishSwipeHint: "Glissez pour découvrir nos gâteaux",
     categoryExplore: "{title} — explorer",
     categoryKids: "Enfants",
     categoryWedding: "Mariage",
