@@ -4713,11 +4713,18 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 }
 
 .site-footer__nav-arrow {
-  display: inline-block;
-  font-size: 0.85em;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: -0.06em;
+  margin-inline-start: 0.15em;
   transform: translate(0, 0);
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.site-footer__nav-arrow svg {
+  display: block;
+  width: 0.72em;
+  height: 0.72em;
 }
 
 .site-footer__nav-link--external:hover .site-footer__nav-arrow,
