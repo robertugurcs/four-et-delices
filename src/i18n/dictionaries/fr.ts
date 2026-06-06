@@ -58,7 +58,7 @@ export const frDictionary = {
     tasteTitle: "Plus près d'un goût inoubliable",
     tasteLine1: "PLUS PRÈS D'UN",
     tasteLine2: "GOÛT",
-    tasteLine3: "INOUOUBLIABLE",
+    tasteLine3: "INOUBLIABLE",
     tasteGallery: "Galerie de gâteaux — {count} photos.",
     tasteSlide: "{index} / {total}",
     categoryWishHeading:
