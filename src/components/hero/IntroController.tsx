@@ -8,6 +8,13 @@ import {
 } from "@/lib/scroll-to-section";
 import { shouldSkipHeroIntro } from "@/lib/skip-hero-intro";
 
+function scrollToCakesHashIfPresent() {
+  const hash = window.location.hash.slice(1);
+  if (hash === OUR_CAKES_SECTION_ID) {
+    scrollToHomeHashWhenReady(hash);
+  }
+}
+
 /**
  * Sets intro phase on <html> only after mount — avoids SSR/client hydration mismatch.
  * Hero sets `dataset.heroIntro = "done"` when the hand-off finishes.
@@ -27,12 +34,15 @@ export function IntroController() {
       document.documentElement.dataset.headerTheme = "hero";
     }
 
-    const hash = window.location.hash.slice(1);
-    if (hash === OUR_CAKES_SECTION_ID) {
-      scrollToHomeHashWhenReady(hash);
-    }
+    scrollToCakesHashIfPresent();
+
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) scrollToCakesHashIfPresent();
+    };
+    window.addEventListener("pageshow", onPageShow);
 
     return () => {
+      window.removeEventListener("pageshow", onPageShow);
       document.documentElement.removeAttribute("data-hero-intro");
       document.documentElement.removeAttribute("data-header-theme");
     };

@@ -16,6 +16,7 @@ import { gsap } from "gsap";
 import { WISH_ANCHOR_TO_CATEGORY } from "@/data/our-cakes";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 import { playGenieArrivalPuff } from "@/lib/magic-sfx";
+import { markHomeReturnSection } from "@/lib/scroll-to-section";
 
 type CategoryMood = "birthdays" | "weddings" | "kids" | "corporate";
 
@@ -150,6 +151,8 @@ export default function CategoryWishSection() {
       if (!categoryId) return;
 
       const mood = anchor as RouteTransitionMood;
+
+      markHomeReturnSection();
 
       pushWithRouteTransition(router, path(`/cakes/${categoryId}`), {
         mood,

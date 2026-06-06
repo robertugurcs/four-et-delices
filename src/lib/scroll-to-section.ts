@@ -1,5 +1,15 @@
 export const OUR_CAKES_SECTION_ID = "cakes";
 
+/** Tag the current home history entry so browser back restores the cards section. */
+export function markHomeReturnSection(id: string = OUR_CAKES_SECTION_ID) {
+  if (typeof window === "undefined") return;
+
+  const nextUrl = `${window.location.pathname}${window.location.search}#${id}`;
+  if (window.location.hash.slice(1) === id) return;
+
+  history.replaceState(window.history.state, "", nextUrl);
+}
+
 export function scrollToSection(
   id: string,
   behavior: ScrollBehavior = "smooth",
