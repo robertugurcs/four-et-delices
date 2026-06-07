@@ -129,15 +129,6 @@ export function MiniSweetCatchFooter() {
             className="sweet-catch-arcane__iframe relative z-[2] mx-auto block h-[478px] w-full max-w-[min(100%,720px)] overflow-hidden rounded-[22px] border border-white/20 bg-[#FDF8F3] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35),inset_0_10px_28px_-6px_rgba(255,255,255,0.22)]"
           />
         </div>
-        <div className="mt-4 text-center">
-          <a
-            href="/game"
-            className="sweet-catch-arcane__fullscreen-link"
-            aria-label="Play Sweet Catch fullscreen"
-          >
-            ⛶ Full Screen
-          </a>
-        </div>
       </div>
     </section>
   );
