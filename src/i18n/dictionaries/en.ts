@@ -46,6 +46,13 @@ export const enDictionary = {
     instagram: "Instagram",
     tiktok: "TikTok",
     whatsapp: "WhatsApp",
+    websiteDesign: "Website design",
+    creditsTitle: "Website\u00a0design",
+    closeCredits: "Close credits",
+    emailMarianne: "Email Marianne Ndoye",
+    whatsappMarianne: "WhatsApp Marianne Ndoye",
+    emailRobert: "Email Robert Ugur Aksu",
+    whatsappRobert: "WhatsApp Robert Ugur Aksu",
   },
   home: {
     intro: "Introduction",
@@ -152,6 +159,8 @@ export const enDictionary = {
     sendFailed: "We couldn't send your inquiry.",
     completeRequired: "Please complete all required fields.",
     sendFailedRetry: "We couldn't send your inquiry. Please try again.",
+    sendFailedServerDown:
+      "We couldn't reach the server. Please check your connection and try again.",
     fillRequired: "Please fill required fields.",
     sending: "Sending…",
     createCake: "Create my cake",

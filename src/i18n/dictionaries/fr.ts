@@ -47,6 +47,13 @@ export const frDictionary = {
     instagram: "Instagram",
     tiktok: "TikTok",
     whatsapp: "WhatsApp",
+    websiteDesign: "Conception web",
+    creditsTitle: "Conception web",
+    closeCredits: "Fermer les crédits",
+    emailMarianne: "Envoyer un e-mail à Marianne Ndoye",
+    whatsappMarianne: "WhatsApp Marianne Ndoye",
+    emailRobert: "Envoyer un e-mail à Robert Ugur Aksu",
+    whatsappRobert: "WhatsApp Robert Ugur Aksu",
   },
   home: {
     intro: "Introduction",
@@ -158,6 +165,8 @@ export const frDictionary = {
     completeRequired: "Veuillez remplir tous les champs obligatoires.",
     sendFailedRetry:
       "Nous n'avons pas pu envoyer votre demande. Veuillez réessayer.",
+    sendFailedServerDown:
+      "Nous n'avons pas pu joindre le serveur. Vérifiez votre connexion puis réessayez.",
     fillRequired: "Veuillez remplir les champs obligatoires.",
     sending: "Envoi…",
     createCake: "Créer mon gâteau",
