@@ -52,6 +52,65 @@ function escapeHtml(s: string): string {
     .replaceAll("'", "&#39;");
 }
 
+/**
+ * French labels for the English enum values submitted by the form.
+ * Mirrors src/i18n/dictionaries/fr.ts -> inquiry.options.
+ * Free-text values (e.g. a custom flavour) fall through unchanged.
+ */
+const FR_VALUE_LABELS = {
+  occasions: {
+    Wedding: "Mariage",
+    Birthday: "Anniversaire",
+    "Baby shower": "Baby shower",
+    Graduation: "Remise de diplôme",
+    "Corporate event": "Événement d'entreprise",
+    "Something else": "Autre",
+  },
+  servings: {
+    "2": "2",
+    "4–5": "4–5",
+    "6–8": "6–8",
+    "10–12": "10–12",
+    "15–20": "15–20",
+    "20–40": "20–40",
+    More: "Plus",
+  },
+  flavours: {
+    Strawberry: "Fraise",
+    "Mango compote": "Compote de mangue",
+    "Passion fruit": "Fruit de la passion",
+    "Chocolate & Vanilla": "Chocolat & vanille",
+    "Kinder Bueno": "Kinder Bueno",
+    "Ferrero Rocher": "Ferrero Rocher",
+    Pistachio: "Pistache",
+    "Other / Custom flavour": "Autre / saveur personnalisée",
+  },
+  styles: {
+    "Minimal & elegant": "Minimal & élégant",
+    "Floral & romantic": "Floral & romantique",
+    "Modern & clean": "Moderne & épuré",
+    "Luxurious & detailed": "Luxueux & détaillé",
+    "Not sure yet": "Pas encore sûr(e)",
+  },
+  delivery: {
+    Delivery: "Livraison",
+    Pickup: "Retrait",
+  },
+} as const satisfies Record<string, Record<string, string>>;
+
+type ValueCategory = keyof typeof FR_VALUE_LABELS;
+
+/** English is the source enum, so `en` returns the value as-is. */
+function localizeValue(
+  category: ValueCategory,
+  value: string,
+  locale: Locale,
+): string {
+  if (locale !== "fr") return value;
+  const map = FR_VALUE_LABELS[category] as Record<string, string>;
+  return map[value] ?? value;
+}
+
 /** Order reference, e.g. FD-20260608-A1B2C */
 function generateOrderReference(): string {
   const now = new Date();
@@ -122,18 +181,19 @@ function parseInquiry(body: InquiryInput): {
   return { inquiry };
 }
 
+/** Owner / Khoudia inbox (OWNER_EMAIL) always receives French. */
 function buildOwnerEmail(inquiry: Inquiry, orderReference: string) {
   const rows: [string, string][] = [
-    ["Order reference", orderReference],
-    ["Customer name", inquiry.customerName],
-    ["Customer phone", inquiry.customerPhone],
-    ["Customer email", inquiry.customerEmail],
-    ["Occasion", inquiry.occasion],
-    ["Cake size / people count", inquiry.peopleCount],
-    ["Flavour", inquiry.flavour],
-    ["Design style", inquiry.designStyle],
-    ["Event date", inquiry.eventDate],
-    ["Delivery or pickup", inquiry.deliveryMethod],
+    ["Numéro de commande", orderReference],
+    ["Nom du client", inquiry.customerName],
+    ["Téléphone du client", inquiry.customerPhone],
+    ["E-mail du client", inquiry.customerEmail],
+    ["Occasion", localizeValue("occasions", inquiry.occasion, "fr")],
+    ["Taille / nombre de personnes", localizeValue("servings", inquiry.peopleCount, "fr")],
+    ["Saveur", localizeValue("flavours", inquiry.flavour, "fr")],
+    ["Style", localizeValue("styles", inquiry.designStyle, "fr")],
+    ["Date de l'événement", inquiry.eventDate],
+    ["Livraison ou retrait", localizeValue("delivery", inquiry.deliveryMethod, "fr")],
     ["Notes", inquiry.notes],
   ];
 
@@ -143,7 +203,7 @@ function buildOwnerEmail(inquiry: Inquiry, orderReference: string) {
 <html>
 <body style="margin:0;padding:24px;background:#f7f4f0;font-family:Georgia,'Times New Roman',serif;color:#2a2420;">
   <div style="max-width:560px;margin:0 auto;padding:24px;background:#ffffff;">
-    <h1 style="font-size:20px;margin:0 0 16px;color:#1a1a1a;">New Cake Inquiry Received</h1>
+    <h1 style="font-size:20px;margin:0 0 16px;color:#1a1a1a;">Nouvelle demande de gâteau reçue</h1>
     <table style="width:100%;border-collapse:collapse;font-size:15px;">
       ${rows
         .map(
@@ -239,16 +299,20 @@ function formatDeliveryForEmail(deliveryMethod: string, locale: Locale): string 
 function buildCustomerEmail(inquiry: Inquiry, orderReference: string) {
   const copy = CUSTOMER_EMAIL_COPY[inquiry.locale];
   const delivery = formatDeliveryForEmail(inquiry.deliveryMethod, inquiry.locale);
+  const occasion = localizeValue("occasions", inquiry.occasion, inquiry.locale);
+  const cakeSize = localizeValue("servings", inquiry.peopleCount, inquiry.locale);
+  const flavour = localizeValue("flavours", inquiry.flavour, inquiry.locale);
+  const designStyle = localizeValue("styles", inquiry.designStyle, inquiry.locale);
 
   const text = `${copy.greeting(inquiry.customerName)}
 
 ${copy.intro}
 
 ${copy.rowLabels.orderReference}: ${orderReference}
-${copy.rowLabels.occasion}: ${inquiry.occasion}
-${copy.rowLabels.cakeSize}: ${inquiry.peopleCount}
-${copy.rowLabels.flavour}: ${inquiry.flavour}
-${copy.rowLabels.designStyle}: ${inquiry.designStyle}
+${copy.rowLabels.occasion}: ${occasion}
+${copy.rowLabels.cakeSize}: ${cakeSize}
+${copy.rowLabels.flavour}: ${flavour}
+${copy.rowLabels.designStyle}: ${designStyle}
 ${copy.rowLabels.eventDate}: ${inquiry.eventDate}
 ${copy.rowLabels.notes}: ${inquiry.notes}
 ${copy.deliveryConfirmation(delivery)}
@@ -261,10 +325,10 @@ ${copy.signature.join("\n")}`;
 
   const rows: [string, string][] = [
     [copy.rowLabels.orderReference, orderReference],
-    [copy.rowLabels.occasion, inquiry.occasion],
-    [copy.rowLabels.cakeSize, inquiry.peopleCount],
-    [copy.rowLabels.flavour, inquiry.flavour],
-    [copy.rowLabels.designStyle, inquiry.designStyle],
+    [copy.rowLabels.occasion, occasion],
+    [copy.rowLabels.cakeSize, cakeSize],
+    [copy.rowLabels.flavour, flavour],
+    [copy.rowLabels.designStyle, designStyle],
     [copy.rowLabels.eventDate, inquiry.eventDate],
     [copy.rowLabels.notes, inquiry.notes],
   ];
@@ -327,7 +391,7 @@ export async function POST(request: Request) {
     from: env.from,
     to: env.owner,
     replyTo: inquiry.customerEmail,
-    subject: `New Cake Inquiry Received — ${orderReference}`,
+    subject: `Nouvelle demande de gâteau reçue — ${orderReference}`,
     text: owner.text,
     html: owner.html,
   });
