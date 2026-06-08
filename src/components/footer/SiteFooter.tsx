@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 
 import { HomeBrandLink } from "@/components/navigation/HomeBrandLink";
 import { OurCakesLink } from "@/components/navigation/OurCakesLink";
 import { GelSocialButtons } from "@/components/footer/GelSocialButtons";
+import { WebsiteDesignBtnScene } from "@/components/footer/WebsiteDesignBtnScene";
+import { WebsiteDesignCredits } from "@/components/footer/WebsiteDesignCredits";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 
 /** Store contact — footer display + inquiry inbox (see OWNER_EMAIL in .env.local). */
@@ -21,6 +24,7 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
   const t = useTranslations();
   const { path } = useLocale();
+  const [creditsOpen, setCreditsOpen] = useState(false);
 
   return (
     <footer className="site-footer" role="contentinfo">
@@ -73,6 +77,16 @@ export function SiteFooter() {
 
           <div className="site-footer__socials" aria-label={t.footer.social}>
             <GelSocialButtons />
+            <button
+              type="button"
+              className="site-footer__design-btn"
+              onClick={() => setCreditsOpen(true)}
+              aria-label={t.footer.websiteDesign}
+              aria-haspopup="dialog"
+              data-no-cursor-grow
+            >
+              <WebsiteDesignBtnScene />
+            </button>
           </div>
         </div>
 
@@ -94,6 +108,11 @@ export function SiteFooter() {
           </p>
         </div>
       </div>
+
+      <WebsiteDesignCredits
+        open={creditsOpen}
+        onClose={() => setCreditsOpen(false)}
+      />
     </footer>
   );
 }
