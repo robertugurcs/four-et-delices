@@ -8,6 +8,7 @@ import {
   DELIVERY_METHODS,
   FLAVOURS,
   OCCASIONS,
+  SERVINGS,
   type Occasion,
   type Servings,
   type Style,
@@ -24,9 +25,6 @@ import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 import "./cake-inquiry.css";
 
 const SPARKLE = " ✦";
-
-const SERVINGS_COLUMN_ONE = ["2", "6–8", "15–20", "More"] as const satisfies readonly Servings[];
-const SERVINGS_COLUMN_TWO = ["4–5", "10–12", "20–40"] as const satisfies readonly Servings[];
 
 const displayServing = (value: string) => value.replace("–", "-");
 
@@ -324,10 +322,11 @@ export function CakeInquiryForm() {
     submitInFlight.current = true;
     setSubmitting(true);
     try {
-      const res = await fetch("/api/orders", {
+      const res = await fetch("/api/inquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(30_000),
       });
       const data = (await res.json().catch(() => ({}))) as {
         success?: boolean;
@@ -345,8 +344,14 @@ export function CakeInquiryForm() {
         return;
       }
       setSuccess(true);
-    } catch {
-      setServerError(inquiry.sendFailedRetry);
+    } catch (err) {
+      const isNetworkFailure =
+        err instanceof TypeError ||
+        (err instanceof Error &&
+          /fetch failed|network|aborted|timeout/i.test(err.message));
+      setServerError(
+        isNetworkFailure ? inquiry.sendFailedServerDown : inquiry.sendFailedRetry,
+      );
     } finally {
       submitInFlight.current = false;
       setSubmitting(false);
@@ -523,13 +528,8 @@ export function CakeInquiryForm() {
         >
           {inquiry.servingsHeading}{SPARKLE}
         </h2>
-        <div className="cake-inquiry-radio-list cake-inquiry-radio-list--columns">
-          <div className="cake-inquiry-radio-list">
-            {SERVINGS_COLUMN_ONE.map((serving) => renderServingOption(serving))}
-          </div>
-          <div className="cake-inquiry-radio-list">
-            {SERVINGS_COLUMN_TWO.map((serving) => renderServingOption(serving))}
-          </div>
+        <div className="cake-inquiry-radio-list cake-inquiry-radio-list--servings">
+          {SERVINGS.map((serving) => renderServingOption(serving))}
         </div>
         <FieldError message={errors.servings} />
         <FieldError message={errors.customServings} />

@@ -3,27 +3,32 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev --webpack",
+    "dev:clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\" && npm run dev",
+    "dev:turbo": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "build:wordmark": "node scripts/build-wordmark-transparent.mjs",
-    "check:order-env": "node scripts/check-order-env.mjs",
-    "check:order-env:prod": "node scripts/check-order-env.mjs --production",
-    "verify:whatsapp-template": "node scripts/verify-whatsapp-template.mjs"
+    "check:order-env": "node scripts/order/check-env.mjs",
+    "check:resend": "node scripts/order/test-resend.mjs",
+    "check:order-env:prod": "node scripts/order/check-env.mjs --production",
+    "verify:whatsapp-template": "node scripts/order/verify-whatsapp-template.mjs",
+    "test:order-api": "node scripts/order/test-api.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.0",
     "next": "16.2.4",
+    "resend": "^6.12.2",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "resend": "^6.12.2"
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "sharp": "^0.34.5",
