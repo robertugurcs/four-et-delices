@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { Resend } from "resend";
+import { type Locale, isValidLocale } from "@/i18n/config";
 
 /** Resend needs Node.js — not the Edge runtime. */
 export const runtime = "nodejs";
@@ -10,6 +11,7 @@ const GENERIC_ERROR = "We couldn't send your inquiry. Please try again.";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type InquiryInput = {
+  locale?: unknown;
   occasion?: unknown;
   servings?: unknown;
   flavour?: unknown;
@@ -24,6 +26,7 @@ type InquiryInput = {
 };
 
 type Inquiry = {
+  locale: Locale;
   occasion: string;
   peopleCount: string;
   flavour: string;
@@ -87,7 +90,9 @@ function parseInquiry(body: InquiryInput): {
   inquiry?: Inquiry;
   missing?: string[];
 } {
+  const localeRaw = str(body.locale);
   const inquiry: Inquiry = {
+    locale: isValidLocale(localeRaw) ? localeRaw : "en",
     occasion: str(body.occasion),
     peopleCount: str(body.servings),
     flavour: str(body.customFlavour) || str(body.flavour),
@@ -158,44 +163,118 @@ function buildOwnerEmail(inquiry: Inquiry, orderReference: string) {
   return { text, html };
 }
 
+type CustomerEmailCopy = {
+  subject: string;
+  greeting: (name: string) => string;
+  intro: string;
+  rowLabels: {
+    orderReference: string;
+    occasion: string;
+    cakeSize: string;
+    flavour: string;
+    designStyle: string;
+    eventDate: string;
+    notes: string;
+  };
+  deliveryConfirmation: (delivery: string) => string;
+  inspiration: string;
+  closingLine: string;
+  signature: string[];
+};
+
+const CUSTOMER_EMAIL_COPY: Record<Locale, CustomerEmailCopy> = {
+  en: {
+    subject: "Your cake inquiry has been received",
+    greeting: (name) => `Hello ${name},`,
+    intro:
+      "Thank you for choosing Four et Délices for your celebration! Cake Designer Khoudia here. I have personally received your cake inquiry.",
+    rowLabels: {
+      orderReference: "Order reference",
+      occasion: "Occasion",
+      cakeSize: "Cake size",
+      flavour: "Flavour",
+      designStyle: "Design style",
+      eventDate: "Event date",
+      notes: "Your notes",
+    },
+    deliveryConfirmation: (delivery) =>
+      `You have confirmed that you will receive your order by ${delivery}.`,
+    inspiration:
+      "Inspiration photos? Reply here or email with your order reference.",
+    closingLine:
+      "I will reach out soon to confirm the details. Thank you for trusting Four et Délices.",
+    signature: ["With care,", "Cake Designer Khoudia", "Four et Délices"],
+  },
+  fr: {
+    subject: "Votre demande de gâteau a bien été reçue",
+    greeting: (name) => `Bonjour ${name},`,
+    intro:
+      "Merci d'avoir choisi Four et Délices pour votre célébration ! Ici Khoudia, designer de gâteaux. J'ai bien reçu votre demande.",
+    rowLabels: {
+      orderReference: "Numéro de commande",
+      occasion: "Occasion",
+      cakeSize: "Taille",
+      flavour: "Saveur",
+      designStyle: "Style",
+      eventDate: "Date",
+      notes: "Vos notes",
+    },
+    deliveryConfirmation: (delivery) =>
+      `Vous avez confirmé ${delivery} pour votre commande.`,
+    inspiration:
+      "Photo d'inspiration ? Répondez ici ou par e-mail avec votre numéro de commande.",
+    closingLine:
+      "Je vous contacterai bientôt. Merci de votre confiance envers Four et Délices.",
+    signature: ["Avec attention,", "Khoudia, designer de gâteaux", "Four et Délices"],
+  },
+};
+
+function formatDeliveryForEmail(deliveryMethod: string, locale: Locale): string {
+  if (locale === "fr") {
+    return deliveryMethod === "Delivery" ? "la livraison" : "le retrait";
+  }
+  return deliveryMethod;
+}
+
 function buildCustomerEmail(inquiry: Inquiry, orderReference: string) {
-  const text = `Hello ${inquiry.customerName},
+  const copy = CUSTOMER_EMAIL_COPY[inquiry.locale];
+  const delivery = formatDeliveryForEmail(inquiry.deliveryMethod, inquiry.locale);
 
-Thank you for choosing Four et Délices for your celebration! Cake Designer Khoudia here. I have personally received your cake inquiry.
+  const text = `${copy.greeting(inquiry.customerName)}
 
-Order reference: ${orderReference}
-Occasion: ${inquiry.occasion}
-Cake size: ${inquiry.peopleCount}
-Flavour: ${inquiry.flavour}
-Design style: ${inquiry.designStyle}
-Event date: ${inquiry.eventDate}
-Your notes: ${inquiry.notes}
-You have confirmed that you will receive your order by ${inquiry.deliveryMethod}.
+${copy.intro}
 
-Inspiration photos? Reply here or email with your order reference.
+${copy.rowLabels.orderReference}: ${orderReference}
+${copy.rowLabels.occasion}: ${inquiry.occasion}
+${copy.rowLabels.cakeSize}: ${inquiry.peopleCount}
+${copy.rowLabels.flavour}: ${inquiry.flavour}
+${copy.rowLabels.designStyle}: ${inquiry.designStyle}
+${copy.rowLabels.eventDate}: ${inquiry.eventDate}
+${copy.rowLabels.notes}: ${inquiry.notes}
+${copy.deliveryConfirmation(delivery)}
 
-I will reach out soon to confirm the details. Thank you for trusting Four et Délices.
+${copy.inspiration}
 
-With care,
-Cake Designer Khoudia
-Four et Délices`;
+${copy.closingLine}
+
+${copy.signature.join("\n")}`;
 
   const rows: [string, string][] = [
-    ["Order reference", orderReference],
-    ["Occasion", inquiry.occasion],
-    ["Cake size", inquiry.peopleCount],
-    ["Flavour", inquiry.flavour],
-    ["Design style", inquiry.designStyle],
-    ["Event date", inquiry.eventDate],
-    ["Your notes", inquiry.notes],
+    [copy.rowLabels.orderReference, orderReference],
+    [copy.rowLabels.occasion, inquiry.occasion],
+    [copy.rowLabels.cakeSize, inquiry.peopleCount],
+    [copy.rowLabels.flavour, inquiry.flavour],
+    [copy.rowLabels.designStyle, inquiry.designStyle],
+    [copy.rowLabels.eventDate, inquiry.eventDate],
+    [copy.rowLabels.notes, inquiry.notes],
   ];
 
   const html = `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:32px 24px;background:#faf8f5;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.6;color:#2a2420;">
   <div style="max-width:520px;margin:0 auto;padding:32px 24px;background:#ffffff;">
-    <p style="font-size:18px;margin:0 0 20px;">Hello ${escapeHtml(inquiry.customerName)},</p>
-    <p style="margin:0 0 20px;">Thank you for choosing Four et Délices for your celebration! Cake Designer Khoudia here. I have personally received your cake inquiry.</p>
+    <p style="font-size:18px;margin:0 0 20px;">${escapeHtml(copy.greeting(inquiry.customerName))}</p>
+    <p style="margin:0 0 20px;">${escapeHtml(copy.intro)}</p>
     <table style="width:100%;border-collapse:collapse;font-size:15px;border-top:1px solid #e8e2dc;">
       ${rows
         .map(
@@ -208,17 +287,17 @@ Four et Délices`;
         )
         .join("\n      ")}
     </table>
-    <p style="margin:20px 0 0;">You have confirmed that you will receive your order by ${escapeHtml(
-      inquiry.deliveryMethod,
-    )}.</p>
-    <p style="margin:20px 0 0;">Inspiration photos? Reply here or email with your order reference.</p>
-    <p style="margin:20px 0 0;">I will reach out soon to confirm the details. Thank you for trusting Four et Délices.</p>
-    <p style="margin:24px 0 0;font-style:italic;color:#3d3530;">With care,<br/>Cake Designer Khoudia<br/>Four et Délices</p>
+    <p style="margin:20px 0 0;">${escapeHtml(copy.deliveryConfirmation(delivery))}</p>
+    <p style="margin:20px 0 0;">${escapeHtml(copy.inspiration)}</p>
+    <p style="margin:20px 0 0;">${escapeHtml(copy.closingLine)}</p>
+    <p style="margin:24px 0 0;font-style:italic;color:#3d3530;">${copy.signature
+      .map((line) => escapeHtml(line))
+      .join("<br/>")}</p>
   </div>
 </body>
 </html>`;
 
-  return { text, html };
+  return { subject: copy.subject, text, html };
 }
 
 export async function POST(request: Request) {
@@ -263,7 +342,7 @@ export async function POST(request: Request) {
     from: env.from,
     to: inquiry.customerEmail,
     replyTo: env.owner,
-    subject: `Your cake inquiry has been received — ${orderReference}`,
+    subject: `${customer.subject} — ${orderReference}`,
     text: customer.text,
     html: customer.html,
   });
