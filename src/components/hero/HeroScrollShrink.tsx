@@ -21,6 +21,11 @@ function useHydrated() {
 import { gsap } from "gsap";
 
 import { HeroScrollHint } from "@/components/hero/HeroScrollHint";
+import {
+  ensureMobileHeroVideoPlays,
+  isMobileHeroViewport,
+  kickMobileHeroVideo,
+} from "@/lib/ensure-mobile-hero-video";
 import { ensureVideoPlays } from "@/lib/ensure-video-plays";
 import {
   markHeroIntroSeen,
@@ -47,6 +52,7 @@ export default function HeroScrollShrink() {
   const { path } = useLocale();
   const sectionRef = useRef<HTMLElement>(null);
   const videoShellRef = useRef<HTMLDivElement>(null);
+  const videoColorRef = useRef<HTMLDivElement>(null);
   const brandTitleRef = useRef<HTMLAnchorElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const introBackdropRef = useRef<HTMLDivElement>(null);
@@ -57,15 +63,24 @@ export default function HeroScrollShrink() {
     const section = sectionRef.current;
     const brandTitle = brandTitleRef.current;
     const video = videoRef.current;
+    const videoColor = videoColorRef.current;
     const introBackdrop = introBackdropRef.current;
 
-    if (!wordmarkInBody || !section || !brandTitle || !video || !introBackdrop)
+    if (
+      !wordmarkInBody ||
+      !section ||
+      !brandTitle ||
+      !video ||
+      !videoColor ||
+      !introBackdrop
+    )
       return;
 
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
     const skipIntro = shouldSkipHeroIntro();
+    const isMobileHero = isMobileHeroViewport();
 
     const dockedWordmark = () => ({
       position: "fixed" as const,
@@ -82,17 +97,25 @@ export default function HeroScrollShrink() {
       force3D: true,
     });
 
-    const stopVideoAutoplay = ensureVideoPlays(video);
+    const stopVideoAutoplay = isMobileHero
+      ? ensureMobileHeroVideoPlays(video)
+      : ensureVideoPlays(video);
 
     const ctx = gsap.context(() => {
-      /* iOS refuses autoplay when opacity is exactly 0 — keep a trace visible to the engine.
-       * filter is applied to .hero-video-color wrapper, NOT the video element itself,
-       * because CSS filter directly on <video> can block iOS Safari autoplay. */
+      /* iOS refuses autoplay when opacity is exactly 0 on the <video> itself.
+       * On mobile, fade the color wrapper instead so Safari keeps muted autoplay alive. */
       gsap.set(video, {
-        opacity: prefersReducedMotion ? 1 : 0.001,
+        opacity: isMobileHero ? 1 : prefersReducedMotion ? 1 : 0.001,
         scale: prefersReducedMotion ? 1 : 1.035,
         force3D: true,
       });
+
+      if (isMobileHero) {
+        gsap.set(videoColor, {
+          opacity: prefersReducedMotion ? 1 : 0.001,
+          force3D: true,
+        });
+      }
 
       gsap.set(introBackdrop, {
         opacity: prefersReducedMotion ? 0 : 1,
@@ -102,17 +125,26 @@ export default function HeroScrollShrink() {
         markHeroIntroSeen();
         document.documentElement.dataset.heroIntro = "done";
         gsap.set(brandTitle, dockedWordmark());
+        if (isMobileHero) {
+          kickMobileHeroVideo(video);
+        }
       };
 
       skipIntroRef.current = () => {
-        gsap.killTweensOf([brandTitle, video, introBackdrop]);
+        gsap.killTweensOf([brandTitle, video, videoColor, introBackdrop]);
         gsap.set(video, { opacity: 1, scale: 1 });
+        if (isMobileHero) {
+          gsap.set(videoColor, { opacity: 1 });
+        }
         gsap.set(introBackdrop, { opacity: 0 });
         finishIntro();
       };
 
       if (prefersReducedMotion || skipIntro) {
         gsap.set(video, { opacity: 1, scale: 1 });
+        if (isMobileHero) {
+          gsap.set(videoColor, { opacity: 1 });
+        }
         gsap.set(introBackdrop, { opacity: 0 });
         finishIntro();
         return;
@@ -139,9 +171,17 @@ export default function HeroScrollShrink() {
           onComplete: finishIntro,
         })
         .to(
-          video,
+          isMobileHero ? videoColor : video,
           {
             opacity: 1,
+            duration: INTRO_HANDOFF_S,
+            ease: "power3.inOut",
+          },
+          0,
+        )
+        .to(
+          video,
+          {
             scale: 1,
             duration: INTRO_HANDOFF_S,
             ease: "power3.inOut",
@@ -335,7 +375,7 @@ export default function HeroScrollShrink() {
           <div ref={videoShellRef} className="hero-video-shell">
             {/* Color-grade wrapper — filter here instead of on the <video> element.
                 Applying CSS filter directly to a video blocks iOS Safari autoplay. */}
-            <div className="hero-video-color">
+            <div ref={videoColorRef} className="hero-video-color">
               <video
                 ref={videoRef}
                 playsInline

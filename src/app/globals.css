@@ -1594,6 +1594,13 @@ html[data-header-theme="light"] .hero-scroll-editorial__line--4 {
   display: none !important;
 }
 
+@media (max-width: 900px) {
+  /* Keep the <video> fully opaque on phones — iOS blocks autoplay on faded video elements. */
+  .hero-scroll-section .hero-video {
+    opacity: 1 !important;
+  }
+}
+
 .hero-video-overlay {
   position: absolute;
   inset: 0;
