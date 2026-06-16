@@ -4135,10 +4135,16 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
 
   .khoudia-hero-banner__overlay {
     transform: translate3d(
-      clamp(-1.75rem, -3.5vw, -0.5rem),
+      clamp(-2.75rem, -5vw, -1.25rem),
       clamp(-0.2rem, -1.5vw, 0.5rem),
       0
     ) !important;
+  }
+
+  .khoudia-hero-banner__desktop-story {
+    width: 86%;
+    max-width: min(48vw, 560px);
+    margin-inline: auto;
   }
 }
 
@@ -4441,7 +4447,7 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   .khoudia-hero-banner__overlay {
     max-width: min(64vw, 700px) !important;
     transform: translate3d(
-      clamp(-1.25rem, -2.5vw, 0rem),
+      clamp(-2.25rem, -4vw, -0.75rem),
       clamp(-0.45rem, -0.75vw, 0.35rem),
       0
     ) !important;
@@ -4462,6 +4468,12 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   .khoudia-hero-banner__story-cta {
     justify-content: center;
     width: 100%;
+  }
+
+  .khoudia-hero-banner__desktop-story {
+    width: 86%;
+    max-width: min(48vw, 560px);
+    margin-inline: auto;
   }
 }
 
@@ -4488,34 +4500,53 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   background-color: var(--khoudia-hero-bg);
 }
 
-/* Mobile portrait — hidden on desktop/iPad (≥768px); never touches desktop markup */
-.khoudia-hero-banner__photo--mobile-only {
+/* Phone / iPad variants — hidden until their breakpoint */
+.khoudia-hero-banner__photo--phone-only,
+.khoudia-hero-banner__photo--ipad-only {
   display: none;
 }
 
 @media (max-width: 767px) {
-  .khoudia-hero-banner__stage > .khoudia-hero-banner__photo:not(.khoudia-hero-banner__photo--mobile-only) {
+  .khoudia-hero-banner__stage
+    > .khoudia-hero-banner__photo:not(.khoudia-hero-banner__photo--phone-only) {
     display: none !important;
   }
 
-  .khoudia-hero-banner__photo--mobile-only {
+  .khoudia-hero-banner__photo--phone-only {
     display: block;
     margin-top: clamp(0.75rem, 3vw, 1.5rem);
     object-fit: contain;
     object-position: center top;
   }
 
-  /* Hi Khoudia + my story — one block, shifted west + south on mobile */
+  /* Hi Khoudia + my story — one block, top-right on mobile */
   .khoudia-hero-banner__mobile-intro {
     transform: translate3d(
-      clamp(-0.5rem, 1.5vw, 0.5rem),
-      clamp(3.15rem, 10vw, 5rem),
+      clamp(0.75rem, 2vw, 1.75rem),
+      clamp(-0.75rem, 1vw, 0.25rem),
       0
     );
   }
 
   .khoudia-hero-banner__mobile-story-cta {
-    transform: translate3d(clamp(0.55rem, 3.5vw, 1.1rem), 0, 0);
+    transform: translate3d(clamp(-0.55rem, -3.5vw, -1.1rem), 0, 0);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .khoudia-hero-banner__stage
+    > .khoudia-hero-banner__photo:not(.khoudia-hero-banner__photo--ipad-only) {
+    display: none !important;
+  }
+
+  .khoudia-hero-banner__photo--ipad-only {
+    display: block;
+  }
+
+  .khoudia-hero-banner__desktop-story {
+    width: 86%;
+    max-width: min(48vw, 560px);
+    margin-inline: auto;
   }
 }
 
@@ -4524,6 +4555,16 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   .khoudia-hero-banner__overlay {
     transform: translate3d(
       clamp(-1.75rem, -3.5vw, -0.5rem),
+      clamp(0.85rem, 1.75vh, 2.15rem),
+      0
+    );
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .khoudia-hero-banner__overlay {
+    transform: translate3d(
+      clamp(-2.75rem, -5.5vw, -1.25rem),
       clamp(0.85rem, 1.75vh, 2.15rem),
       0
     );
