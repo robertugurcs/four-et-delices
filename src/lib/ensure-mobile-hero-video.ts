@@ -13,8 +13,13 @@ export function kickMobileHeroVideo(video: HTMLVideoElement): void {
   video.defaultMuted = true;
   video.playsInline = true;
   video.setAttribute("muted", "");
+  video.setAttribute("autoplay", "");
   video.setAttribute("playsinline", "");
   video.setAttribute("webkit-playsinline", "");
+
+  if (video.readyState === 0) {
+    video.load();
+  }
 
   const pending = video.play();
   if (pending && typeof pending.catch === "function") {
@@ -22,10 +27,21 @@ export function kickMobileHeroVideo(video: HTMLVideoElement): void {
   }
 }
 
+/** Fire play attempts after layout paint — iOS often misses the first synchronous call. */
+export function scheduleMobileHeroVideoKick(video: HTMLVideoElement): void {
+  kickMobileHeroVideo(video);
+  requestAnimationFrame(() => {
+    kickMobileHeroVideo(video);
+    requestAnimationFrame(() => kickMobileHeroVideo(video));
+  });
+}
+
 /** iOS Safari hero autoplay — extra retries without changing desktop behaviour. */
 export function ensureMobileHeroVideoPlays(video: HTMLVideoElement): () => void {
   const baseCleanup = ensureVideoPlays(video);
   const tryPlay = () => kickMobileHeroVideo(video);
+
+  scheduleMobileHeroVideoKick(video);
 
   const io = new IntersectionObserver(
     (entries) => {

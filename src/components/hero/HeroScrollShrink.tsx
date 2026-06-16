@@ -25,6 +25,7 @@ import {
   ensureMobileHeroVideoPlays,
   isMobileHeroViewport,
   kickMobileHeroVideo,
+  scheduleMobileHeroVideoKick,
 } from "@/lib/ensure-mobile-hero-video";
 import { ensureVideoPlays } from "@/lib/ensure-video-plays";
 import {
@@ -102,24 +103,23 @@ export default function HeroScrollShrink() {
       : ensureVideoPlays(video);
 
     const ctx = gsap.context(() => {
-      /* iOS refuses autoplay when opacity is exactly 0 on the <video> itself.
-       * On mobile, fade the color wrapper instead so Safari keeps muted autoplay alive. */
-      gsap.set(video, {
-        opacity: isMobileHero ? 1 : prefersReducedMotion ? 1 : 0.001,
-        scale: prefersReducedMotion ? 1 : 1.035,
-        force3D: true,
-      });
-
+      /* iOS refuses autoplay when the video subtree is faded out.
+       * Mobile: keep video fully visible from frame one; only animate the wordmark. */
       if (isMobileHero) {
-        gsap.set(videoColor, {
+        gsap.set(video, { opacity: 1, scale: 1, force3D: true });
+        gsap.set(videoColor, { opacity: 1, force3D: true });
+        gsap.set(introBackdrop, { opacity: 0 });
+        scheduleMobileHeroVideoKick(video);
+      } else {
+        gsap.set(video, {
           opacity: prefersReducedMotion ? 1 : 0.001,
+          scale: prefersReducedMotion ? 1 : 1.035,
           force3D: true,
         });
+        gsap.set(introBackdrop, {
+          opacity: prefersReducedMotion ? 0 : 1,
+        });
       }
-
-      gsap.set(introBackdrop, {
-        opacity: prefersReducedMotion ? 0 : 1,
-      });
 
       const finishIntro = () => {
         markHeroIntroSeen();
@@ -165,23 +165,44 @@ export default function HeroScrollShrink() {
         force3D: true,
       });
 
+      if (isMobileHero) {
+        gsap
+          .timeline({
+            delay: INTRO_HOLD_S,
+            onStart: () => scheduleMobileHeroVideoKick(video),
+            onComplete: finishIntro,
+          })
+          .to(
+            brandTitle,
+            {
+              left: "50%",
+              top: HEADER_ROW_TOP_PX,
+              xPercent: -50,
+              yPercent: 0,
+              x: 0,
+              y: WORDMARK_REST_Y_NUDGE_PX,
+              scale: 0.34,
+              autoAlpha: 1,
+              zIndex: 9999,
+              duration: INTRO_HANDOFF_S,
+              ease: "power3.inOut",
+              transformOrigin: "50% 0%",
+              force3D: true,
+            },
+            0,
+          );
+        return;
+      }
+
       gsap
         .timeline({
           delay: INTRO_HOLD_S,
           onComplete: finishIntro,
         })
         .to(
-          isMobileHero ? videoColor : video,
-          {
-            opacity: 1,
-            duration: INTRO_HANDOFF_S,
-            ease: "power3.inOut",
-          },
-          0,
-        )
-        .to(
           video,
           {
+            opacity: 1,
             scale: 1,
             duration: INTRO_HANDOFF_S,
             ease: "power3.inOut",
