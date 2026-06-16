@@ -160,7 +160,7 @@ export function MeetKhoudiaContent() {
   return (
     <main
       ref={rootRef}
-      className="meet-khoudia m-0 min-h-screen w-full max-w-full overflow-x-clip p-0 text-[#4b332a]"
+      className="meet-khoudia m-0 min-h-screen w-full max-w-full overflow-x-clip p-0 text-black"
     >
       <SiteHeader />
 
@@ -173,7 +173,7 @@ export function MeetKhoudiaContent() {
             <div className="meet-khoudia-hero__copy md:col-span-7 md:pb-6">
               <h1
                 id="meet-khoudia-heading"
-                className="meet-khoudia-slogan m-0 font-serif font-normal tracking-[-0.015em] text-[#2a201a]"
+                className="meet-khoudia-slogan m-0 font-serif font-normal tracking-[-0.015em] text-black"
               >
                 <span className="meet-khoudia-slogan-line mk-slogan-line block">
                   {t.meetKhoudia.title1}
@@ -186,10 +186,10 @@ export function MeetKhoudiaContent() {
                 </span>
               </h1>
               <div className="mt-8 space-y-6 font-serif font-normal leading-[1.6] md:mt-10">
-                <p className="mk-fade-up m-0 text-[clamp(1.05rem,1.5vw,1.25rem)] text-[#4b332a]/90">
+                <p className="mk-fade-up m-0 text-[clamp(1.05rem,1.5vw,1.25rem)] text-black/90">
                   {t.meetKhoudia.intro}
                 </p>
-                <p className="mk-fade-up m-0 text-[clamp(1.05rem,1.5vw,1.25rem)] text-[#4b332a]/90">
+                <p className="mk-fade-up m-0 text-[clamp(1.05rem,1.5vw,1.25rem)] text-black/90">
                   {t.meetKhoudia.p1}
                 </p>
               </div>
@@ -216,10 +216,10 @@ export function MeetKhoudiaContent() {
           </div>
 
           <div className="meet-khoudia-studio__copy order-2 flex flex-col gap-10 md:order-none md:col-span-7 md:gap-14">
-            <p className="meet-khoudia-studio__lead mk-fade-up m-0 max-w-[34em] font-serif text-[clamp(1.55rem,2.55vw,2.35rem)] font-normal leading-[1.48] tracking-[-0.012em] text-[#2a201a]">
+            <p className="meet-khoudia-studio__lead mk-fade-up m-0 max-w-[34em] font-serif text-[clamp(1.55rem,2.55vw,2.35rem)] font-normal leading-[1.48] tracking-[-0.012em] text-black">
               {t.meetKhoudia.p2}
             </p>
-            <div className="meet-khoudia-studio__prose flex max-w-[38em] flex-col gap-5 font-serif text-[clamp(1.0625rem,1.35vw,1.2rem)] font-normal leading-[1.62] text-[#4b332a] md:gap-6">
+            <div className="meet-khoudia-studio__prose flex max-w-[38em] flex-col gap-5 font-serif text-[clamp(1.0625rem,1.35vw,1.2rem)] font-normal leading-[1.62] text-black md:gap-6">
               <p className="mk-fade-up m-0">{t.meetKhoudia.p3}</p>
               <p className="mk-fade-up m-0">{t.meetKhoudia.p4}</p>
             </div>
@@ -230,7 +230,7 @@ export function MeetKhoudiaContent() {
       <section className="meet-khoudia-final-cta mx-auto w-full max-w-[1320px] px-5 pb-28 sm:px-8 md:pb-36">
         <div className="grid grid-cols-1 items-center gap-x-10 gap-y-10 md:grid-cols-12 md:gap-x-12">
           <div className="order-1 md:col-span-5 md:row-start-1">
-            <p className="mk-fade-up m-0 font-serif text-[clamp(1.5rem,3vw,2.25rem)] font-normal italic leading-[1.35] text-[#2a201a]">
+            <p className="mk-fade-up m-0 font-serif text-[clamp(1.5rem,3vw,2.25rem)] font-normal italic leading-[1.35] text-black">
               {t.meetKhoudia.ctaIntro}
             </p>
           </div>

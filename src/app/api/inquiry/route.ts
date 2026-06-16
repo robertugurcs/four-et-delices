@@ -1,7 +1,9 @@
+import { isValidPhoneNumber } from "libphonenumber-js";
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { Resend } from "resend";
 import { type Locale, isValidLocale } from "@/i18n/config";
+import { formatPhoneForWhatsApp } from "@/lib/format-phone-e164";
 
 /** Resend needs Node.js — not the Edge runtime. */
 export const runtime = "nodejs";
@@ -67,12 +69,12 @@ const FR_VALUE_LABELS = {
     "Something else": "Autre",
   },
   servings: {
-    "2": "2",
-    "4–5": "4–5",
-    "6–8": "6–8",
-    "10–12": "10–12",
-    "15–20": "15–20",
-    "20–40": "20–40",
+    "15–18": "15–18",
+    "19–24": "19–24",
+    "25–30": "25–30",
+    "31–35": "31–35",
+    "36–40": "36–40",
+    "41–50": "41–50",
     More: "Plus",
   },
   flavours: {
@@ -150,6 +152,9 @@ function parseInquiry(body: InquiryInput): {
   missing?: string[];
 } {
   const localeRaw = str(body.locale);
+  const rawPhone = str(body.phone);
+  const customerPhone = formatPhoneForWhatsApp(rawPhone) ?? rawPhone;
+
   const inquiry: Inquiry = {
     locale: isValidLocale(localeRaw) ? localeRaw : "en",
     occasion: str(body.occasion),
@@ -158,7 +163,7 @@ function parseInquiry(body: InquiryInput): {
     designStyle: str(body.style),
     notes: str(body.notes) || NOTES_FALLBACK,
     customerName: str(body.name),
-    customerPhone: str(body.phone),
+    customerPhone,
     customerEmail: str(body.email),
     eventDate: str(body.eventDate),
     deliveryMethod: str(body.deliveryMethod),
@@ -169,7 +174,9 @@ function parseInquiry(body: InquiryInput): {
   if (!inquiry.customerEmail || !EMAIL_RE.test(inquiry.customerEmail)) {
     missing.push("customerEmail");
   }
-  if (!inquiry.customerPhone) missing.push("customerPhone");
+  if (!inquiry.customerPhone || !isValidPhoneNumber(inquiry.customerPhone)) {
+    missing.push("customerPhone");
+  }
   if (!inquiry.occasion) missing.push("occasion");
   if (!inquiry.peopleCount) missing.push("peopleCount");
   if (!str(body.flavour)) missing.push("flavour");

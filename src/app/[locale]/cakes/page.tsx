@@ -4,6 +4,7 @@ import { CategoryGrid } from "@/components/our-cakes/CategoryGrid";
 import { getLocalizedCakeCatalog } from "@/data/localized-our-cakes";
 import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { createPageMetadata } from "@/lib/seo/create-page-metadata";
 
 type CakesPageProps = {
   params: Promise<{ locale: Locale }>;
@@ -15,10 +16,14 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getDictionary(locale);
 
-  return {
+  return createPageMetadata({
+    locale,
+    pathname: "/cakes",
     title: t.meta.collectionsTitle,
     description: t.meta.collectionsDescription,
-  };
+    siteName: t.meta.siteName,
+    keywords: t.meta.collectionsKeywords,
+  });
 }
 
 export default async function CakesPage({ params }: CakesPageProps) {

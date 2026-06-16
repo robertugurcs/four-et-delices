@@ -20,6 +20,7 @@ function useHydrated() {
 }
 import { gsap } from "gsap";
 
+import { HeroScrollHint } from "@/components/hero/HeroScrollHint";
 import { ensureVideoPlays } from "@/lib/ensure-video-plays";
 import {
   markHeroIntroSeen,
@@ -354,6 +355,8 @@ export default function HeroScrollShrink() {
 
             <div className="hero-video-overlay" aria-hidden />
           </div>
+
+          <HeroScrollHint />
 
           <div
             ref={introBackdropRef}

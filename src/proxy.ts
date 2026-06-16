@@ -1,12 +1,26 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { LOCALE_COOKIE, resolvePreferredLocale } from "@/i18n/detect-locale";
-import { stripLocaleFromPathname } from "@/i18n/routing";
+import {
+  LOCALE_COOKIE,
+  isSearchEngineCrawler,
+  resolvePreferredLocale,
+} from "@/i18n/detect-locale";
+import type { Locale } from "@/i18n/config";
+import { toCanonicalPath, toLocalizedBarePath } from "@/i18n/pathnames";
+import { localizedPath, stripLocaleFromPathname } from "@/i18n/routing";
+
+const LOCALE_HEADER = "x-site-locale";
+
+function withLocale(response: NextResponse, locale: Locale) {
+  response.headers.set(LOCALE_HEADER, locale);
+  return response;
+}
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const onFrenchPath = pathname === "/fr" || pathname.startsWith("/fr/");
+  const isCrawler = isSearchEngineCrawler(request.headers.get("user-agent"));
 
   const preferredLocale = resolvePreferredLocale(
     request.cookies.get(LOCALE_COOKIE)?.value,
@@ -14,27 +28,42 @@ export function proxy(request: NextRequest) {
   );
 
   const barePath = stripLocaleFromPathname(pathname);
+  const canonicalBare = toCanonicalPath(barePath);
 
-  if (preferredLocale === "fr") {
-    if (!onFrenchPath) {
-      const url = request.nextUrl.clone();
-      url.pathname = barePath === "/" ? "/fr" : `/fr${barePath}`;
-      return NextResponse.redirect(url);
-    }
+  if (!isCrawler && preferredLocale !== "fr" && onFrenchPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = localizedPath(canonicalBare, "en");
+    return withLocale(NextResponse.redirect(url), "en");
+  }
 
-    return NextResponse.next();
+  if (!isCrawler && preferredLocale === "fr" && !onFrenchPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = localizedPath(canonicalBare, "fr");
+    return withLocale(NextResponse.redirect(url), "fr");
   }
 
   if (onFrenchPath) {
-    const url = request.nextUrl.clone();
-    url.pathname = barePath;
-    return NextResponse.redirect(url);
+    const frenchBare = toLocalizedBarePath(canonicalBare, "fr");
+
+    if (barePath !== frenchBare) {
+      const url = request.nextUrl.clone();
+      url.pathname = frenchBare === "/" ? "/fr" : `/fr${frenchBare}`;
+      return withLocale(NextResponse.redirect(url), "fr");
+    }
+
+    if (barePath !== canonicalBare) {
+      const url = request.nextUrl.clone();
+      url.pathname = canonicalBare === "/" ? "/fr" : `/fr${canonicalBare}`;
+      return withLocale(NextResponse.rewrite(url), "fr");
+    }
+
+    return withLocale(NextResponse.next(), "fr");
   }
 
   const rewriteUrl = request.nextUrl.clone();
-  rewriteUrl.pathname = barePath === "/" ? "/en" : `/en${barePath}`;
+  rewriteUrl.pathname = canonicalBare === "/" ? "/en" : `/en${canonicalBare}`;
 
-  return NextResponse.rewrite(rewriteUrl);
+  return withLocale(NextResponse.rewrite(rewriteUrl), "en");
 }
 
 export const config = {

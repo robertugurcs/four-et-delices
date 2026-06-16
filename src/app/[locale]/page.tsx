@@ -12,6 +12,7 @@ import { KhoudiaHeroBanner } from "@/components/khoudia/KhoudiaHeroBanner";
 import { SiteHeader } from "@/components/site-header/SiteHeader";
 import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { createPageMetadata } from "@/lib/seo/create-page-metadata";
 
 type HomePageProps = {
   params: Promise<{ locale: Locale }>;
@@ -23,15 +24,21 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getDictionary(locale);
 
-  return {
+  return createPageMetadata({
+    locale,
+    pathname: "/",
     title: t.meta.homeTitle,
     description: t.meta.siteDescription,
-  };
+    siteName: t.meta.siteName,
+    keywords: t.meta.homeKeywords,
+    image: "/assets/hero-poster.jpg",
+    imageAlt: t.meta.siteName,
+  });
 }
 
 export default function Home() {
   return (
-    <main className="m-0 w-full max-w-full bg-[#fbf4eb] p-0">
+    <main className="m-0 w-full max-w-full bg-white p-0">
       <IntroController />
       <SiteHeader />
       <div className="w-full overflow-x-clip">
@@ -40,7 +47,7 @@ export default function Home() {
         <SectionCloudDivider fill="#7d1828" direction="down" />
         <CategoryWishSection />
         <TestimonialSection />
-        <div className="relative isolate flex w-full flex-col gap-0 p-0">
+        <div className="relative isolate flex w-full flex-col gap-0 bg-white p-0">
           <TestimonialsWaveDivider tone="flat" />
           <KhoudiaHeroBanner />
         </div>

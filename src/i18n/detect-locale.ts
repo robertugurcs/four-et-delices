@@ -46,3 +46,12 @@ export function resolvePreferredLocale(
   if (cookieValue === "en" || cookieValue === "fr") return cookieValue;
   return detectLocaleFromAcceptLanguage(acceptLanguage);
 }
+
+const SEARCH_ENGINE_UA =
+  /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot|linkedinbot|applebot|semrushbot|ahrefsbot|mj12bot|petalbot|bytespider/i;
+
+/** Crawlers should see explicit /fr URLs without locale-preference redirects. */
+export function isSearchEngineCrawler(userAgent: string | null): boolean {
+  if (!userAgent) return false;
+  return SEARCH_ENGINE_UA.test(userAgent);
+}

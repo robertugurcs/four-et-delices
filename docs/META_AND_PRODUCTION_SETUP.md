@@ -82,6 +82,7 @@ API Setup → **To** → `+90 553 423 95 70` ekle ve doğrula.
 
 ```env
 RESEND_API_KEY=re_...
+RESEND_FROM=Four et Délices <onboarding@resend.dev>
 OWNER_EMAIL=robertugurcs@gmail.com
 WHATSAPP_ACCESS_TOKEN=...
 WHATSAPP_PHONE_NUMBER_ID=...
@@ -89,7 +90,49 @@ WHATSAPP_PHONE_NUMBER_ID=...
 
 Env kontrolü: `npm run check:order-env`
 
-### 2.4 Form testi
+### 2.3.1 E-posta rolleri (kim ne alır?)
+
+Mailler **Gmail SMTP ile değil**, **Resend** üzerinden gider. Gmail adresleri sadece **alıcı inbox**’tur.
+
+| Rol | Nerede tanımlı | Ne alır |
+|-----|----------------|---------|
+| **Gönderen (From)** | `RESEND_FROM` | `Four et Délices <onboarding@resend.dev>` (test) veya `orders@domain.com` (prod) |
+| **Restoran / owner** | `OWNER_EMAIL` | Yeni sipariş bildirimi — test: `robertugurcs@gmail.com` |
+| **Müşteri** | Form **Email** alanı | Onay maili — herhangi bir adres (ör. `mariannendoye12@gmail.com`) |
+
+Kod iki mail atar: owner’a bildirim + müşteriye Khoudia tonunda onay (`src/lib/inquiry-notification-copy.ts`). WhatsApp ayrı kanal.
+
+### 2.3.2 Sandbox vs domain (kime mail gider?)
+
+| `RESEND_FROM` | Müşteri form email | Sonuç |
+|---------------|-------------------|--------|
+| `onboarding@resend.dev` | Resend hesabınla aynı (ör. `robertugurcs@gmail.com`) | **Senaryo A** — 2 mail + WhatsApp çalışır |
+| `onboarding@resend.dev` | Farklı adres (ör. `mariannendoye12@gmail.com`) | Müşteri maili **gelmez** (Resend sandbox kısıtı) |
+| Doğrulanmış domain (`orders@yourdomain.com`) | Herhangi bir adres | **Senaryo B** — gerçekçi test |
+
+Site yayınlanmadan da Resend domain DNS doğrulanabilir — site domain’i ile e-posta domain’i aynı olabilir ama farklı işlevlerdir.
+
+### 2.4 Senaryo A — Hızlı test (domain yok)
+
+1. `.env.local`: `cake-site` Resend key + yukarıdaki env
+2. Form **Email**: `robertugurcs@gmail.com` (Resend hesabınla aynı)
+3. Form **Phone**: `+90 553 423 95 70`
+4. Beklenen: Robert inbox’ta **2 mail** (konu: “New Cake Inquiry” + “Your inquiry with Four et Délices”) + WhatsApp
+
+Manuel API: `npm run test:order-api` (payload: `scripts/order/test-payload.json`)
+
+### 2.5 Senaryo B — Gerçekçi müşteri testi (domain gerekli)
+
+1. [Resend Domains](https://resend.com/domains) → domain ekle → DNS TXT/MX doğrula
+2. `.env.local`: `RESEND_FROM=Four et Délices <orders@yourdomain.com>`
+3. Form **Email**: `mariannendoye12@gmail.com` (veya herhangi bir adres)
+4. `OWNER_EMAIL=robertugurcs@gmail.com` kalır
+5. Beklenen:
+   - `robertugurcs@gmail.com` → owner bildirimi
+   - `mariannendoye12@gmail.com` → müşteri onay maili
+   - WhatsApp → form telefonu
+
+### 2.6 Form testi (genel)
 
 1. `npm run dev`
 2. `/en/inquiry` veya `/fr/inquiry`
@@ -108,7 +151,7 @@ Production env:
 
 ```env
 RESEND_API_KEY=re_...
-OWNER_EMAIL=dakar.four.et.delices@gmail.com
+OWNER_EMAIL=fouretdelices@gmail.com
 RESEND_FROM=Four et Délices <orders@yourdomain.com>
 ```
 
@@ -135,7 +178,7 @@ Numara: **+221 77 728 9602**
 | Değişken | Production değer |
 |----------|------------------|
 | `RESEND_API_KEY` | Resend key |
-| `OWNER_EMAIL` | `dakar.four.et.delices@gmail.com` |
+| `OWNER_EMAIL` | `fouretdelices@gmail.com` |
 | `RESEND_FROM` | `Four et Délices <orders@domain>` |
 | `WHATSAPP_ACCESS_TOKEN` | System User token |
 | `WHATSAPP_PHONE_NUMBER_ID` | Khoudia numara ID |

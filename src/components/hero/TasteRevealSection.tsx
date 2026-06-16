@@ -23,7 +23,7 @@ const IMAGES = [
   "/assets/reveal/C-1-1.webp",
   "/assets/reveal/C-2-1.webp",
   "/assets/reveal/C-3-1.webp",
-  "/assets/reveal/C-4-1.webp",
+  "/assets/reveal/C-5-1.webp",
   "/assets/reveal/K-1-1.webp",
   "/assets/reveal/K-2-1.webp",
   "/assets/reveal/K-3-1.webp",
@@ -70,6 +70,10 @@ export default function TasteRevealSection() {
 
   useEffect(() => {
     sequenceRef.current = shuffleImages(IMAGES);
+    IMAGES.forEach((src) => {
+      const preload = new window.Image();
+      preload.src = src;
+    });
   }, []);
 
   const getNextImage = () => {
@@ -195,7 +199,7 @@ export default function TasteRevealSection() {
                 alt=""
                 fill
                 sizes="380px"
-                quality={100}
+                quality={75}
                 className="taste-reveal__img"
               />
             </div>

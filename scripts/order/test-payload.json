@@ -1,0 +1,13 @@
+{
+  "locale": "en",
+  "name": "Marianne Test",
+  "phone": "+905534239570",
+  "email": "mariannendoye12@gmail.com",
+  "eventDate": "2026-07-15",
+  "occasion": "Birthday",
+  "servings": "25–30",
+  "flavour": "Chocolate & Vanilla",
+  "style": "Minimal & elegant",
+  "deliveryMethod": "Pickup",
+  "notes": "Manual API test — check owner inbox, customer inbox, and WhatsApp."
+}

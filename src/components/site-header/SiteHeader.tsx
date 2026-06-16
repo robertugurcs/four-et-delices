@@ -20,7 +20,7 @@ import { LanguageSwitcher } from "@/components/navigation/LanguageSwitcher";
 import { OurCakesLink } from "@/components/navigation/OurCakesLink";
 import { SiteHeaderOrderLink } from "./SiteHeaderOrderLink";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
-import { isHomePath, stripLocaleFromPathname } from "@/i18n/routing";
+import { getCanonicalBarePath, isHomePath } from "@/i18n/routing";
 
 const HEADER_WORDMARK_SRC = "/assets/four-et-delices-wordmark.webp";
 const noopSubscribe = () => () => {};
@@ -39,7 +39,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const t = useTranslations();
   const { path, locale } = useLocale();
-  const barePath = stripLocaleFromPathname(pathname);
+  const barePath = getCanonicalBarePath(pathname);
   const hydrated = useHydrated();
   const menuId = useId();
   const [mobileOpen, setMobileOpen] = useState(false);

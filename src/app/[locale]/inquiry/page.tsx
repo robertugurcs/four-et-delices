@@ -5,6 +5,7 @@ import { InquiryHero } from "@/components/cake-inquiry/InquiryHero";
 import { SiteHeader } from "@/components/site-header/SiteHeader";
 import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { createPageMetadata } from "@/lib/seo/create-page-metadata";
 
 type InquiryPageProps = {
   params: Promise<{ locale: Locale }>;
@@ -16,10 +17,14 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getDictionary(locale);
 
-  return {
+  return createPageMetadata({
+    locale,
+    pathname: "/inquiry",
     title: t.meta.inquiryTitle,
     description: t.meta.inquiryDescription,
-  };
+    siteName: t.meta.siteName,
+    keywords: t.meta.inquiryKeywords,
+  });
 }
 
 export default function InquiryPage() {
@@ -32,7 +37,7 @@ export default function InquiryPage() {
       <style>{`
         .iq-page {
           min-height: 100dvh;
-          background: #fff9f2;
+          background: #ffffff;
           overflow-x: clip;
         }
 

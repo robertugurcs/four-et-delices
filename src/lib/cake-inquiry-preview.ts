@@ -64,7 +64,11 @@ export function buildPreviewSegments(
 
     occasion: Occasion | "";
 
+    customOccasion?: string;
+
     servings: Servings | "";
+
+    customServings?: string;
 
     flavour: Flavour | "";
 
@@ -92,13 +96,33 @@ export function buildPreviewSegments(
 
   if (data.occasion) {
 
-    segments.push({
+    if (data.occasion === "Something else") {
 
-      text: `${occasionWireframe[data.occasion]}${copy.cake}`,
+      const customOccasion = data.customOccasion?.trim();
 
-      highlight: true,
+      segments.push({
 
-    });
+        text: customOccasion
+
+          ? `${copy.oneOfAKindWithOccasion.replace("{occasion}", customOccasion.toLowerCase())}${copy.cake}`
+
+          : `${occasionWireframe[data.occasion]}${copy.cake}`,
+
+        highlight: true,
+
+      });
+
+    } else {
+
+      segments.push({
+
+        text: `${occasionWireframe[data.occasion]}${copy.cake}`,
+
+        highlight: true,
+
+      });
+
+    }
 
   } else {
 
@@ -114,13 +138,19 @@ export function buildPreviewSegments(
 
   if (data.servings) {
 
+    const customServings = data.customServings?.trim();
+
     segments.push({
 
       text:
 
         data.servings === "More"
 
-          ? copy.largerGroup
+          ? customServings
+
+            ? copy.people.replace("{count}", customServings)
+
+            : copy.largerGroup
 
           : copy.people.replace("{count}", displayServings(data.servings)),
 
@@ -136,79 +166,89 @@ export function buildPreviewSegments(
 
 
 
-  segments.push({ text: copy.with, highlight: false });
+  if (!data.flavour && !data.style) {
+
+    segments.push({ text: copy.defaultFlavourAndStyle, highlight: false });
+
+  } else {
+
+    segments.push({ text: copy.with, highlight: false });
 
 
 
-  if (!data.flavour) {
+    if (!data.flavour) {
 
-    segments.push({ text: copy.chosenFlavour, highlight: false });
+      segments.push({ text: copy.chosenFlavour, highlight: false });
 
-  } else if (data.flavour === CUSTOM_FLAVOUR_OPTION) {
+    } else if (data.flavour === CUSTOM_FLAVOUR_OPTION) {
 
-    const custom = data.customFlavour?.trim();
+      const custom = data.customFlavour?.trim();
 
-    if (custom) {
+      if (custom) {
 
-      segments.push({ text: custom.toLowerCase(), highlight: true });
+        segments.push({ text: custom.toLowerCase(), highlight: true });
 
-      segments.push({ text: copy.flavourSuffix, highlight: false });
+        segments.push({ text: copy.flavourSuffix, highlight: false });
+
+      } else {
+
+        segments.push({ text: copy.customFlavourChoice, highlight: false });
+
+      }
 
     } else {
 
-      segments.push({ text: copy.customFlavourChoice, highlight: false });
+      segments.push({
+
+        text: options.flavours[data.flavour].toLowerCase(),
+
+        highlight: true,
+
+      });
+
+      segments.push({ text: copy.flavourSuffix, highlight: false });
 
     }
 
-  } else {
 
-    segments.push({
 
-      text: options.flavours[data.flavour].toLowerCase(),
-
-      highlight: true,
-
-    });
-
-    segments.push({ text: copy.flavourSuffix, highlight: false });
-
-  }
+    segments.push({ text: copy.in, highlight: false });
 
 
 
-  segments.push({ text: copy.in, highlight: false });
+    if (!data.style) {
 
+      segments.push({ text: copy.styleDefined, highlight: false });
 
+    } else if (data.style === "Not sure yet") {
 
-  if (!data.style) {
+      segments.push({ text: copy.styleDecided, highlight: false });
 
-    segments.push({ text: copy.styleDefined, highlight: false });
+    } else {
 
-  } else if (data.style === "Not sure yet") {
+      segments.push({
 
-    segments.push({ text: copy.styleDecided, highlight: false });
+        text: copy.stylePattern.replace(
 
-  } else {
+          "{style}",
 
-    segments.push({
+          options.styles[data.style].toLowerCase(),
 
-      text: copy.stylePattern.replace(
+        ),
 
-        "{style}",
+        highlight: true,
 
-        options.styles[data.style].toLowerCase(),
+      });
 
-      ),
-
-      highlight: true,
-
-    });
+    }
 
   }
 
 
 
-  segments.push({ text: ".", highlight: false });
+  const last = segments[segments.length - 1];
+
+  last.text = `${last.text}.`;
 
 
 
@@ -226,7 +266,11 @@ export function buildPreviewSentence(
 
     occasion: Occasion | "";
 
+    customOccasion?: string;
+
     servings: Servings | "";
+
+    customServings?: string;
 
     flavour: Flavour | "";
 

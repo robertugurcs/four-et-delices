@@ -8,12 +8,12 @@ export const OCCASIONS = [
 ] as const;
 
 export const SERVINGS = [
-  "2",
-  "4–5",
-  "6–8",
-  "10–12",
-  "15–20",
-  "20–40",
+  "15–18",
+  "19–24",
+  "25–30",
+  "31–35",
+  "36–40",
+  "41–50",
   "More",
 ] as const;
 

@@ -1,19 +1,98 @@
 export const enDictionary = {
   meta: {
-    siteName: "Custom Cake Studio",
-    siteDescription: "Bespoke celebration cakes, crafted to order.",
-    homeTitle: "Custom Cake Studio",
-    meetKhoudiaTitle: "Meet Khoudia",
+    siteName: "Four et Délices",
+    siteDescription:
+      "Bespoke celebration cakes in Dakar, Senegal — wedding, birthday, kids, and corporate designs crafted to order by Four et Délices.",
+    homeTitle: "Four et Délices — Bespoke Cakes in Dakar, Senegal",
+    homeKeywords: [
+      "Four et Délices",
+      "custom cakes Dakar",
+      "bespoke cakes Senegal",
+      "order cake Dakar",
+      "patisserie Dakar",
+      "wedding cakes Senegal",
+      "birthday cakes Dakar",
+      "kids cakes Dakar",
+      "corporate cakes Dakar",
+      "celebration cakes",
+      "cake designer Dakar",
+    ],
+    meetKhoudiaTitle: "Meet Khoudia — Cake Designer in Dakar",
     meetKhoudiaDescription:
-      "Four et Délices was created to make every cake feel connected to the moment it is made for.",
-    inquiryTitle: "Cake inquiry",
+      "Discover Khoudia, founder and cake designer of Four et Délices in Dakar — creating bespoke celebration cakes that honour every moment.",
+    meetKhoudiaKeywords: [
+      "Khoudia cake designer Dakar",
+      "pastry chef Senegal",
+      "Four et Délices founder",
+      "bespoke cake designer Dakar",
+    ],
+    inquiryTitle: "Order a Custom Cake in Dakar",
     inquiryDescription:
-      "Request a bespoke cake — tell us your date, style, and flavours.",
-    collectionsTitle: "Collections",
+      "Request a bespoke cake from Four et Délices in Dakar — share your date, style, flavours, and celebration details.",
+    inquiryKeywords: [
+      "order cake Dakar",
+      "custom cake inquiry",
+      "cake quote Senegal",
+      "bespoke cake order",
+      "Four et Délices order",
+    ],
+    collectionsTitle: "Bespoke Cake Collections in Dakar",
     collectionsDescription:
-      "Explore celebration cakes by occasion — kids, birthdays, corporate, and weddings.",
-    categoryCakesTitle: "{category} Cakes",
+      "Browse Four et Délices celebration cakes in Dakar — kids, birthday, corporate, and wedding collections made to order.",
+    collectionsKeywords: [
+      "cake catalog Dakar",
+      "bespoke cakes Senegal",
+      "celebration patisserie Dakar",
+      "Four et Délices gallery",
+    ],
+    categoryCakesTitle: "Bespoke {category} Cakes in Dakar",
     ourCakesFallback: "Our Cakes",
+    categorySeo: {
+      kids: {
+        title: "Kids Cakes Made to Order in Dakar",
+        description:
+          "Custom kids cakes in Dakar — playful designs made to order by Four et Délices for birthdays and celebrations.",
+        keywords: [
+          "kids cake Dakar",
+          "children birthday cake Senegal",
+          "custom kids cake",
+          "themed kids cake Dakar",
+        ],
+      },
+      birthdays: {
+        title: "Birthday Cakes Made to Order in Dakar",
+        description:
+          "Elegant bespoke birthday cakes in Dakar — crafted to order by Four et Délices for every celebration.",
+        keywords: [
+          "birthday cake Dakar",
+          "birthday cake Senegal",
+          "custom birthday cake",
+          "birthday patisserie Dakar",
+        ],
+      },
+      corporate: {
+        title: "Corporate Cakes Made to Order in Dakar",
+        description:
+          "Bespoke corporate cakes in Dakar — brand identity, elegance, and artisan finishing by Four et Délices.",
+        keywords: [
+          "corporate cake Dakar",
+          "business cake Senegal",
+          "brand event cake",
+          "corporate patisserie Dakar",
+        ],
+      },
+      weddings: {
+        title: "Wedding Cakes Made to Order in Dakar",
+        description:
+          "Romantic bespoke wedding cakes in Dakar — crafted by Four et Délices to celebrate your special day.",
+        keywords: [
+          "wedding cake Dakar",
+          "wedding cake Senegal",
+          "bespoke wedding cake",
+          "wedding patisserie Dakar",
+        ],
+      },
+    },
   },
   lang: {
     en: "EN",
@@ -26,7 +105,7 @@ export const enDictionary = {
     brandHome: "Four et Délices — home",
     brandName: "Four et Délices",
     ourCakes: "Our Cakes",
-    meetKhoudia: "Meet Khoudia",
+    meetKhoudia: "The Designer",
     orderCake: "Order your cake",
     openMenu: "Open menu",
     closeMenu: "Close menu",
@@ -45,14 +124,8 @@ export const enDictionary = {
     tagline: "Bespoke celebration cakes",
     instagram: "Instagram",
     tiktok: "TikTok",
+    snapchat: "Snapchat",
     whatsapp: "WhatsApp",
-    websiteDesign: "Website design",
-    creditsTitle: "Website\u00a0design",
-    closeCredits: "Close credits",
-    emailMarianne: "Email Marianne Ndoye",
-    whatsappMarianne: "WhatsApp Marianne Ndoye",
-    emailRobert: "Email Robert Ugur Aksu",
-    whatsappRobert: "WhatsApp Robert Ugur Aksu",
   },
   home: {
     intro: "Introduction",
@@ -60,6 +133,7 @@ export const enDictionary = {
     heroLine2: "Celebration",
     heroLine3: "Deserves",
     heroLine4: "a Masterpiece",
+    heroScrollHint: "Scroll",
     tasteSection: "Cake teaser",
     tasteTitle: "Closer to an unforgettable taste",
     tasteLine1: "CLOSER TO AN",
@@ -76,6 +150,8 @@ export const enDictionary = {
     categoryWishP3:
       "Tell us what you're celebrating.\nWe'll bring your vision to life.",
     categoryWishCta: "Please make your wish",
+    categoryCatalogCta: "Explore the Collection",
+    categoryCatalogAria: "Browse our full cake catalog",
     categoryExplore: "{title} — explore",
     categoryKids: "Kids",
     categoryWedding: "Wedding",
@@ -93,7 +169,7 @@ export const enDictionary = {
       "Everything was beyond perfect. The wedding cake looked absolutely stunning and tasted even better. Every guest kept asking where we got it from!",
     testimonial2:
       "The birthday cake was elegant, delicious, and exactly how I imagined it. It made the whole celebration feel so luxurious and special!",
-    khoudiaSection: "Meet Khoudia",
+    khoudiaSection: "The Designer",
     khoudiaHeroAlt: "Khoudia with an intricately piped celebration cake.",
     khoudiaMobileAlt: "Hi, I'm Khoudia.",
     khoudiaDesktopAlt:
@@ -136,19 +212,24 @@ export const enDictionary = {
     heroSub: "Tell us a little about what you're celebrating.",
     occasionHeading: "What is the occasion?",
     servingsHeading: "How many people will be sharing this amazing thing?",
+    servingsGuestsLabel: "guests",
+    servingsMoreHint: "50+",
     flavourHeading: "What kind of flavours do you have in mind?",
     styleHeading: "How would you like your cake to look?",
     styleHint: "(we can help you decide)",
     notesHeading: "Is there anything else we should know?",
-    deliveryHeading: "Where and when should your cake be ready?",
+    deliveryHeading: "Personal information",
     nameLabel: "Name",
     phoneLabel: "Phone number",
+    phoneCountrySelectAria: "Select country code",
+    phoneHint: "Your WhatsApp number.",
+    phoneWhatsAppReady: "Phone number\u00a0:",
     emailLabel: "Email",
     eventDateLabel: "Date of event",
     deliveryLabel: "Delivery or pickup?",
     customOccasionPlaceholder: "other…",
     customOccasionAria: "Describe the occasion",
-    customServingsPlaceholder: "How many people",
+    customServingsPlaceholder: "More than 50 guests",
     customFlavourPlaceholder: "Tell us your preferred flavour",
     customFlavourAria: "Preferred flavour",
     notesPlaceholder:
@@ -171,6 +252,7 @@ export const enDictionary = {
     validation: {
       name: "Please add your name.",
       phone: "Please add a phone number.",
+      phoneInvalid: "Please enter a valid phone number.",
       email: "Please add your email.",
       emailInvalid: "Please enter a valid email.",
       eventDate: "Please choose an event date.",
@@ -178,6 +260,7 @@ export const enDictionary = {
       customOccasion: "Please tell us about the occasion.",
       servings: "Please select a serving size.",
       customServings: "Please tell us how many people.",
+      customServingsMin: "Please enter more than 50 guests.",
       flavour: "Please select a flavour.",
       customFlavour: "Please tell us your preferred flavour.",
       style: "Please select a style.",
@@ -193,6 +276,8 @@ export const enDictionary = {
       with: " with ",
       chosenFlavour: "a chosen flavour",
       customFlavourChoice: "a custom flavour of your choice",
+      defaultFlavourAndStyle:
+        ", with a flavour of your choice and a style to be defined",
       flavourSuffix: " flavour",
       in: " in ",
       styleDefined: "a style to be defined",
@@ -204,6 +289,7 @@ export const enDictionary = {
       graduation: "a graduation",
       corporate: "a corporate",
       oneOfAKind: "a one-of-a-kind",
+      oneOfAKindWithOccasion: "a one-of-a-kind {occasion}",
       cake: " cake",
     },
     options: {
@@ -216,12 +302,12 @@ export const enDictionary = {
         "Something else": "Something else",
       },
       servings: {
-        "2": "2",
-        "4–5": "4–5",
-        "6–8": "6–8",
-        "10–12": "10–12",
-        "15–20": "15–20",
-        "20–40": "20–40",
+        "15–18": "15–18",
+        "19–24": "19–24",
+        "25–30": "25–30",
+        "31–35": "31–35",
+        "36–40": "36–40",
+        "41–50": "41–50",
         More: "More",
       },
       flavours: {
@@ -321,22 +407,27 @@ export const enDictionary = {
           {
             title: "Africa Champion",
             description:
-              "A bold celebration cake inspired by victory, pride, and the spirit of Africa.",
+              "A bold celebration cake inspired by victory, pride, and the spirit of Africa. For this championship tribute, Baobab trusted Four et Délices.",
           },
           {
             title: "Coris Bank Cake",
             description:
-              "A refined corporate cake designed with elegance, identity, and professional presence.",
+              "A refined corporate cake designed with elegance, identity, and professional presence for Coris Bank. For this celebration of the bank's brand and values, Coris Bank trusted Four et Délices.",
           },
           {
             title: "Sonko's Ideal",
             description:
-              "A signature creation shaped around character, ambition, and a distinctive personal vision.",
+              "A signature creation shaped around character, ambition, and a distinctive personal vision. For this one-of-a-kind design, Sonko trusted Four et Délices.",
           },
           {
-            title: "Baobab's Pink",
+            title: "IAM — 30 Years of Excellence",
             description:
-              "A soft pink creation inspired by the beauty, warmth, and timeless strength of the baobab.",
+              "Our custom-designed cake, chosen by the esteemed directors and teaching team of IAM – Institut Africain de Management to celebrate its 30th anniversary. Bearing the golden traces of thirty years of education, leadership, and success, the IAM team trusted Four et Délices.",
+          },
+          {
+            title: "Nestlé's World",
+            description:
+              "For Nestlé's 65th anniversary, our custom-designed cake brings together the brand's deep-rooted heritage, values, and iconic products. Reflecting the vision of quality, community, and planet, this meaningful celebration cake represents Nestlé's world with elegance and grandeur. For this special celebration, the Nestlé team trusted Four et Délices.",
           },
         ],
       },

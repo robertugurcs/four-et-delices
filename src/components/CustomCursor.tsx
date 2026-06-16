@@ -151,7 +151,8 @@ export function CustomCursor() {
   const refreshHoverAtPointer = useCallback(() => {
     if (typeof document === "undefined") return;
     const { x, y } = targetRef.current;
-    resolveHover(document.elementFromPoint(x, y));
+    const hit = document.elementFromPoint(x, y);
+    resolveHover(hit);
   }, [resolveHover]);
 
   useLayoutEffect(() => {
@@ -203,7 +204,8 @@ export function CustomCursor() {
       if (iframeRelayRef.current) return;
 
       setPointer(e.clientX, e.clientY);
-      resolveHover(e.target as Element | null);
+      const hit = document.elementFromPoint(e.clientX, e.clientY);
+      resolveHover(hit);
     };
 
     const onMouseDown = (e: MouseEvent) => {
@@ -342,7 +344,7 @@ export function CustomCursor() {
   return createPortal(
     <div
       ref={rootRef}
-      className="custom-cursor pointer-events-none fixed left-0 top-0 z-[10150] overflow-visible will-change-transform"
+      className="custom-cursor pointer-events-none fixed left-0 top-0 z-[10180] overflow-visible will-change-transform"
       style={{ transform: "translate3d(0px,0px,0)" }}
       aria-hidden
     >

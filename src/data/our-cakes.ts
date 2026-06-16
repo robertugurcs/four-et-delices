@@ -74,20 +74,22 @@ const CATEGORY_META: Record<
     ],
   },
   corporate: {
-    featuredCakeId: "c-4",
+    featuredCakeId: "c-5",
     tagline:
       "Tailored cakes that bring elegance, identity, and a refined touch to every professional occasion.",
     cakeTitles: [
       "Africa Champion",
       "Coris Bank Cake",
       "Sonko's Ideal",
-      "Baobab's Pink",
+      "IAM — 30 Years of Excellence",
+      "Nestlé's World",
     ],
     cakeDescriptions: [
-      "A bold celebration cake inspired by victory, pride, and the spirit of Africa.",
-      "A refined corporate cake designed with elegance, identity, and professional presence.",
-      "A signature creation shaped around character, ambition, and a distinctive personal vision.",
-      "A soft pink creation inspired by the beauty, warmth, and timeless strength of the baobab.",
+      "A bold celebration cake inspired by victory, pride, and the spirit of Africa. For this championship tribute, Baobab trusted Four et Délices.",
+      "A refined corporate cake designed with elegance, identity, and professional presence for Coris Bank. For this celebration of the bank's brand and values, Coris Bank trusted Four et Délices.",
+      "A signature creation shaped around character, ambition, and a distinctive personal vision. For this one-of-a-kind design, Sonko trusted Four et Délices.",
+      "Our custom-designed cake, chosen by the esteemed directors and teaching team of IAM – Institut Africain de Management to celebrate its 30th anniversary. Bearing the golden traces of thirty years of education, leadership, and success, the IAM team trusted Four et Délices.",
+      "For Nestlé's 65th anniversary, our custom-designed cake brings together the brand's deep-rooted heritage, values, and iconic products. Reflecting the vision of quality, community, and planet, this meaningful celebration cake represents Nestlé's world with elegance and grandeur. For this special celebration, the Nestlé team trusted Four et Délices.",
     ],
   },
   weddings: {
@@ -151,7 +153,25 @@ function cakesFor(
 export const OUR_CAKES: OurCake[] = [
   ...cakesFor("kids", "K", 4),
   ...cakesFor("birthdays", "B", 4),
-  ...cakesFor("corporate", "C", 4),
+  ...cakesFor("corporate", "C", 3),
+  {
+    id: "c-5",
+    code: "C-5",
+    categoryId: "corporate",
+    title: CATEGORY_META.corporate.cakeTitles[3]!,
+    description: CATEGORY_META.corporate.cakeDescriptions![3]!,
+    tags: ["Custom flavours", "Bespoke décor", "Made to order"],
+    angles: cakePaths("corporate", "c-5"),
+  },
+  {
+    id: "c-6",
+    code: "C-6",
+    categoryId: "corporate",
+    title: CATEGORY_META.corporate.cakeTitles[4]!,
+    description: CATEGORY_META.corporate.cakeDescriptions![4]!,
+    tags: ["Custom flavours", "Bespoke décor", "Made to order"],
+    angles: cakePaths("corporate", "c-6"),
+  },
   ...cakesFor("weddings", "W", 4),
 ];
 

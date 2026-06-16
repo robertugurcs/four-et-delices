@@ -11,6 +11,8 @@ import {
 import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localizedPath } from "@/i18n/routing";
+import { createPageMetadata } from "@/lib/seo/create-page-metadata";
+import { getCategorySeoMeta } from "@/lib/seo/category-meta";
 
 type PageProps = {
   params: Promise<{ locale: Locale; category: string }>;
@@ -27,14 +29,20 @@ export async function generateMetadata({
   }
 
   const category = getLocalizedCategoryById(dictionary, categorySlug);
+  const categorySeo = getCategorySeoMeta(dictionary, categorySlug);
 
-  return {
-    title: dictionary.meta.categoryCakesTitle.replace(
-      "{category}",
-      category?.title ?? "",
-    ),
-    description: category?.tagline,
-  };
+  return createPageMetadata({
+    locale,
+    pathname: `/cakes/${categorySlug}`,
+    title: categorySeo.title,
+    description: categorySeo.description,
+    siteName: dictionary.meta.siteName,
+    keywords: categorySeo.keywords,
+    image: category
+      ? getLocalizedCakesByCategory(dictionary, categorySlug)[0]?.angles.angle1
+      : undefined,
+    imageAlt: category?.title,
+  });
 }
 
 export default async function CakesCategoryPage({ params }: PageProps) {

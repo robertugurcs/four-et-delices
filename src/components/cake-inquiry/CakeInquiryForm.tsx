@@ -22,6 +22,7 @@ import {
 import type { FieldErrors } from "@/types/cake-inquiry";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
 
+import { PhoneField } from "@/components/cake-inquiry/PhoneField";
 import "./cake-inquiry.css";
 
 const SPARKLE = " ✦";
@@ -193,7 +194,9 @@ export function CakeInquiryForm() {
       buildPreviewSegments(
         {
           occasion: form.occasion,
+          customOccasion: form.customOccasion,
           servings: form.servings,
+          customServings: form.customServings,
           flavour: form.flavour,
           customFlavour: form.customFlavour,
           style: form.style,
@@ -203,6 +206,8 @@ export function CakeInquiryForm() {
       ),
     [
       form.customFlavour,
+      form.customOccasion,
+      form.customServings,
       form.flavour,
       form.occasion,
       form.servings,
@@ -361,7 +366,7 @@ export function CakeInquiryForm() {
   if (success) {
     return (
       <div className="cake-inquiry-form__main">
-        <div className="rounded-3xl border border-[#8b3a4a]/20 bg-[#fff9f2] p-10 text-center shadow-sm">
+        <div className="rounded-3xl border border-[#8b3a4a]/20 bg-white p-10 text-center shadow-sm">
         <p
           className="font-serif text-2xl font-normal leading-snug tracking-[0.02em] text-[#3d2228] sm:text-3xl"
           role="status"
@@ -402,20 +407,31 @@ export function CakeInquiryForm() {
               set("servings", serving);
               clearError("servings");
             }}
-            label={inquiry.options.servings[serving]}
+            label={
+              <>
+                {inquiry.options.servings[serving]}
+                <span className="cake-inquiry-radio-hint">
+                  {inquiry.servingsMoreHint}
+                </span>
+              </>
+            }
           />
           {form.servings === "More" ? (
             <div className="cake-inquiry-radio-row__extra">
               <input
                 id={`${baseId}-custom-servings`}
                 type="text"
+                inputMode="numeric"
                 className={inputClass(
                   `${baseId}-custom-servings`,
                   "cake-inquiry-input cake-inquiry-input--inline",
                 )}
                 value={form.customServings}
-                onChange={(e) => set("customServings", e.target.value)}
-                placeholder=""
+                onChange={(e) => {
+                  set("customServings", e.target.value);
+                  clearError("customServings");
+                }}
+                placeholder={inquiry.customServingsPlaceholder}
                 aria-label={inquiry.customServingsPlaceholder}
                 aria-invalid={Boolean(errors.customServings)}
               />
@@ -441,7 +457,14 @@ export function CakeInquiryForm() {
             clearError("servings");
             clearError("customServings");
           }}
-          label={displayServing(inquiry.options.servings[serving])}
+          label={
+            <>
+              {displayServing(inquiry.options.servings[serving])}
+              <span className="cake-inquiry-radio-hint">
+                {inquiry.servingsGuestsLabel}
+              </span>
+            </>
+          }
         />
       </div>
     );
@@ -689,15 +712,15 @@ export function CakeInquiryForm() {
             label={`${inquiry.phoneLabel}${SPARKLE}`}
             error={errors.phone}
           >
-            <input
+            <PhoneField
               id={`${baseId}-phone`}
-              type="tel"
-              className={inputClass(`${baseId}-phone`, "cake-inquiry-input")}
               value={form.phone}
-              onChange={(e) => set("phone", e.target.value)}
-              autoComplete="tel"
-              aria-invalid={Boolean(errors.phone)}
-              required
+              onChange={(value) => set("phone", value)}
+              locale={locale}
+              invalid={Boolean(errors.phone)}
+              countrySelectAriaLabel={inquiry.phoneCountrySelectAria}
+              hint={inquiry.phoneHint}
+              whatsAppReadyLabel={inquiry.phoneWhatsAppReady}
             />
           </FormField>
 

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Nunito_Sans, Playfair_Display } from "next/font/google";
 import { CustomCursor } from "@/components/CustomCursor";
 import { IntroReadyGate } from "@/components/IntroReadyGate";
 import { RouteTransitionVeil } from "@/components/navigation/RouteTransitionVeil";
+import { getSiteUrl } from "@/lib/seo/site-url";
 import "./globals.css";
 
 /**
@@ -23,21 +25,32 @@ const body = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
-    default: "Custom Cake Studio",
-    template: "%s | Custom Cake Studio",
+    default: "Four et Délices",
+    template: "%s | Four et Délices",
   },
-  description: "Bespoke celebration cakes, crafted to order.",
+  description:
+    "Bespoke celebration cakes in Dakar, Senegal — wedding, birthday, kids, and corporate designs crafted to order.",
+  applicationName: "Four et Délices",
+  creator: "Four et Délices",
+  publisher: "Four et Délices",
+  formatDetection: {
+    telephone: false,
+  },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const lang = headersList.get("x-site-locale") === "fr" ? "fr" : "en";
+
   return (
     <html
-      lang="en"
+      lang={lang}
       className={`${display.variable} ${body.variable} antialiased`}
     >
       <body className="m-0 min-h-screen p-0 font-sans">

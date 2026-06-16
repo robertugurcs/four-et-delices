@@ -46,43 +46,8 @@ const CATEGORIES: Category[] = [
   { anchor: "kids",      title: "Kids",      image: "/assets/category-wish/K-1-1.webp", mood: "kids",      fanRotDeg: -3.5 },
   { anchor: "weddings",  title: "Wedding",   image: "/assets/category-wish/W-2-1.webp", mood: "weddings",  fanRotDeg: -1.2 },
   { anchor: "birthdays", title: "Birthday",  image: "/assets/category-wish/B-4-1.webp", mood: "birthdays", fanRotDeg:  1.2 },
-  { anchor: "corporate", title: "Corporate", image: "/assets/category-wish/C-4-1.webp", mood: "corporate", fanRotDeg:  3.5 },
+  { anchor: "corporate", title: "Corporate", image: "/assets/category-wish/C-5-1.webp", mood: "corporate", fanRotDeg:  3.5 },
 ];
-
-/** Cloud path from noun-cloud-8289424.svg — viewBox "-5 -10 110 135" */
-const CLOUD_PATH_D = `m90.898 40.961c-0.089844 0.078124-2.3086 1.8906-5.9492 1.8906-3.1914 0-6.5312-1.3906-9.9297-4.1289-0.10156-0.078125-0.21094-0.17188-0.30859-0.26172-1.4688-8.1289-8.3203-14.148-16.699-14.488-0.25 0-0.48828-0.019531-0.73828-0.019531-0.37891 0-0.75 0-1.1289 0.039063-1.4609 0.089843-2.8984 0.37109-4.2891 0.82031-0.17188-0.14844-0.33984-0.28906-0.51953-0.42969-4.1211-3.4609-9.25-5.4609-14.691-5.6797-0.33984-0.019531-0.67188-0.03125-1.0117-0.03125-11.551 0-21.609 8.2812-23.941 19.48-5.4414 3.4219-8.9219 9.3789-9.1797 15.84-0.44141 10.84 8.0117 20.02 18.852 20.461h0.80859c0.35938 0 0.73047 0 1.0898-0.03125 0.85156-0.050781 1.6797-0.14844 2.5117-0.30078 0.30859 0.37109 0.64062 0.73828 0.98047 1.0781 3.6094 3.7188 8.4688 5.9102 13.75 6.1289 0.28906 0 0.55859 0.019531 0.85156 0.019531 6.4688 0 12.52-3.0898 16.34-8.2188 1.5898 0.58984 3.2812 0.92969 4.9883 1h0.67188c8.1914 0 14.969-5.9805 16.129-13.91 11.691-0.85938 15.719-15.801 15.879-16.449l2.1406-8.2695z`;
-
-/** One cloud per slot — order: Kids, Weddings, Birthdays, Corporate */
-type CloudCfg = { tx: number; ty: number; rot: number; sx: number; sy: number; uni: number; squashX: number };
-
-const CLOUD_BY_SLOT: CloudCfg[] = [
-  /* Kids (left): upright puff + slight scale up */
-  { tx: 1, ty: 14, rot: -5, sx: 1, sy: 1, uni: 1.08, squashX: 1 },
-  /* Weddings: shorter “tail” */
-  { tx: 0, ty: 15, rot: 6, sx: 1, sy: 1, uni: 1.02, squashX: 0.76 },
-  /* Birthdays */
-  { tx: -5, ty: 14, rot: -4, sx: 1, sy: 1, uni: 1.02, squashX: 1 },
-  { tx: 8, ty: 16, rot: 5, sx: 1, sy: 1, uni: 1.02, squashX: 1 },
-];
-
-function CloudBg({ idx }: { idx: number }) {
-  const v = CLOUD_BY_SLOT[idx] ?? CLOUD_BY_SLOT[0];
-  const { tx, ty, rot, sx, sy, uni, squashX } = v;
-  return (
-    <div className="cw-cloud-bg" aria-hidden>
-      <svg
-        viewBox="-5 -10 110 135"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{
-          transform: `translate(${tx}%, ${ty}%) rotate(${rot}deg) scale(${squashX * uni * sx}, ${uni * sy})`,
-          transformOrigin: "50% 92%",
-        }}
-      >
-        <path d={CLOUD_PATH_D} fill="currentColor" />
-      </svg>
-    </div>
-  );
-}
 
 /* ── Cake / candle SVG burst (replaces gold particle sparkle on card) ───── */
 function spawnCakeBurst(container: Element) {
@@ -123,9 +88,8 @@ export default function CategoryWishSection() {
   const magicGenieRef  = useRef<HTMLImageElement>(null);
   const cardButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const cardLiftRefs   = useRef<(HTMLDivElement | null)[]>([]);
-  const [selected, setSelected]       = useState<string | null>(null);
-  const [hoveredMood, setHoveredMood] = useState<CategoryMood | null>(null);
-  const [fanOpen, setFanOpen]         = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [fanOpen, setFanOpen]   = useState(false);
   const ipadFanRef  = useRef(false);
   const revealedRef = useRef(false);
   const router = useRouter();
@@ -162,6 +126,12 @@ export default function CategoryWishSection() {
     [path, router],
   );
 
+  const navigateToCatalog = useCallback(() => {
+    pushWithRouteTransition(router, path("/cakes"), {
+      mood: "default",
+    });
+  }, [path, router]);
+
   /* ── iPad: fan always open (desktop spread, no hover needed) ─────────── */
   useEffect(() => {
     const mq = window.matchMedia(IPAD_FAN_MQ);
@@ -189,12 +159,12 @@ export default function CategoryWishSection() {
     const ctx = gsap.context(() => {
       const lifts     = cardLiftRefs.current.filter(Boolean) as HTMLDivElement[];
       const proseRoot = proseRef.current;
-      const wishLine = proseRoot?.querySelector(
-        ".category-wish-section__prose-wish",
+      const wishBlock = proseRoot?.querySelector(
+        ".category-wish-section__wish-block",
       ) as HTMLElement | null;
       const proseLines = proseRoot
         ? (Array.from(proseRoot.querySelectorAll(":scope > *")) as HTMLElement[]).filter(
-            (el) => !el.classList.contains("category-wish-section__prose-wish"),
+            (el) => !el.classList.contains("category-wish-section__wish-block"),
           )
         : [];
       const genieEl     = magicGenieRef.current;
@@ -207,7 +177,7 @@ export default function CategoryWishSection() {
         }
         gsap.set(lifts, { opacity: (_, el) => readOp(el), y: 0 });
         if (proseLines.length) gsap.set(proseLines, { opacity: 1, y: 0 });
-        if (wishLine) gsap.set(wishLine, { opacity: 1, y: 0 });
+        if (wishBlock) gsap.set(wishBlock, { opacity: 1, y: 0 });
         return;
       }
 
@@ -220,9 +190,10 @@ export default function CategoryWishSection() {
         gsap.set(lifts, { opacity: 1, clearProps: "all" });
       }
       if (proseLines.length) gsap.set(proseLines, { opacity: 0, y: 14 });
-      if (wishLine) gsap.set(wishLine, { opacity: 0, y: 18 });
+      if (wishBlock) gsap.set(wishBlock, { opacity: 0, y: 18 });
 
-      const WISH_AT = 1.95;
+      const WISH_BLOCK_AT = narrowMobile ? 0.55 : 0.58;
+      const LAMP_AT = 1.95;
       const GENIE_AT = 2.15;
 
       const runReveal = () => {
@@ -242,7 +213,17 @@ export default function CategoryWishSection() {
           }, 0.08);
         }
 
-        /* 2 — Cards stagger in (desktop/tablet only; mobile uses static grid) */
+        /* 2 — Wish + catalog CTA (above cards in layout) */
+        if (wishBlock) {
+          tl.to(wishBlock, {
+            opacity: 1,
+            y: 0,
+            duration: 0.55,
+            ease: "power3.out",
+          }, WISH_BLOCK_AT);
+        }
+
+        /* 3 — Cards stagger in (desktop/tablet only; mobile uses static grid) */
         if (!narrowMobile) {
           tl.to(
             lifts,
@@ -257,19 +238,9 @@ export default function CategoryWishSection() {
           );
         }
 
-        /* 3 — Wish CTA after cards */
-        if (wishLine) {
-          tl.to(wishLine, {
-            opacity: 1,
-            y: 0,
-            duration: 0.55,
-            ease: "power3.out",
-          }, narrowMobile ? 1.05 : WISH_AT);
-        }
-
-        /* Desktop/tablet — lamp + genie after cards & wish */
+        /* Desktop/tablet — lamp + genie after cards */
         if (!narrowMobile) {
-          tl.to(lampWrap, { opacity: 1, scale: 1, y: 0, duration: 1.15, ease: "expo.out" }, WISH_AT);
+          tl.to(lampWrap, { opacity: 1, scale: 1, y: 0, duration: 1.15, ease: "expo.out" }, LAMP_AT);
 
           if (genieEl && lampWrap && root) {
             tl.call(() => {
@@ -365,7 +336,6 @@ export default function CategoryWishSection() {
     if (!cat) return;
 
     setSelected(anchor);
-    setHoveredMood(cat.mood);
 
     const narrowMobile =
       typeof window !== "undefined" &&
@@ -459,7 +429,6 @@ export default function CategoryWishSection() {
       id="cakes"
       className="category-wish-section"
       aria-labelledby="category-wish-heading"
-      data-cw-mood={hoveredMood ?? ""}
     >
       {/* Flying genie — GSAP only, not a cursor */}
       <img
@@ -500,20 +469,46 @@ export default function CategoryWishSection() {
                 </span>
               ))}
             </p>
-            <p className="category-wish-section__prose-wish">
-              <span className="category-wish-section__wish-line">
-                <span>{t.home.categoryWishCta}</span>
-                <img
-                  src={CAKE_BURST_SRC}
-                  alt=""
-                  width={46}
-                  height={46}
-                  draggable={false}
-                  className="category-wish-section__wish-cake-mark"
-                  aria-hidden
-                />
-              </span>
-            </p>
+            <div className="category-wish-section__wish-block">
+              <p className="category-wish-section__prose-wish">
+                <span className="category-wish-section__wish-line">
+                  <span>{t.home.categoryWishCta}</span>
+                  <img
+                    src={CAKE_BURST_SRC}
+                    alt=""
+                    width={46}
+                    height={46}
+                    draggable={false}
+                    className="category-wish-section__wish-cake-mark"
+                    aria-hidden
+                  />
+                </span>
+              </p>
+              <div className="category-wish-catalog-cta">
+                <button
+                  type="button"
+                  className="category-wish-catalog-cta__btn"
+                  onClick={navigateToCatalog}
+                  aria-label={t.home.categoryCatalogAria}
+                >
+                  <span className="category-wish-catalog-cta__label">
+                    {t.home.categoryCatalogCta}
+                  </span>
+                  <span className="category-wish-catalog-cta__arrow" aria-hidden>
+                    <svg viewBox="0 0 12 12" width="12" height="12">
+                      <path
+                        d="M3.5 8.5 8.5 3.5M8.5 3.5H4.5M8.5 3.5V7.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -521,23 +516,6 @@ export default function CategoryWishSection() {
         <div
           className={`category-wish-fan${fanOpen ? " category-wish-fan--open" : ""}`}
           role="list"
-          onMouseEnter={() => setFanOpen(true)}
-          onMouseLeave={() => {
-            if (ipadFanRef.current) return;
-            setFanOpen(false);
-            setHoveredMood(null);
-          }}
-          onFocus={() => setFanOpen(true)}
-          onBlur={(e) => {
-            if (ipadFanRef.current) return;
-            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-              setFanOpen(false);
-              setHoveredMood(null);
-            }
-          }}
-          onTouchStart={() => {
-            if (!ipadFanRef.current) setFanOpen(true);
-          }}
         >
           {CATEGORIES.map((cat, index) => (
             <div
@@ -545,15 +523,12 @@ export default function CategoryWishSection() {
               className="category-wish-fan__slot"
               role="listitem"
             >
-              <CloudBg idx={index} />
-
               <button
                 ref={(el) => { cardButtonRefs.current[index] = el; }}
                 type="button"
                 data-category-mood={cat.mood}
                 className={`category-wish-card${selected === cat.anchor ? " category-wish-card--selected" : ""}`}
                 onClick={() => handleActivate(cat.anchor, index)}
-                onMouseEnter={() => setHoveredMood(cat.mood)}
                 aria-pressed={selected === cat.anchor}
                 aria-label={t.home.categoryExplore.replace(
                   "{title}",

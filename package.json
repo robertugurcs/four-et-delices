@@ -6,22 +6,26 @@
     "dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev --webpack",
     "dev:clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\" && npm run dev",
     "dev:turbo": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev --turbopack",
-    "build": "next build",
+    "build": "npm run build:favicon && next build",
     "start": "next start",
     "lint": "eslint",
     "build:wordmark": "node scripts/build-wordmark-transparent.mjs",
+    "build:favicon": "node scripts/build-favicon-circle.mjs",
     "check:order-env": "node scripts/order/check-env.mjs",
     "check:resend": "node scripts/order/test-resend.mjs",
     "check:order-env:prod": "node scripts/order/check-env.mjs --production",
     "verify:whatsapp-template": "node scripts/order/verify-whatsapp-template.mjs",
+    "verify:preview-sentences": "node scripts/verify-preview-sentences.mjs",
     "test:order-api": "node scripts/order/test-api.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.0",
+    "libphonenumber-js": "^1.13.6",
     "next": "16.2.4",
-    "resend": "^6.12.2",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-phone-number-input": "^3.4.17",
+    "resend": "^6.12.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

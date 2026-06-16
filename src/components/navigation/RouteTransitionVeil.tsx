@@ -58,8 +58,8 @@ const PALETTES: Record<RouteTransitionMood, string[]> = {
   kids: ["#f4d03f", "#e85d75", "#b794f6", "#fbd9e5", "#f4a62a", "#d45a8f", "#fff4c2", "#c43670"],
   weddings: ["#e8e4dc", "#c9b8a8", "#9db4a0", "#f5f1ea", "#b8a99a", "#d4cfc4", "#ede8e0"],
   birthdays: ["#f4a62a", "#fbd9e5", "#e85d75", "#fff0d6", "#c43670", "#ffc857", "#f8c4d8"],
-  corporate: ["#c43670", "#f5d0e8", "#9a2858", "#fbd9e5", "#b32f64", "#e8a4c8", "#d45a8f"],
-  default: ["#fbd9e5", "#c43670", "#fbf4eb", "#f4a62a", "#e85d75", "#b794f6", "#f8e4d4"],
+  corporate: ["#ffffff", "#1a1a1a", "#c9a227", "#e8e4dc", "#f5f3ef", "#7d1828", "#d4cfc4"],
+  default: ["#fbd9e5", "#c43670", "#ffffff", "#f4a62a", "#e85d75", "#b794f6", "#f8e4d4"],
 };
 
 function buildMoodOrbs(mood: RouteTransitionMood): OrbSpec[] {

@@ -134,7 +134,7 @@ export function TestimonialSection() {
             <nav className="nav-controls" aria-label={t.home.testimonialNav}>
               <button
                 type="button"
-                className="nav-arrow"
+                className="nav-arrow nav-arrow--prev"
                 aria-label={t.home.testimonialPrev}
                 onClick={() =>
                   switchTo(
@@ -160,7 +160,7 @@ export function TestimonialSection() {
               </div>
               <button
                 type="button"
-                className="nav-arrow"
+                className="nav-arrow nav-arrow--next"
                 aria-label={t.home.testimonialNext}
                 onClick={() => switchTo((current + 1) % testimonials.length)}
               >
