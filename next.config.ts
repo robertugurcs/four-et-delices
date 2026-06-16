@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/favicon.ico",
+        destination: "/icon.png",
+        permanent: true,
+      },
+      {
         source: "/story",
         destination: "/meet-khoudia",
         permanent: true,

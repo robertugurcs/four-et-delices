@@ -38,6 +38,25 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  icons: {
+    icon: [
+      {
+        url: "/icon.png",
+        sizes: "96x96",
+        type: "image/png",
+      },
+      {
+        url: "/assets/four-et-delices-favicon-circle.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+    apple: {
+      url: "/apple-icon.png",
+      sizes: "180x180",
+      type: "image/png",
+    },
+  },
 };
 
 export default async function RootLayout({

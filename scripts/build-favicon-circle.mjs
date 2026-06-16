@@ -12,7 +12,8 @@ const root = path.join(__dirname, "..");
 
 const SIZE = 512;
 const APPLE_SIZE = 180;
-const ICON_SIZE = 64;
+/** Google Search favicons: use a multiple of 48px (96+ recommended). */
+const ICON_SIZE = 96;
 /** Center-crop zoom — pushes hat/hearts/bowl larger inside the tab icon */
 const ZOOM = 1.28;
 

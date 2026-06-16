@@ -1083,6 +1083,22 @@ html.intro-ready:not([data-hero-intro="running"])
   }
 }
 
+/* Samsung Galaxy Z Fold cover (~344px) — lift wave + tighten testimonial gap (white seam) */
+@media (min-width: 342px) and (max-width: 346px) {
+  .testimonial-section {
+    padding-bottom: clamp(1.25rem, 4.5vw, 1.75rem);
+    margin-bottom: -0.85rem;
+  }
+
+  .testimonials-wave-divider {
+    margin-top: -28px;
+  }
+
+  .testimonials-wave-divider svg {
+    transform: translateY(-11px);
+  }
+}
+
 /* Taste reveal â€” post-hero collage / cursor trail + champagne top divider (inside section only) */
 .taste-reveal {
   position: relative;
@@ -4472,17 +4488,28 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   background-color: var(--khoudia-hero-bg);
 }
 
+/* Mobile portrait — hidden on desktop/iPad (≥768px); never touches desktop markup */
+.khoudia-hero-banner__photo--mobile-only {
+  display: none;
+}
+
 @media (max-width: 767px) {
-  /* Festive photo — mobile vertical position */
-  .khoudia-hero-banner__photo {
-    margin-top: clamp(0.75rem, 3vw, 1.5rem);
+  .khoudia-hero-banner__stage > .khoudia-hero-banner__photo:not(.khoudia-hero-banner__photo--mobile-only) {
+    display: none !important;
   }
 
-  /* Hi Khoudia + my story — one block, shifted east on mobile */
+  .khoudia-hero-banner__photo--mobile-only {
+    display: block;
+    margin-top: clamp(0.75rem, 3vw, 1.5rem);
+    object-fit: contain;
+    object-position: center top;
+  }
+
+  /* Hi Khoudia + my story — one block, shifted west + south on mobile */
   .khoudia-hero-banner__mobile-intro {
     transform: translate3d(
-      clamp(2rem, 10vw, 3.75rem),
-      clamp(-1.35rem, -5.5vw, -0.5rem),
+      clamp(-0.5rem, 1.5vw, 0.5rem),
+      clamp(3.15rem, 10vw, 5rem),
       0
     );
   }
@@ -5257,27 +5284,43 @@ html[data-route-transition="true"][data-route-mood="corporate"] body {
   }
 
   .site-footer__meta {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.55rem 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
   }
 
   .site-footer__contact {
-    flex: 1 1 auto;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    justify-content: start;
     align-items: center;
-    gap: 0.35rem 0.85rem;
-    min-width: min(100%, 16rem);
+    width: 100%;
+    min-width: 0;
+    column-gap: 0.48rem;
+    row-gap: 0;
+  }
+
+  .site-footer__location {
+    font-size: clamp(0.54rem, 2.45vw, 0.66rem);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .site-footer__contact-line {
+    font-size: clamp(0.56rem, 2.55vw, 0.68rem);
+    letter-spacing: 0;
+    line-height: 1.2;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .site-footer__credit {
-    flex: 0 1 auto;
-    justify-content: flex-end;
-    margin-left: auto;
-    text-align: right;
+    flex: none;
+    justify-content: flex-start;
+    margin-left: 0;
+    text-align: left;
   }
 }
 

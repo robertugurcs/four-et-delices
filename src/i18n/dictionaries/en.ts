@@ -196,7 +196,7 @@ export const enDictionary = {
     p2:
       "I have always been drawn to details, not the obvious ones, but the quiet ones. Over time this sensitivity to detail naturally evolved into a way of creating.",
     p3:
-      "My role is to translate that invisible intention into something tangible that can be seen, shared and remembered.",
+      "My role is to translate this invisible intention into a tangible creation that can be admired, shared and savored.",
     p4:
       "Every creation is designed with the idea that it will become part of someone's memory. And that is what gives meaning to every step of the process.",
     studioAlt: "Khoudia piping a custom celebration cake in her studio kitchen.",

@@ -14,6 +14,11 @@ const MOBILE_STORY_PNG_SRC = "/assets/khoudia/khoudia-mobil-english.webp";
 const MOBILE_STORY_NATURAL_W = 923;
 const MOBILE_STORY_NATURAL_H = 540;
 
+/** Phones only (<768px) — full-res PNG; desktop/iPad hero stays DESKTOP_HERO_SRC. */
+const MOBILE_HERO_SRC = "/assets/rename7.png";
+const MOBILE_HERO_NATURAL_W = 941;
+const MOBILE_HERO_NATURAL_H = 1672;
+
 const DESKTOP_HERO_SRC = "/assets/rename2.png";
 /** Full-resolution festive hero — keeps aspect ratio stable while scaling. */
 const DESKTOP_HERO_NATURAL_W = 1672;
@@ -41,6 +46,17 @@ export function KhoudiaHeroBanner() {
           height={DESKTOP_HERO_NATURAL_H}
           sizes="100vw"
           className="khoudia-hero-banner__photo m-0 p-0"
+          unoptimized
+          priority
+          loading="eager"
+        />
+        <Image
+          alt={t.home.khoudiaHeroAlt}
+          src={MOBILE_HERO_SRC}
+          width={MOBILE_HERO_NATURAL_W}
+          height={MOBILE_HERO_NATURAL_H}
+          sizes="100vw"
+          className="khoudia-hero-banner__photo khoudia-hero-banner__photo--mobile-only m-0 p-0"
           unoptimized
           priority
           loading="eager"

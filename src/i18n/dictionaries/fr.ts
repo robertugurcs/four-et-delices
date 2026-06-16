@@ -203,7 +203,7 @@ export const frDictionary = {
     p2:
       "J'ai toujours été attirée par les détails, pas les évidents, mais les discrets. Avec le temps, cette sensibilité au détail est devenue une façon de créer.",
     p3:
-      "Mon rôle est de traduire cette intention invisible en quelque chose de tangible, visible, partageable et mémorable.",
+      "Mon rôle est de traduire cette intention invisible en une création tangible, qui puisse être admirée, partagée et savourée.",
     p4:
       "Chaque création est pensée pour devenir une part de la mémoire de quelqu'un. Et c'est ce qui donne du sens à chaque étape du processus.",
     studioAlt:
