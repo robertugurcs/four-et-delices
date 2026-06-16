@@ -109,7 +109,7 @@ export function HeroStorySplit() {
         </h2>
 
         <p ref={textRef} className="story-split__text">
-          Four et Délices creates bespoke celebration cakes with sculptural
+          Four et Délices creates handmade celebration cakes with sculptural
           detail, delicate finishes, and made-to-order designs for celebrations
           that deserve something unforgettable.
         </p>

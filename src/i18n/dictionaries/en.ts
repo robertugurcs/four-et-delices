@@ -2,12 +2,12 @@ export const enDictionary = {
   meta: {
     siteName: "Four et Délices",
     siteDescription:
-      "Bespoke celebration cakes in Dakar, Senegal — wedding, birthday, kids, and corporate designs crafted to order by Four et Délices.",
-    homeTitle: "Four et Délices — Bespoke Cakes in Dakar, Senegal",
+      "Handmade celebration cakes in Dakar, Senegal. Wedding, birthday, kids, and corporate designs crafted to order by Four et Délices.",
+    homeTitle: "Handmade Cakes in Dakar | Four et Délices",
     homeKeywords: [
       "Four et Délices",
       "custom cakes Dakar",
-      "bespoke cakes Senegal",
+      "handmade cakes Senegal",
       "order cake Dakar",
       "patisserie Dakar",
       "wedding cakes Senegal",
@@ -17,41 +17,41 @@ export const enDictionary = {
       "celebration cakes",
       "cake designer Dakar",
     ],
-    meetKhoudiaTitle: "Meet Khoudia — Cake Designer in Dakar",
+    meetKhoudiaTitle: "Meet Khoudia, Cake Designer in Dakar",
     meetKhoudiaDescription:
-      "Discover Khoudia, founder and cake designer of Four et Délices in Dakar — creating bespoke celebration cakes that honour every moment.",
+      "Discover Khoudia, founder and cake designer of Four et Délices in Dakar. She creates handmade celebration cakes that honour every moment.",
     meetKhoudiaKeywords: [
       "Khoudia cake designer Dakar",
       "pastry chef Senegal",
       "Four et Délices founder",
-      "bespoke cake designer Dakar",
+      "handmade cake designer Dakar",
     ],
     inquiryTitle: "Order a Custom Cake in Dakar",
     inquiryDescription:
-      "Request a bespoke cake from Four et Délices in Dakar — share your date, style, flavours, and celebration details.",
+      "Request a handmade cake from Four et Délices in Dakar. Share your date, style, flavours, and celebration details.",
     inquiryKeywords: [
       "order cake Dakar",
       "custom cake inquiry",
       "cake quote Senegal",
-      "bespoke cake order",
+      "handmade cake order",
       "Four et Délices order",
     ],
-    collectionsTitle: "Bespoke Cake Collections in Dakar",
+    collectionsTitle: "Handmade Cake Collections in Dakar",
     collectionsDescription:
-      "Browse Four et Délices celebration cakes in Dakar — kids, birthday, corporate, and wedding collections made to order.",
+      "Browse Four et Délices celebration cakes in Dakar. Kids, birthday, corporate, and wedding collections made to order.",
     collectionsKeywords: [
       "cake catalog Dakar",
-      "bespoke cakes Senegal",
+      "handmade cakes Senegal",
       "celebration patisserie Dakar",
       "Four et Délices gallery",
     ],
-    categoryCakesTitle: "Bespoke {category} Cakes in Dakar",
+    categoryCakesTitle: "Handmade {category} Cakes in Dakar",
     ourCakesFallback: "Our Cakes",
     categorySeo: {
       kids: {
         title: "Kids Cakes Made to Order in Dakar",
         description:
-          "Custom kids cakes in Dakar — playful designs made to order by Four et Délices for birthdays and celebrations.",
+          "Custom kids cakes in Dakar. Playful designs made to order by Four et Délices for birthdays and celebrations.",
         keywords: [
           "kids cake Dakar",
           "children birthday cake Senegal",
@@ -62,7 +62,7 @@ export const enDictionary = {
       birthdays: {
         title: "Birthday Cakes Made to Order in Dakar",
         description:
-          "Elegant bespoke birthday cakes in Dakar — crafted to order by Four et Délices for every celebration.",
+          "Elegant handmade birthday cakes in Dakar, crafted to order by Four et Délices for every celebration.",
         keywords: [
           "birthday cake Dakar",
           "birthday cake Senegal",
@@ -73,7 +73,7 @@ export const enDictionary = {
       corporate: {
         title: "Corporate Cakes Made to Order in Dakar",
         description:
-          "Bespoke corporate cakes in Dakar — brand identity, elegance, and artisan finishing by Four et Délices.",
+          "Handmade corporate cakes in Dakar. Brand identity, elegance, and artisan finishing by Four et Délices.",
         keywords: [
           "corporate cake Dakar",
           "business cake Senegal",
@@ -84,11 +84,11 @@ export const enDictionary = {
       weddings: {
         title: "Wedding Cakes Made to Order in Dakar",
         description:
-          "Romantic bespoke wedding cakes in Dakar — crafted by Four et Délices to celebrate your special day.",
+          "Romantic handmade wedding cakes in Dakar, crafted by Four et Délices to celebrate your special day.",
         keywords: [
           "wedding cake Dakar",
           "wedding cake Senegal",
-          "bespoke wedding cake",
+          "handmade wedding cake",
           "wedding patisserie Dakar",
         ],
       },
@@ -102,7 +102,7 @@ export const enDictionary = {
     label: "Language",
   },
   nav: {
-    brandHome: "Four et Délices — home",
+    brandHome: "Four et Délices home",
     brandName: "Four et Délices",
     ourCakes: "Our Cakes",
     meetKhoudia: "The Designer",
@@ -121,7 +121,7 @@ export const enDictionary = {
     contact: "Contact",
     location: "Dakar, Senegal",
     copyright: "© {year} Four et Délices",
-    tagline: "Bespoke celebration cakes",
+    tagline: "Handmade celebration cakes",
     instagram: "Instagram",
     tiktok: "TikTok",
     snapchat: "Snapchat",
@@ -139,7 +139,7 @@ export const enDictionary = {
     tasteLine1: "CLOSER TO AN",
     tasteLine2: "UNFORGETTABLE",
     tasteLine3: "TASTE",
-    tasteGallery: "Cake gallery — {count} photos.",
+    tasteGallery: "Cake gallery, {count} photos.",
     tasteSlide: "{index} / {total}",
     categoryWishHeading:
       "Your imagination deserves a beautiful creation.\nThe kind that turns heads before the first slice is even served.",
@@ -152,7 +152,7 @@ export const enDictionary = {
     categoryWishCta: "Please make your wish",
     categoryCatalogCta: "Explore the Collection",
     categoryCatalogAria: "Browse our full cake catalog",
-    categoryExplore: "{title} — explore",
+    categoryExplore: "{title}, explore",
     categoryKids: "Kids",
     categoryWedding: "Wedding",
     categoryBirthday: "Birthday",
@@ -173,7 +173,7 @@ export const enDictionary = {
     khoudiaHeroAlt: "Khoudia with an intricately piped celebration cake.",
     khoudiaMobileAlt: "Hi, I'm Khoudia.",
     khoudiaDesktopAlt:
-      "Khoudia: Hi I'm Khoudia, your pastry chef — a cake begins with a feeling.",
+      "Khoudia: Hi I'm Khoudia, your pastry chef. A cake begins with a feeling.",
     khoudiaStory: "my story",
     khoudiaDesktopProse:
       "your future favorite pastry chef. I have always been drawn to details, not the obvious ones, but the quiet ones. Over time, this sensitivity to detail naturally evolved into a way of creating. For me, a cake is never just a product. It starts with a feeling. And that's where the story began.",
@@ -181,7 +181,7 @@ export const enDictionary = {
     sweetCatchMini: "Mini arcade",
     sweetCatch: "Sweet Catch",
     sweetCatchIframe:
-      "Sweet Catch — collect 15 sweets, avoid bombs",
+      "Sweet Catch: collect 15 sweets, avoid bombs",
   },
   meetKhoudia: {
     title1: "For me a cake",
@@ -233,7 +233,7 @@ export const enDictionary = {
     eventDateHintStandard:
       "We ask for at least 2 days' notice so every detail can be prepared with care.",
     eventDateHintPremium:
-      "Wedding and corporate creations require at least one week's notice — bespoke tiers, finishes, and logistics deserve that time.",
+      "Wedding and corporate creations require at least one week's notice. Handmade tiers, finishes, and logistics deserve that time.",
     deliveryLabel: "Delivery or pickup?",
     customOccasionPlaceholder: "other…",
     customOccasionAria: "Describe the occasion",
@@ -253,7 +253,7 @@ export const enDictionary = {
     fillRequired: "Please fill required fields.",
     sending: "Sending…",
     createCake: "Create my cake",
-    createCakeReady: "Everything looks ready — tap to send your inquiry",
+    createCakeReady: "Everything looks ready. Tap to send your inquiry",
     createCakeFooter:
       "We'll review everything and get back to you to refine the details.",
     submitting: "Submitting your inquiry, please wait.",
@@ -352,13 +352,13 @@ export const enDictionary = {
     categoryCakes: "{category} cakes",
     leadTime: {
       standard:
-        "Orders are accepted at least 2 days before your event — enough time to craft every detail with care.",
+        "Orders are accepted at least 2 days before your event. That gives us time to craft every detail with care.",
       premium:
         "Wedding and corporate designs require at least one week's notice. Every tier, finish, and detail is shaped with the time your celebration deserves.",
     },
     tags: {
       customFlavours: "Custom flavours",
-      bespokeDecor: "Bespoke décor",
+      bespokeDecor: "Handmade décor",
       madeToOrder: "Made to order",
     },
     fallbackDescription:
@@ -492,11 +492,11 @@ export const enDictionary = {
       handFinished: "Hand-finished tiers",
       anyFlavour: "Available in any flavour pairing",
       beginDesign: "Begin Your Design",
-      beginDesignAria: "Begin your cake design — go to inquiry",
+      beginDesignAria: "Begin your cake design, go to inquiry",
       galleryHint:
         "Click a photo to enlarge · arrows to browse · F for fullscreen",
       photos: "{title} photos",
-      photoAlt: "{title} — {angle}",
+      photoAlt: "{title}, {angle}",
       closeGallery: "Close gallery",
       previousPhoto: "Previous photo",
       nextPhoto: "Next photo",

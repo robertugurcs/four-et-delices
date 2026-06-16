@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s | Four et Délices",
   },
   description:
-    "Bespoke celebration cakes in Dakar, Senegal — wedding, birthday, kids, and corporate designs crafted to order.",
+    "Handmade celebration cakes in Dakar, Senegal. Wedding, birthday, kids, and corporate designs crafted to order.",
   applicationName: "Four et Délices",
   creator: "Four et Délices",
   publisher: "Four et Délices",

@@ -2,8 +2,8 @@ export const frDictionary = {
   meta: {
     siteName: "Four et Délices",
     siteDescription:
-      "Gâteaux d'exception sur mesure à Dakar, Sénégal — mariages, anniversaires, enfants et entreprises, créés sur commande par Four et Délices.",
-    homeTitle: "Four et Délices — Gâteaux sur mesure à Dakar, Sénégal",
+      "Gâteaux faits main à Dakar, Sénégal. Mariages, anniversaires, enfants et entreprises, créés sur commande par Four et Délices.",
+    homeTitle: "Gâteaux faits main à Dakar | Four et Délices",
     homeKeywords: [
       "Four et Délices",
       "gâteau sur mesure Dakar",
@@ -20,9 +20,9 @@ export const frDictionary = {
       "créatrice de gâteaux Dakar",
       "cake designer Dakar",
     ],
-    meetKhoudiaTitle: "Rencontrer Khoudia — Créatrice de gâteaux à Dakar",
+    meetKhoudiaTitle: "Rencontrer Khoudia, créatrice de gâteaux à Dakar",
     meetKhoudiaDescription:
-      "Découvrez Khoudia, fondatrice et créatrice de gâteaux de Four et Délices à Dakar — des pâtisseries sur mesure pensées pour chaque célébration.",
+      "Découvrez Khoudia, fondatrice et créatrice de gâteaux de Four et Délices à Dakar. Des pâtisseries faites main pensées pour chaque célébration.",
     meetKhoudiaKeywords: [
       "Khoudia pâtissière Dakar",
       "créatrice de gâteaux Sénégal",
@@ -32,7 +32,7 @@ export const frDictionary = {
     ],
     inquiryTitle: "Commander un gâteau sur mesure à Dakar",
     inquiryDescription:
-      "Commandez votre gâteau sur mesure chez Four et Délices à Dakar — partagez votre date, votre style, vos saveurs et les détails de votre événement.",
+      "Commandez votre gâteau fait main chez Four et Délices à Dakar. Partagez votre date, votre style, vos saveurs et les détails de votre événement.",
     inquiryKeywords: [
       "commander gâteau Dakar",
       "commande gâteau sur mesure",
@@ -43,7 +43,7 @@ export const frDictionary = {
     ],
     collectionsTitle: "Collections de gâteaux sur mesure à Dakar",
     collectionsDescription:
-      "Parcourez les gâteaux de célébration Four et Délices à Dakar — enfants, anniversaires, entreprises et mariages, tous créés sur commande.",
+      "Parcourez les gâteaux de célébration Four et Délices à Dakar. Enfants, anniversaires, entreprises et mariages, tous créés sur commande.",
     collectionsKeywords: [
       "catalogue gâteaux Dakar",
       "gâteaux sur mesure Sénégal",
@@ -57,7 +57,7 @@ export const frDictionary = {
       kids: {
         title: "Gâteaux enfants sur mesure à Dakar",
         description:
-          "Gâteaux enfant personnalisés à Dakar — créations enjouées sur commande par Four et Délices pour anniversaires et fêtes.",
+          "Gâteaux enfant personnalisés à Dakar. Créations enjouées sur commande par Four et Délices pour anniversaires et fêtes.",
         keywords: [
           "gâteau enfant Dakar",
           "gâteau anniversaire enfant Sénégal",
@@ -68,7 +68,7 @@ export const frDictionary = {
       birthdays: {
         title: "Gâteaux d'anniversaire sur mesure à Dakar",
         description:
-          "Gâteaux d'anniversaire élégants et personnalisés à Dakar — créés sur commande par Four et Délices pour chaque célébration.",
+          "Gâteaux d'anniversaire élégants et faits main à Dakar, créés sur commande par Four et Délices pour chaque célébration.",
         keywords: [
           "gâteau anniversaire Dakar",
           "gâteau anniversaire Sénégal",
@@ -79,7 +79,7 @@ export const frDictionary = {
       corporate: {
         title: "Gâteaux entreprise sur mesure à Dakar",
         description:
-          "Gâteaux d'entreprise sur mesure à Dakar — identité de marque, élégance et finitions artisanales par Four et Délices.",
+          "Gâteaux d'entreprise faits main à Dakar. Identité de marque, élégance et finitions artisanales par Four et Délices.",
         keywords: [
           "gâteau entreprise Dakar",
           "gâteau corporate Sénégal",
@@ -90,7 +90,7 @@ export const frDictionary = {
       weddings: {
         title: "Gâteaux de mariage sur mesure à Dakar",
         description:
-          "Gâteaux de mariage romantiques et sur mesure à Dakar — créés par Four et Délices pour célébrer votre grand jour.",
+          "Gâteaux de mariage romantiques et faits main à Dakar, créés par Four et Délices pour célébrer votre grand jour.",
         keywords: [
           "gâteau de mariage Dakar",
           "gâteau mariage Sénégal",
@@ -108,7 +108,7 @@ export const frDictionary = {
     label: "Langue",
   },
   nav: {
-    brandHome: "Four et Délices — accueil",
+    brandHome: "Four et Délices, accueil",
     brandName: "Four et Délices",
     ourCakes: "Nos gâteaux",
     meetKhoudia: "La Designer",
@@ -127,7 +127,7 @@ export const frDictionary = {
     contact: "Contact",
     location: "Dakar, Sénégal",
     copyright: "© {year} Four et Délices",
-    tagline: "Gâteaux d'exception sur mesure",
+    tagline: "Gâteaux faits main d'exception",
     instagram: "Instagram",
     tiktok: "TikTok",
     snapchat: "Snapchat",
@@ -145,7 +145,7 @@ export const frDictionary = {
     tasteLine1: "PLUS PRÈS D'UN",
     tasteLine2: "GOÛT",
     tasteLine3: "INOUBLIABLE",
-    tasteGallery: "Galerie de gâteaux — {count} photos.",
+    tasteGallery: "Galerie de gâteaux, {count} photos.",
     tasteSlide: "{index} / {total}",
     categoryWishHeading:
       "Votre imagination mérite une belle création.\nCelle qui fait tourner les têtes avant même la première part.",
@@ -158,7 +158,7 @@ export const frDictionary = {
     categoryWishCta: "Formulez votre souhait",
     categoryCatalogCta: "Explorer la collection",
     categoryCatalogAria: "Parcourir tout le catalogue de gâteaux",
-    categoryExplore: "{title} — explorer",
+    categoryExplore: "{title}, explorer",
     categoryKids: "Enfants",
     categoryWedding: "Mariage",
     categoryBirthday: "Anniversaire",
@@ -180,7 +180,7 @@ export const frDictionary = {
       "Khoudia avec un gâteau de célébration finement décoré au glaçage.",
     khoudiaMobileAlt: "Bonjour, je suis Khoudia.",
     khoudiaDesktopAlt:
-      "Khoudia : Bonjour, je suis Khoudia, votre pâtissière — un gâteau commence par une émotion.",
+      "Khoudia : Bonjour, je suis Khoudia, votre pâtissière. Un gâteau commence par une émotion.",
     khoudiaStory: "mon histoire",
     khoudiaDesktopProse:
       "votre future pâtissière préférée. J'ai toujours été attirée par les détails, pas les évidents, mais les discrets. Avec le temps, cette sensibilité au détail est devenue une façon de créer. Pour moi, un gâteau n'est jamais qu'un produit. Il commence par une émotion. Et c'est là que l'histoire a commencé.",
@@ -188,7 +188,7 @@ export const frDictionary = {
     sweetCatchMini: "Mini arcade",
     sweetCatch: "Sweet Catch",
     sweetCatchIframe:
-      "Sweet Catch — collectez 15 friandises, évitez les bombes",
+      "Sweet Catch : collectez 15 friandises, évitez les bombes",
   },
   meetKhoudia: {
     title1: "Pour moi, un gâteau",
@@ -243,7 +243,7 @@ export const frDictionary = {
     eventDateHintStandard:
       "Nous demandons un préavis d'au moins 2 jours pour préparer chaque détail avec soin.",
     eventDateHintPremium:
-      "Les créations mariage et entreprise demandent un préavis d'au moins une semaine — étages, finitions et logistique méritent ce temps.",
+      "Les créations mariage et entreprise demandent un préavis d'au moins une semaine. Étages, finitions et logistique méritent ce temps.",
     deliveryLabel: "Livraison ou retrait ?",
     customOccasionPlaceholder: "autre…",
     customOccasionAria: "Décrire l'occasion",
@@ -265,7 +265,7 @@ export const frDictionary = {
     sending: "Envoi…",
     createCake: "Créer mon gâteau",
     createCakeReady:
-      "Tout est prêt — appuyez pour envoyer votre demande",
+      "Tout est prêt. Appuyez pour envoyer votre demande",
     createCakeFooter:
       "Nous examinerons tout et reviendrons vers vous pour affiner les détails.",
     submitting: "Envoi de votre demande en cours, veuillez patienter.",
@@ -315,7 +315,7 @@ export const frDictionary = {
       corporate: "un gâteau pour un événement d'entreprise",
       oneOfAKind: "un gâteau pour une célébration unique",
       oneOfAKindWithOccasion:
-        "un gâteau pour une célébration unique — {occasion}",
+        "un gâteau pour une célébration unique, {occasion}",
       cake: "",
     },
     options: {
@@ -365,13 +365,13 @@ export const frDictionary = {
     categoryCakes: "Gâteaux {category}",
     leadTime: {
       standard:
-        "Les commandes sont acceptées au minimum 2 jours avant votre événement — le temps nécessaire pour soigner chaque détail.",
+        "Les commandes sont acceptées au minimum 2 jours avant votre événement. Cela nous laisse le temps de soigner chaque détail.",
       premium:
         "Les créations mariage et entreprise demandent un préavis d'au moins une semaine. Chaque étage, finition et détail mérite le temps que votre célébration exige.",
     },
     tags: {
       customFlavours: "Saveurs personnalisées",
-      bespokeDecor: "Décor sur mesure",
+      bespokeDecor: "Décor fait main",
       madeToOrder: "Fait sur commande",
     },
     fallbackDescription:
@@ -505,11 +505,11 @@ export const frDictionary = {
       handFinished: "Étages finis à la main",
       anyFlavour: "Disponible avec tout accord de saveurs",
       beginDesign: "Commencer votre création",
-      beginDesignAria: "Commencer votre gâteau — aller au formulaire",
+      beginDesignAria: "Commencer votre gâteau, aller au formulaire",
       galleryHint:
         "Cliquez sur une photo pour agrandir · flèches pour parcourir · F pour plein écran",
-      photos: "Photos — {title}",
-      photoAlt: "{title} — {angle}",
+      photos: "Photos de {title}",
+      photoAlt: "{title}, {angle}",
       closeGallery: "Fermer la galerie",
       previousPhoto: "Photo précédente",
       nextPhoto: "Photo suivante",
