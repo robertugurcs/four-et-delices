@@ -4,6 +4,8 @@ import { randomBytes } from "node:crypto";
 import { Resend } from "resend";
 import { type Locale, isValidLocale } from "@/i18n/config";
 import { formatPhoneForWhatsApp } from "@/lib/format-phone-e164";
+import { getEarliestEventDate, isEventDateAllowed, parseIsoDate } from "@/lib/event-date";
+import type { Occasion } from "@/lib/cake-inquiry-constants";
 
 /** Resend needs Node.js — not the Edge runtime. */
 export const runtime = "nodejs";
@@ -182,6 +184,13 @@ function parseInquiry(body: InquiryInput): {
   if (!str(body.flavour)) missing.push("flavour");
   if (!inquiry.designStyle) missing.push("designStyle");
   if (!inquiry.eventDate) missing.push("eventDate");
+  else {
+    const parsedEventDate = parseIsoDate(inquiry.eventDate);
+    const earliest = getEarliestEventDate(inquiry.occasion as Occasion);
+    if (!parsedEventDate || !isEventDateAllowed(parsedEventDate, earliest)) {
+      missing.push("eventDate");
+    }
+  }
   if (!inquiry.deliveryMethod) missing.push("deliveryMethod");
 
   if (missing.length > 0) return { missing };

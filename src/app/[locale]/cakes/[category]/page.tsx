@@ -11,6 +11,7 @@ import {
 import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localizedPath } from "@/i18n/routing";
+import { getCategoryLeadTimeNotice } from "@/lib/cake-lead-time";
 import { createPageMetadata } from "@/lib/seo/create-page-metadata";
 import { getCategorySeoMeta } from "@/lib/seo/category-meta";
 
@@ -70,6 +71,9 @@ export default async function CakesCategoryPage({ params }: PageProps) {
         {category.title}
         <span className="our-cakes-heading__count">[{cakes.length}]</span>
       </h1>
+      <p className="our-cakes-lead-time">
+        {getCategoryLeadTimeNotice(dictionary, categorySlug)}
+      </p>
       <CakeGrid category={category} cakes={cakes} locale={locale} />
     </>
   );

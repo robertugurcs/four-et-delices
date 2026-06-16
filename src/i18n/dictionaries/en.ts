@@ -226,6 +226,14 @@ export const enDictionary = {
     phoneWhatsAppReady: "Phone number\u00a0:",
     emailLabel: "Email",
     eventDateLabel: "Date of event",
+    eventDatePlaceholder: "Choose a date",
+    eventDateOpenAria: "Choose event date",
+    eventDatePrevMonth: "Previous month",
+    eventDateNextMonth: "Next month",
+    eventDateHintStandard:
+      "We ask for at least 2 days' notice so every detail can be prepared with care.",
+    eventDateHintPremium:
+      "Wedding and corporate creations require at least one week's notice — bespoke tiers, finishes, and logistics deserve that time.",
     deliveryLabel: "Delivery or pickup?",
     customOccasionPlaceholder: "other…",
     customOccasionAria: "Describe the occasion",
@@ -256,6 +264,11 @@ export const enDictionary = {
       email: "Please add your email.",
       emailInvalid: "Please enter a valid email.",
       eventDate: "Please choose an event date.",
+      eventDatePast: "Please choose today or a future date.",
+      eventDateTooSoonStandard:
+        "Please choose a date at least 2 days from today.",
+      eventDateTooSoonPremium:
+        "Wedding and corporate orders need at least one week's notice. Please choose a later date.",
       occasion: "Please select an occasion.",
       customOccasion: "Please tell us about the occasion.",
       servings: "Please select a serving size.",
@@ -337,6 +350,12 @@ export const enDictionary = {
     collections: "Collections",
     allCollections: "All collections",
     categoryCakes: "{category} cakes",
+    leadTime: {
+      standard:
+        "Orders are accepted at least 2 days before your event — enough time to craft every detail with care.",
+      premium:
+        "Wedding and corporate designs require at least one week's notice. Every tier, finish, and detail is shaped with the time your celebration deserves.",
+    },
     tags: {
       customFlavours: "Custom flavours",
       bespokeDecor: "Bespoke décor",

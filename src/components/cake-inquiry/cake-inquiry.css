@@ -726,3 +726,230 @@
 .cake-inquiry-field--error .cake-inquiry-phone .PhoneInputInput {
   color: var(--ci-ink);
 }
+
+/* Event date — custom calendar */
+.cake-inquiry-date {
+  position: relative;
+  width: 100%;
+}
+
+.cake-inquiry-date__trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: none;
+  border-bottom: 1.5px solid var(--ci-border);
+  background: transparent;
+  padding: 0.55rem 0 0.65rem;
+  cursor: pointer;
+  text-align: left;
+  color: var(--ci-ink);
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cake-inquiry-date__trigger:focus-visible {
+  outline: none;
+  border-color: var(--ci-accent);
+  box-shadow: 0 1px 0 0 var(--ci-accent-soft);
+}
+
+.cake-inquiry-date--open .cake-inquiry-date__trigger {
+  border-color: var(--ci-accent);
+  box-shadow: 0 1px 0 0 var(--ci-accent-soft);
+}
+
+.cake-inquiry-date--invalid .cake-inquiry-date__trigger,
+.cake-inquiry-field--error .cake-inquiry-date__trigger {
+  border-color: #c0392b;
+}
+
+.cake-inquiry-date-hint {
+  margin: 0.45rem 0 0;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--ci-muted);
+}
+
+.cake-inquiry-date__value {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cake-inquiry-date__value--placeholder {
+  color: var(--ci-muted);
+  font-style: italic;
+}
+
+.cake-inquiry-date__icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+  color: var(--ci-accent);
+  opacity: 0.85;
+}
+
+.cake-inquiry-date__popover {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  width: min(100%, 19.5rem);
+  padding: 0.85rem 0.9rem 1rem;
+  border: 1px solid rgb(184 77 99 / 0.22);
+  border-radius: 0.85rem;
+  background: #fff;
+  box-shadow:
+    0 10px 28px rgb(61 34 40 / 0.12),
+    0 2px 8px rgb(184 77 99 / 0.08);
+  animation: ci-date-pop 0.18s ease;
+}
+
+@keyframes ci-date-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.cake-inquiry-date__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.cake-inquiry-date__month {
+  margin: 0;
+  flex: 1 1 auto;
+  text-align: center;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ci-ink);
+  text-transform: capitalize;
+}
+
+.cake-inquiry-date__nav {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(184 77 99 / 0.18);
+  border-radius: 9999px;
+  background: #fff;
+  color: var(--ci-ink);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.cake-inquiry-date__nav:hover:not(:disabled) {
+  border-color: var(--ci-accent);
+  background: rgb(184 77 99 / 0.06);
+  color: var(--ci-accent);
+}
+
+.cake-inquiry-date__nav:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.cake-inquiry-date__nav:focus-visible {
+  outline: 2px solid var(--ci-accent-soft);
+  outline-offset: 2px;
+}
+
+.cake-inquiry-date__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.15rem;
+  margin-bottom: 0.35rem;
+}
+
+.cake-inquiry-date__weekday {
+  text-align: center;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ci-muted);
+}
+
+.cake-inquiry-date__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.15rem;
+}
+
+.cake-inquiry-date__day {
+  display: inline-flex;
+  width: 100%;
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--ci-ink);
+  cursor: pointer;
+  font-family: "Eighties Comeback", var(--font-serif), serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.cake-inquiry-date__day--empty {
+  pointer-events: none;
+}
+
+.cake-inquiry-date__day:hover:not(:disabled):not(.cake-inquiry-date__day--selected) {
+  background: rgb(184 77 99 / 0.08);
+}
+
+.cake-inquiry-date__day--today:not(.cake-inquiry-date__day--selected) {
+  box-shadow: inset 0 0 0 1.5px rgb(184 77 99 / 0.35);
+}
+
+.cake-inquiry-date__day--selected {
+  background: var(--ci-accent);
+  color: #fff9f2;
+  box-shadow: 0 2px 8px rgb(184 77 99 / 0.28);
+}
+
+.cake-inquiry-date__day--disabled {
+  color: rgb(176 146 152 / 0.55);
+  cursor: not-allowed;
+}
+
+.cake-inquiry-date__day:focus-visible {
+  outline: 2px solid var(--ci-accent-soft);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cake-inquiry-date__popover {
+    animation: none;
+  }
+}

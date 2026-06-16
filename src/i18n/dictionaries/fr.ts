@@ -236,6 +236,14 @@ export const frDictionary = {
     phoneWhatsAppReady: "Numéro de téléphone\u202f:",
     emailLabel: "E-mail",
     eventDateLabel: "Date de l'événement",
+    eventDatePlaceholder: "Choisir une date",
+    eventDateOpenAria: "Choisir la date de l'événement",
+    eventDatePrevMonth: "Mois précédent",
+    eventDateNextMonth: "Mois suivant",
+    eventDateHintStandard:
+      "Nous demandons un préavis d'au moins 2 jours pour préparer chaque détail avec soin.",
+    eventDateHintPremium:
+      "Les créations mariage et entreprise demandent un préavis d'au moins une semaine — étages, finitions et logistique méritent ce temps.",
     deliveryLabel: "Livraison ou retrait ?",
     customOccasionPlaceholder: "autre…",
     customOccasionAria: "Décrire l'occasion",
@@ -268,6 +276,11 @@ export const frDictionary = {
       email: "Veuillez indiquer votre e-mail.",
       emailInvalid: "Veuillez entrer une adresse e-mail valide.",
       eventDate: "Veuillez choisir une date d'événement.",
+      eventDatePast: "Veuillez choisir aujourd'hui ou une date ultérieure.",
+      eventDateTooSoonStandard:
+        "Veuillez choisir une date au moins 2 jours à partir d'aujourd'hui.",
+      eventDateTooSoonPremium:
+        "Les commandes mariage et entreprise nécessitent un préavis d'au moins une semaine. Veuillez choisir une date ultérieure.",
       occasion: "Veuillez sélectionner une occasion.",
       customOccasion: "Veuillez nous parler de l'occasion.",
       servings: "Veuillez sélectionner une taille.",
@@ -350,6 +363,12 @@ export const frDictionary = {
     collections: "Collections",
     allCollections: "Toutes les collections",
     categoryCakes: "Gâteaux {category}",
+    leadTime: {
+      standard:
+        "Les commandes sont acceptées au minimum 2 jours avant votre événement — le temps nécessaire pour soigner chaque détail.",
+      premium:
+        "Les créations mariage et entreprise demandent un préavis d'au moins une semaine. Chaque étage, finition et détail mérite le temps que votre célébration exige.",
+    },
     tags: {
       customFlavours: "Saveurs personnalisées",
       bespokeDecor: "Décor sur mesure",

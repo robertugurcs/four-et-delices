@@ -16,6 +16,7 @@ import {
 } from "@/lib/cake-inquiry-constants";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
+import { isEventDateAllowed, getEarliestEventDate, isPremiumLeadOccasion, parseIsoDate } from "@/lib/event-date";
 import type { FieldErrors, CakeInquiryPayload } from "@/types/cake-inquiry";
 
 export const MORE_SERVINGS_MIN = 50;
@@ -65,7 +66,17 @@ export function validateCakeInquiry(
   else if (!isValidPhoneNumber(v.phone.trim())) e.phone = messages.phoneInvalid;
   if (!v.email.trim()) e.email = messages.email;
   else if (!emailOk(v.email)) e.email = messages.emailInvalid;
-  if (!v.eventDate) e.eventDate = messages.eventDate;
+  if (!v.eventDate) {
+    e.eventDate = messages.eventDate;
+  } else {
+    const parsed = parseIsoDate(v.eventDate);
+    const earliest = getEarliestEventDate(v.occasion);
+    if (!parsed || !isEventDateAllowed(parsed, earliest)) {
+      e.eventDate = isPremiumLeadOccasion(v.occasion)
+        ? messages.eventDateTooSoonPremium
+        : messages.eventDateTooSoonStandard;
+    }
+  }
   if (!v.occasion) e.occasion = messages.occasion;
   else if (v.occasion === "Something else" && !v.customOccasion.trim()) {
     e.customOccasion = messages.customOccasion;

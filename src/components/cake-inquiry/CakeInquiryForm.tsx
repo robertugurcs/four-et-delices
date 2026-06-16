@@ -21,7 +21,13 @@ import {
 } from "@/lib/validate-cake-inquiry";
 import type { FieldErrors } from "@/types/cake-inquiry";
 import { useLocale, useTranslations } from "@/i18n/LocaleProvider";
-
+import {
+  getEarliestEventDate,
+  isEventDateAllowed,
+  isPremiumLeadOccasion,
+  parseIsoDate,
+} from "@/lib/event-date";
+import { EventDateField } from "@/components/cake-inquiry/EventDateField";
 import { PhoneField } from "@/components/cake-inquiry/PhoneField";
 import "./cake-inquiry.css";
 
@@ -80,7 +86,8 @@ function focusScrollTarget(el: HTMLElement) {
   if (
     el instanceof HTMLInputElement ||
     el instanceof HTMLTextAreaElement ||
-    el instanceof HTMLSelectElement
+    el instanceof HTMLSelectElement ||
+    el instanceof HTMLButtonElement
   ) {
     el.focus({ preventScroll: true });
     return;
@@ -218,6 +225,15 @@ export function CakeInquiryForm() {
       locale,
     ],
   );
+
+  const eventMinDate = useMemo(
+    () => getEarliestEventDate(form.occasion),
+    [form.occasion],
+  );
+
+  const eventDateHint = isPremiumLeadOccasion(form.occasion)
+    ? inquiry.eventDateHintPremium
+    : inquiry.eventDateHintStandard;
 
   const isFormComplete = useMemo(
     () => Object.keys(validateCakeInquiry(form, inquiry.validation)).length === 0,
@@ -503,15 +519,28 @@ export function CakeInquiryForm() {
                 value={occasion}
                 checked={form.occasion === occasion}
                 onChange={() => {
-                  setForm((f) => ({
-                    ...f,
-                    occasion: occasion as Occasion,
-                    customOccasion:
-                      occasion === "Something else" ? f.customOccasion : "",
-                  }));
+                  setForm((f) => {
+                    const nextOccasion = occasion as Occasion;
+                    let nextEventDate = f.eventDate;
+                    if (nextEventDate) {
+                      const parsed = parseIsoDate(nextEventDate);
+                      const earliest = getEarliestEventDate(nextOccasion);
+                      if (!parsed || !isEventDateAllowed(parsed, earliest)) {
+                        nextEventDate = "";
+                      }
+                    }
+                    return {
+                      ...f,
+                      occasion: nextOccasion,
+                      customOccasion:
+                        occasion === "Something else" ? f.customOccasion : "",
+                      eventDate: nextEventDate,
+                    };
+                  });
                   setServerError(null);
                   clearError("occasion");
                   if (occasion !== "Something else") clearError("customOccasion");
+                  clearError("eventDate");
                 }}
                 label={inquiry.options.occasions[occasion]}
               />
@@ -748,15 +777,25 @@ export function CakeInquiryForm() {
             label={`${inquiry.eventDateLabel}${SPARKLE}`}
             error={errors.eventDate}
           >
-            <input
+            <EventDateField
               id={`${baseId}-event`}
-              type="date"
-              className={inputClass(`${baseId}-event`, "cake-inquiry-input")}
               value={form.eventDate}
-              onChange={(e) => set("eventDate", e.target.value)}
-              aria-invalid={Boolean(errors.eventDate)}
-              required
+              onChange={(value) => {
+                set("eventDate", value);
+                clearError("eventDate");
+              }}
+              locale={locale}
+              minDate={eventMinDate}
+              invalid={Boolean(errors.eventDate)}
+              shake={shakeTargetId === `${baseId}-event`}
+              labels={{
+                placeholder: inquiry.eventDatePlaceholder,
+                openAria: inquiry.eventDateOpenAria,
+                prevMonth: inquiry.eventDatePrevMonth,
+                nextMonth: inquiry.eventDateNextMonth,
+              }}
             />
+            <p className="cake-inquiry-date-hint">{eventDateHint}</p>
           </FormField>
         </div>
 

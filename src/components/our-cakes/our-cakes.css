@@ -69,6 +69,16 @@
   color: var(--oc-muted);
 }
 
+.our-cakes-lead-time {
+  margin: -0.35rem clamp(1rem, 3vw, 2.5rem) clamp(1.5rem, 3vh, 2.5rem);
+  max-width: 42rem;
+  font-family: var(--oc-font-body);
+  font-size: clamp(0.92rem, 1.45vw, 1.02rem);
+  line-height: 1.55;
+  color: var(--oc-muted);
+  text-wrap: balance;
+}
+
 .our-cakes-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -364,6 +374,15 @@
 
 .our-cakes-detail__cta-wrap {
   margin: clamp(0.9rem, 2vh, 1.25rem) 0 0;
+}
+
+.our-cakes-detail__lead-time {
+  margin: 0 0 0.85rem;
+  max-width: 22rem;
+  font-family: var(--oc-font-body);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--oc-muted);
 }
 
 .our-cakes-detail__cta-wrap a.site-header__order-link {

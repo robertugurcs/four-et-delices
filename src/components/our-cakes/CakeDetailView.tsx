@@ -11,6 +11,7 @@ import type { Locale } from "@/i18n/config";
 import { useTranslations } from "@/i18n/LocaleProvider";
 import { localizedPath } from "@/i18n/routing";
 import { BackBar } from "./BackBar";
+import { getCategoryLeadTimeNotice } from "@/lib/cake-lead-time";
 
 type CakeDetailViewProps = {
   category: CakeCategory;
@@ -169,6 +170,7 @@ export function CakeDetailView({ category, cake, locale }: CakeDetailViewProps) 
   const detail = t.cakes.detail;
   const angleLabels = [detail.frontView, detail.sideView, detail.detailView];
   const categoryLabel = t.cakes.categoryCakes.replace("{category}", category.title);
+  const leadTimeNotice = getCategoryLeadTimeNotice(t, category.id);
   const angles = ourCakeAngleList(cake);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -415,6 +417,7 @@ export function CakeDetailView({ category, cake, locale }: CakeDetailViewProps) 
           </div>
 
           <div className="our-cakes-detail__cta-wrap">
+            <p className="our-cakes-detail__lead-time">{leadTimeNotice}</p>
             <SiteHeaderOrderLink
               label={detail.beginDesign}
               ariaLabel={detail.beginDesignAria}
