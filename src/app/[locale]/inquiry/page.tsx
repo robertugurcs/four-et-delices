@@ -102,6 +102,7 @@ export default function InquiryPage() {
           line-height: 1.1;
           color: #2e1218;
           letter-spacing: -0.01em;
+          text-wrap: balance;
         }
 
         .iq-hero__sub {
@@ -111,6 +112,7 @@ export default function InquiryPage() {
           font-style: italic;
           color: #7a3040;
           opacity: 0.88;
+          text-wrap: pretty;
         }
       `}</style>
     </main>

@@ -57,6 +57,7 @@
   letter-spacing: -0.02em;
   line-height: 1.1;
   color: var(--oc-text);
+  text-wrap: balance;
 }
 
 .our-cakes-heading__count {

@@ -185,7 +185,7 @@ export function MeetKhoudiaContent() {
                   {t.meetKhoudia.title3}
                 </span>
               </h1>
-              <div className="mt-8 space-y-6 font-serif font-normal leading-[1.6] md:mt-10">
+              <div className="typography-prose mt-8 space-y-6 font-serif font-normal leading-[1.6] md:mt-10">
                 <p className="mk-fade-up m-0 text-[clamp(1.05rem,1.5vw,1.25rem)] text-black/90">
                   {t.meetKhoudia.intro}
                 </p>
@@ -219,7 +219,7 @@ export function MeetKhoudiaContent() {
             <p className="meet-khoudia-studio__lead mk-fade-up m-0 max-w-[34em] font-serif text-[clamp(1.55rem,2.55vw,2.35rem)] font-normal leading-[1.48] tracking-[-0.012em] text-black">
               {t.meetKhoudia.p2}
             </p>
-            <div className="meet-khoudia-studio__prose flex max-w-[38em] flex-col gap-5 font-serif text-[clamp(1.0625rem,1.35vw,1.2rem)] font-normal leading-[1.62] text-black md:gap-6">
+            <div className="typography-prose meet-khoudia-studio__prose flex max-w-[38em] flex-col gap-5 font-serif text-[clamp(1.0625rem,1.35vw,1.2rem)] font-normal leading-[1.62] text-black md:gap-6">
               <p className="mk-fade-up m-0">{t.meetKhoudia.p3}</p>
               <p className="mk-fade-up m-0">{t.meetKhoudia.p4}</p>
             </div>

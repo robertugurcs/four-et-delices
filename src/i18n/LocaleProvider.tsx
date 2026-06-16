@@ -9,6 +9,7 @@ import {
 import type { Locale } from "@/i18n/config";
 import { localizedPath } from "@/i18n/routing";
 import type { Dictionary } from "@/i18n/types";
+import { typographicText } from "@/lib/french-typography";
 
 type LocaleContextValue = {
   locale: Locale;
@@ -52,4 +53,10 @@ export function useLocale() {
 
 export function useTranslations() {
   return useLocale().dictionary;
+}
+
+/** Apply French non-breaking punctuation to runtime / user-authored strings. */
+export function useTypographicText(text: string): string {
+  const { locale } = useLocale();
+  return typographicText(text, locale);
 }

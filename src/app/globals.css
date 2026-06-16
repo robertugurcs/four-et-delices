@@ -105,6 +105,47 @@ body.intro-ready {
   transition: opacity 0.6s ease;
 }
 
+/* --------------------------------------------------------------------------
+ * Typography baseline — editorial readability (French punctuation, orphans)
+ * -------------------------------------------------------------------------- */
+body,
+p,
+li,
+td,
+th,
+blockquote,
+.typography-prose {
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.typography-heading {
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+  text-wrap: balance;
+}
+
+button,
+a,
+label,
+.typography-ui {
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.typography-prose {
+  text-wrap: pretty;
+}
+
 /* Custom knife cursor â€” hide native OS cursor everywhere (desktop test), see CustomCursor.tsx */
 html[data-custom-cursor="true"],
 html[data-custom-cursor="true"] body,
@@ -4622,6 +4663,15 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   color: #000000;
 }
 
+.khoudia-hero-banner__prose,
+.meet-khoudia-hero__copy p,
+.meet-khoudia-studio__lead,
+.meet-khoudia-studio__prose {
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
 /* --------------------------------------------------------------------------
  * Meet Khoudia — Ibrahem-style split hero + portrait frames
  * -------------------------------------------------------------------------- */
@@ -4657,6 +4707,11 @@ html[data-header-theme="light"] .nav-right a.site-header__order-link:active .sit
   .meet-khoudia-hero__portrait .meet-khoudia-portrait__frame {
     max-height: min(58svh, 540px);
   }
+}
+
+.meet-khoudia-slogan,
+.meet-khoudia-slogan-line {
+  text-wrap: balance;
 }
 
 .meet-khoudia-slogan-line {

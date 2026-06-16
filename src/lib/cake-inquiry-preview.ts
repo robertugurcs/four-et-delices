@@ -13,6 +13,8 @@ import {
 } from "@/lib/cake-inquiry-constants";
 
 import type { Dictionary } from "@/i18n/types";
+import type { Locale } from "@/i18n/config";
+import { typographicText } from "@/lib/french-typography";
 
 
 
@@ -81,6 +83,8 @@ export function buildPreviewSegments(
   copy: PreviewCopy,
 
   options: OptionCopy,
+
+  locale?: Locale,
 
 ): PreviewSegment[] {
 
@@ -252,6 +256,13 @@ export function buildPreviewSegments(
 
 
 
+  if (locale === "fr") {
+    return segments.map((segment) => ({
+      ...segment,
+      text: typographicText(segment.text, locale),
+    }));
+  }
+
   return segments;
 
 }
@@ -284,9 +295,11 @@ export function buildPreviewSentence(
 
   options: OptionCopy,
 
+  locale?: Locale,
+
 ): string {
 
-  return buildPreviewSegments(data, copy, options)
+  return buildPreviewSegments(data, copy, options, locale)
 
     .map((s) => s.text)
 

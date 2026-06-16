@@ -203,6 +203,7 @@ export function CakeInquiryForm() {
         },
         inquiry.preview,
         inquiry.options,
+        locale,
       ),
     [
       form.customFlavour,
@@ -214,6 +215,7 @@ export function CakeInquiryForm() {
       form.style,
       inquiry.options,
       inquiry.preview,
+      locale,
     ],
   );
 

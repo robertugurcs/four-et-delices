@@ -82,7 +82,7 @@ export function KhoudiaHeroBanner() {
               priority={false}
             />
             <div className="khoudia-hero-banner__cta-block hidden w-full flex-col items-center md:flex md:-mt-[clamp(2.75rem,10vw,6.75rem)] md:gap-1">
-              <p className="khoudia-hero-banner__prose m-0 max-w-[min(98vw,520px)] px-1 text-center font-serif text-lg font-normal leading-relaxed tracking-[0.02em] text-black">
+              <p className="khoudia-hero-banner__prose typography-prose m-0 max-w-[min(98vw,520px)] px-1 text-center font-serif text-lg font-normal leading-relaxed tracking-[0.02em] text-black">
                 {t.home.khoudiaDesktopProse}
               </p>
               <div className="khoudia-hero-banner__story-cta pointer-events-auto flex w-full justify-center pt-0">
